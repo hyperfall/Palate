@@ -34,9 +34,21 @@ drop policy if exists "own collections" on public.collections;
 create policy "own collections" on public.collections
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
+-- Own items, AND only in a collection you own. The extra EXISTS closes a gap:
+-- without it, a caller could insert an item (stamped with their own user_id)
+-- into someone else's collection id and, via the (collection_id, recipe_slug)
+-- unique constraint, block that owner from saving the same recipe.
 drop policy if exists "own items" on public.collection_items;
 create policy "own items" on public.collection_items
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.collections c
+      where c.id = collection_id and c.user_id = auth.uid()
+    )
+  );
 
 -- Username reservations — the authoritative unique namespace for public @handles.
 -- One row per user; the UNIQUE constraint on `username` is what actually enforces

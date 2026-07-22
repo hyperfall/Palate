@@ -58,6 +58,17 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: '/cook-from',
+    label: 'Cook from',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M4 11h16l-1.4 7.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8z" />
+        <path d="M6 11a6 6 0 0 1 12 0" />
+        <path d="M12 3v3" />
+      </svg>
+    ),
+  },
+  {
     href: '/taste-night',
     label: 'Quiz',
     icon: (

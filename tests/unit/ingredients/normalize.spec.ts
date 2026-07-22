@@ -20,6 +20,14 @@ describe('normalizeItem', () => {
     expect(normalizeItem('butter (unsalted), softened')).toBe('butter')
     expect(normalizeItem('garlic, minced')).toBe('garlic')
   })
+  it('strips a leading quantity + unit so the name is the ingredient, not the measure', () => {
+    expect(normalizeItem('2 tbsp olive oil')).toBe('olive oil')
+    expect(normalizeItem('tbsp olive oil')).toBe('olive oil')
+    expect(normalizeItem('400 g crushed tomatoes')).toBe('tomato')
+    expect(normalizeItem('3 cloves garlic')).toBe('garlic')
+    expect(normalizeItem('1 tsp ground cumin')).toBe('cumin')
+    expect(normalizeItem('50g feta')).toBe('feta')
+  })
   it('strips leading/trailing descriptors', () => {
     expect(normalizeItem('extra-virgin olive oil')).toBe('olive oil')
     expect(normalizeItem('freshly ground black pepper')).toBe('black pepper')

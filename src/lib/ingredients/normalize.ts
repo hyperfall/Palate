@@ -1,4 +1,6 @@
 // src/lib/ingredients/normalize.ts
+import { parseIngredientLine } from './parse'
+
 /** Descriptor words stripped from ingredient names before matching. */
 const DESCRIPTORS = new Set([
   'fresh', 'freshly', 'dried', 'ground', 'chopped', 'minced', 'sliced', 'diced',
@@ -25,7 +27,12 @@ export function singularize(word: string): string {
 }
 
 export function normalizeItem(raw: string): string {
-  let s = raw.toLowerCase().trim()
+  // Peel a leading quantity + unit ("2 tbsp olive oil" → "olive oil") so the
+  // canonical name is the ingredient, not the measure. The structured form
+  // splits these out now, but pasted lines and legacy rows still glue them on —
+  // without this the catalog fills with "tbsp olive oil"-style names.
+  const item = parseIngredientLine(raw).item || raw
+  let s = item.toLowerCase().trim()
   s = s.replace(/\([^)]*\)/g, ' ') // drop parentheticals
   s = s.split(',')[0] // keep the head, drop ", minced" etc.
   for (const marker of TAIL_MARKERS) {

@@ -30,14 +30,18 @@ async function run() {
   const payload = await getPayload({ config })
 
   for (const [name, substitutions] of Object.entries(SUBS)) {
-    const found = await payload.find({ collection: 'ingredients', where: { name: { equals: name } }, limit: 1 })
-    const doc = found.docs[0]
+    // Canonical ingredient names may carry leftover quantities/units from an
+    // earlier normalization pass (e.g. "tbsp olive oil"), so match by
+    // case-insensitive contains rather than exact equality, and prefer the
+    // shortest matching name — the one closest to the bare ingredient.
+    const found = await payload.find({ collection: 'ingredients', where: { name: { like: name } }, limit: 50 })
+    const doc = [...found.docs].sort((a, b) => String(a.name).length - String(b.name).length)[0]
     if (!doc) {
       console.log(`skip subs: no canonical ingredient "${name}"`)
       continue
     }
     await payload.update({ collection: 'ingredients', id: doc.id, data: { substitutions } as never })
-    console.log(`subs → ${name}`)
+    console.log(`subs → ${name} (matched "${doc.name}")`)
   }
 
   // Link steps → ingredients on the flagship recipe by matching names in text.

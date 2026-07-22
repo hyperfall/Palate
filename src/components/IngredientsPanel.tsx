@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
+import { convertMeasure, humanizeQuantity } from '@/lib/units'
+import { useUnitSystem } from '@/lib/useUnitSystem'
+import type { SubRow } from '@/lib/substitutions'
+
 /**
  * Ingredients with a servings scaler — a control that earns its JavaScript.
  * Quantities scale in place; anything non-numeric ("a large handful") is left
@@ -11,38 +15,18 @@ import { useEffect, useState } from 'react'
  * right so the column of numbers stays scannable mid-cook.
  */
 
+type CanonicalIngredient = {
+  countable?: boolean | null
+  substitutions?: SubRow[] | null
+}
+
 type Ingredient = {
   id?: string | null
   quantity?: string | null
   unit?: string | null
   item: string
   note?: string | null
-}
-
-const VULGAR: Array<[number, string]> = [
-  [0.25, '¼'],
-  [0.33, '⅓'],
-  [0.5, '½'],
-  [0.67, '⅔'],
-  [0.75, '¾'],
-]
-
-function formatQuantity(value: number): string {
-  const whole = Math.floor(value)
-  const frac = value - whole
-
-  for (const [v, glyph] of VULGAR) {
-    if (Math.abs(frac - v) < 0.05) return whole > 0 ? `${whole}${glyph}` : glyph
-  }
-  if (frac < 0.05) return String(whole)
-  return String(Math.round(value * 100) / 100)
-}
-
-function scaleQuantity(quantity: string | null | undefined, factor: number): string {
-  if (!quantity) return ''
-  const parsed = Number.parseFloat(quantity)
-  if (Number.isNaN(parsed)) return quantity
-  return formatQuantity(parsed * factor)
+  ingredient?: CanonicalIngredient | number | null
 }
 
 export function IngredientsPanel({
@@ -54,6 +38,20 @@ export function IngredientsPanel({
 }) {
   const [servings, setServings] = useState(baseServings)
   const factor = servings / baseServings
+  const [unitSystem, setUnitSystem] = useUnitSystem()
+
+  const measureFor = (ing: Ingredient): string => {
+    const parsed = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
+    // Non-numeric ("a handful") is left verbatim — scaling it would be a lie.
+    if (Number.isNaN(parsed)) return [ing.quantity, ing.unit].filter(Boolean).join(' ')
+    const scaled = parsed * factor
+    const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
+    const converted = ing.unit
+      ? convertMeasure(scaled, ing.unit, unitSystem)
+      : { quantity: scaled, unit: '' }
+    const qty = humanizeQuantity(converted.quantity, { countable: Boolean(canonical?.countable) })
+    return [qty, converted.unit].filter(Boolean).join(' ')
+  }
 
   // Editable value buffer — click the number and type "12" instead of tapping
   // + ten times. Focused shows the raw number; committing clamps to 1–24.
@@ -131,6 +129,22 @@ export function IngredientsPanel({
             +
           </button>
         </div>
+
+        <div className="flex items-center gap-0.5 rounded border border-rule p-0.5" role="group" aria-label="Units">
+          {(['metric', 'us'] as const).map((sys) => (
+            <button
+              key={sys}
+              type="button"
+              onClick={() => setUnitSystem(sys)}
+              aria-pressed={unitSystem === sys}
+              className={`cursor-pointer rounded-sm border-none px-2.5 py-1.5 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.08em] transition-colors ${
+                unitSystem === sys ? 'bg-flame text-paper' : 'bg-transparent text-slate hover:text-ink'
+              }`}
+            >
+              {sys === 'metric' ? 'Metric' : 'US'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {servings !== baseServings && (
@@ -146,11 +160,16 @@ export function IngredientsPanel({
         </p>
       )}
 
+      {factor >= 2 && (
+        <p className="mt-1.5 text-[0.8125rem] leading-snug text-slate">
+          At {Math.round(factor * 10) / 10}×, use a wider pan and expect a little extra cooking time —
+          scaled amounts are a starting point, taste as you go.
+        </p>
+      )}
+
       <ul className="mt-5 list-none space-y-3 p-0">
         {ingredients.map((ingredient, index) => {
-          const measure = [scaleQuantity(ingredient.quantity, factor), ingredient.unit]
-            .filter(Boolean)
-            .join(' ')
+          const measure = measureFor(ingredient)
 
           return (
             <li key={ingredient.id ?? index} className="leader text-[1.0625rem] leading-snug">

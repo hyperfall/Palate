@@ -53,6 +53,9 @@ export function StudioForm({
   const [pickerKey, setPickerKey] = useState(0)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null)
+  // Below xl the preview isn't pinned beside the form; a floating button opens it
+  // as a dismissible overlay so it never crowds the editing space.
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   const [title, setTitle] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
@@ -105,6 +108,20 @@ export function StudioForm({
     const t = setTimeout(() => setVideoPreview(videoUrl.trim()), 500)
     return () => clearTimeout(t)
   }, [videoUrl])
+
+  useEffect(() => {
+    if (!previewOpen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [previewOpen])
 
   if (gate === 'checking') return null
 
@@ -480,11 +497,30 @@ export function StudioForm({
       </button>
     </form>
 
-    {/* Live preview — the recipe page, forming as they type. Below xl it stacks
-        under the form (was hidden entirely) so phone/tablet creators still see it;
-        it only pins to the side on the wide two-column layout. */}
-    <aside aria-label="Recipe preview" className="min-w-0 xl:sticky xl:top-24">
-      <p className="eyebrow m-0">Live preview — how it will look</p>
+    {/* Live preview — the recipe page, forming as they type. On xl it pins beside
+        the form; below xl it's hidden until the floating button opens it as a
+        full-screen sheet, so it never crowds the editing space. */}
+    <aside
+      aria-label="Recipe preview"
+      role={previewOpen ? 'dialog' : undefined}
+      aria-modal={previewOpen ? true : undefined}
+      className={`min-w-0 xl:sticky xl:top-24 ${
+        previewOpen ? 'fixed inset-0 z-50 overflow-y-auto bg-paper p-5' : 'hidden xl:block'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="eyebrow m-0">Live preview — how it will look</p>
+        {previewOpen && (
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(false)}
+            aria-label="Close preview"
+            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat xl:hidden"
+          >
+            ✕
+          </button>
+        )}
+      </div>
       <div className="ticket-card mt-3 overflow-hidden">
         <div className="relative bg-pan text-milk">
           {photoUrl ? (
@@ -566,6 +602,19 @@ export function StudioForm({
         </div>
       </div>
     </aside>
+
+      {/* Small screens only: a floating trigger opens the preview overlay, so it
+          stays out of the way until the creator wants to check their work. */}
+      {!previewOpen && (
+        <button
+          type="button"
+          onClick={() => setPreviewOpen(true)}
+          aria-haspopup="dialog"
+          className="fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg xl:hidden"
+        >
+          <span aria-hidden="true">◉</span> Live preview
+        </button>
+      )}
     </div>
   )
 }

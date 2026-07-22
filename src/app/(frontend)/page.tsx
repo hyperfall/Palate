@@ -115,7 +115,14 @@ export default async function HomePage() {
           {/* The taste board — the instrument, used as the way in. */}
           <div
             className="rounded-md border border-pan-line bg-pan-deep p-6 sm:p-8"
-            style={{ ['--meter-rest' as string]: 'rgb(238 240 228 / 0.14)' }}
+            style={{
+              ['--meter-rest' as string]: 'rgb(238 240 228 / 0.14)',
+              // A whisper of warmth over the flat pan — two low-alpha flame
+              // radials bloom from opposite corners so the board has depth,
+              // not a visible gradient band. Theme-aware via --color-flame.
+              backgroundImage:
+                'radial-gradient(120% 85% at 12% -8%, color-mix(in oklab, var(--color-flame) 10%, transparent), transparent 55%), radial-gradient(100% 70% at 92% 112%, color-mix(in oklab, var(--color-flame) 6%, transparent), transparent 60%)',
+            }}
           >
             <p className="m-0 font-body text-[1.0625rem] font-semibold text-milk">
               How do you want to eat tonight?

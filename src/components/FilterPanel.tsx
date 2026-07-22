@@ -164,23 +164,42 @@ function FacetGroup({
   hint?: string
   /** Number of active selections in this group — shown as a flame badge. */
   activeCount?: number
-  /** Long groups collapse by default to keep the panel scannable. */
+  /** Whether this group starts expanded. Primary axes (Meal, Taste, Time, …)
+      pass true; secondary/long lists pass false to keep the panel scannable. */
   defaultOpen?: boolean
   children: React.ReactNode
 }) {
   // A group with an active selection always opens so the choice stays visible.
   const [open, setOpen] = useState(defaultOpen || activeCount > 0)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const regionId = `facet-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+
+  const toggle = () => {
+    setOpen((wasOpen) => {
+      // Collapsing unmounts the content; if focus was inside it, pull focus back
+      // to the header so it never silently drops to <body>.
+      if (wasOpen && contentRef.current?.contains(document.activeElement)) {
+        btnRef.current?.focus()
+      }
+      return !wasOpen
+    })
+  }
 
   return (
     <div className="border-t border-rule pt-4">
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         aria-expanded={open}
-        className="flex w-full cursor-pointer items-center justify-between gap-3 border-none bg-transparent p-0 text-left"
+        aria-controls={regionId}
+        className="group/facet flex w-full cursor-pointer items-center justify-between gap-3 border-none bg-transparent p-0 text-left"
       >
         <span className="flex items-center gap-2">
-          <span className="eyebrow m-0 text-ink">{label}</span>
+          <span className="eyebrow m-0 text-ink transition-colors group-hover/facet:text-flame">
+            {label}
+          </span>
           {activeCount > 0 && (
             <span className="grid h-[1.1rem] min-w-[1.1rem] place-items-center rounded-full bg-flame px-1 font-mono text-[0.625rem] font-semibold text-paper tabular-nums">
               {activeCount}
@@ -196,13 +215,17 @@ function FacetGroup({
             height="7"
             viewBox="0 0 11 7"
             aria-hidden="true"
-            className={`fill-none stroke-slate stroke-[1.5] transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`fill-none stroke-slate stroke-[1.5] transition-[transform,stroke] group-hover/facet:stroke-flame ${open ? 'rotate-180' : ''}`}
           >
             <path d="M1 1l4.5 4L10 1" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
       </button>
-      {open && <div className="mt-3">{children}</div>}
+      {open && (
+        <div id={regionId} ref={contentRef} role="group" aria-label={label} className="mt-3">
+          {children}
+        </div>
+      )}
     </div>
   )
 }
@@ -302,6 +325,75 @@ export function FilterPanel({
   const commit = useCommit(filters)
   const activeCount = countActiveFilters(filters)
   const [open, setOpen] = useState(false)
+
+  // One place both the desktop header and the mobile drawer clear from.
+  const clearAll = () => {
+    setQuery('')
+    commit((d) => {
+      d.cuisines = []
+      d.courses = []
+      d.ingredients = []
+      d.diets = []
+      d.difficulties = []
+      d.taste = {}
+      d.maxMinutes = null
+      d.maxCalories = null
+      d.minRating = null
+      d.maxCost = null
+      d.equipment = []
+      d.onePan = false
+      d.makeAhead = false
+      d.keepsWell = false
+      d.tasteVector = null
+      d.q = ''
+    })
+  }
+
+  // Mobile drawer as a real dialog: lock body scroll, trap Tab, close on Escape,
+  // move focus in on open and restore it to the trigger on close.
+  const drawerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const restoreTo = triggerRef.current
+    const focusables = () =>
+      Array.from(
+        drawerRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((el) => !el.hasAttribute('disabled'))
+    // Focus the dialog itself (tabindex -1). A short timeout (not rAF) lands
+    // reliably after the open click and mount settle.
+    const focusTimer = setTimeout(() => drawerRef.current?.focus(), 60)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        return
+      }
+      if (e.key === 'Tab') {
+        const items = focusables()
+        if (items.length === 0) return
+        const first = items[0]
+        const last = items[items.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      clearTimeout(focusTimer)
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKey)
+      restoreTo?.focus?.()
+    }
+  }, [open])
 
   // Debounced title search. The ref dance keeps typing responsive while the
   // URL (and the server-rendered results) trail by a beat.
@@ -606,15 +698,21 @@ export function FilterPanel({
     [filters, query, cuisines, availableAllergens],
   )
 
+  const clearButtonClass =
+    'cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-2 hover:underline'
+
   return (
     <aside aria-label="Filter recipes">
-      {/* Mobile: one compact bar; recipes stay the first real content. */}
+      {/* Mobile: a compact bar; recipes stay the first real content. */}
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <button
+          ref={triggerRef}
           type="button"
           className="chip"
           data-active={open || activeCount > 0}
           aria-expanded={open}
+          aria-haspopup="dialog"
+          aria-controls="filter-drawer"
           onClick={() => setOpen((v) => !v)}
         >
           Filters{activeCount > 0 ? ` · ${activeCount}` : ''}
@@ -622,48 +720,58 @@ export function FilterPanel({
         <SortSelect filters={filters} />
       </div>
 
+      {/* Mobile drawer — a real dialog: dimmed overlay, scroll-lock, Escape,
+          focus trap + restore (see the effect above). */}
       {open && (
-        <div className="ticket-card mt-4 p-5 hover:translate-0 hover:shadow-none lg:hidden">
-          {panelBody}
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-pan-deep/60" onClick={() => setOpen(false)} />
+          <div
+            ref={drawerRef}
+            id="filter-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filter recipes"
+            tabIndex={-1}
+            className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-xl border-t border-rule bg-paper outline-none"
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-rule px-5 py-4">
+              <p className="eyebrow m-0 text-ink">
+                Filters{activeCount > 0 ? ` · ${activeCount}` : ''}
+              </p>
+              <div className="flex items-center gap-4">
+                {activeCount > 0 && (
+                  <button type="button" onClick={clearAll} className={clearButtonClass}>
+                    Clear {activeCount}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close filters"
+                  className="grid h-8 w-8 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="scroll-rail flex-1 overflow-y-auto px-5 py-4">{panelBody}</div>
+          </div>
         </div>
       )}
 
-      {/* Desktop: a sticky station — controls stay at hand while the grid scrolls. */}
+      {/* Desktop: a sticky station. The Filter/Clear header stays pinned while the
+          facet groups scroll beneath it, so "Clear" is always reachable. */}
       <div className="hidden lg:block">
-        <div className="scroll-rail sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2 pb-4">
-          <div className="flex items-baseline justify-between gap-3 pb-4">
+        <div className="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
+          <div className="flex items-baseline justify-between gap-3 border-b border-rule pb-3">
             <p className="eyebrow m-0 text-ink">Filter</p>
             {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery('')
-                  commit((d) => {
-                    d.cuisines = []
-                    d.courses = []
-                    d.ingredients = []
-                    d.diets = []
-                    d.difficulties = []
-                    d.taste = {}
-                    d.maxMinutes = null
-                    d.maxCalories = null
-                    d.minRating = null
-                    d.maxCost = null
-                    d.equipment = []
-                    d.onePan = false
-                    d.makeAhead = false
-                    d.keepsWell = false
-                    d.tasteVector = null
-                    d.q = ''
-                  })
-                }}
-                className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-2 hover:underline"
-              >
+              <button type="button" onClick={clearAll} className={clearButtonClass}>
                 Clear {activeCount}
               </button>
             )}
           </div>
-          {panelBody}
+          <div className="scroll-rail flex-1 overflow-y-auto pr-2 pt-4 pb-4">{panelBody}</div>
         </div>
       </div>
     </aside>

@@ -84,8 +84,13 @@ export default async function CatalogPage({
         />
 
         <section>
+          {/* Announced to screen readers on every filter change, at all
+              breakpoints (the visible count below is desktop-only + aria-hidden). */}
+          <p className="sr-only" role="status" aria-live="polite">
+            {totalDocs} {totalDocs === 1 ? 'recipe' : 'recipes'} match your filters
+          </p>
           <div className="hidden flex-wrap items-baseline justify-between gap-4 pb-4 lg:flex">
-            <p className="datum m-0">
+            <p className="datum m-0" aria-hidden="true">
               {totalDocs} {totalDocs === 1 ? 'recipe' : 'recipes'}
             </p>
             <SortSelect filters={filters} />

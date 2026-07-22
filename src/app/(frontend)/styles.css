@@ -214,6 +214,9 @@
 
   .chip:hover {
     border-color: var(--color-ink);
+    /* A faint fill so hover previews the selected (inverted) state instead of a
+       barely-there border shift. */
+    background: color-mix(in oklab, var(--color-ink) 7%, transparent);
   }
 
   .chip[aria-pressed='true'],
@@ -506,6 +509,10 @@
   .scroll-rail {
     scrollbar-width: thin;
     scrollbar-color: var(--color-rule) transparent;
+    /* overflow-y:auto would otherwise promote overflow-x to auto, so an
+       edge taste-tooltip could spawn a stray horizontal scrollbar. clip keeps
+       vertical scrolling without ever showing a horizontal one. */
+    overflow-x: clip;
   }
 
   .scroll-rail::-webkit-scrollbar {

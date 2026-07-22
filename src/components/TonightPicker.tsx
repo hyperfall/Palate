@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { TASTE_AXES, TASTE_AXIS_LABELS, type TasteAxis } from '@/lib/taxonomy'
+import { readTasteProfile } from '@/lib/useTasteProfile'
 import { CookingLoader } from './CookingLoader'
 import { AXIS_COLOR, TastePanel } from './TasteGauge'
 
@@ -35,7 +36,26 @@ const TIME_CHOICES = [
  */
 export function TonightPicker() {
   const [answers, setAnswers] = useState<Partial<Record<TasteAxis, number>>>({})
+  const [prefilled, setPrefilled] = useState(false)
   const [time, setTime] = useState<number | null | undefined>(undefined)
+
+  // Seed the taste answers from a saved profile so a returning visitor jumps
+  // straight to "how long have you got?" — they can still step Back to adjust.
+  useEffect(() => {
+    const profile = readTasteProfile()
+    if (!profile) return
+    setAnswers((a) =>
+      Object.keys(a).length > 0
+        ? a
+        : {
+            spiciness: profile.spiciness,
+            sweetness: profile.sweetness,
+            richness: profile.richness,
+            effort: profile.effort,
+          },
+    )
+    setPrefilled(true)
+  }, [])
   const [pick, setPick] = useState<Pick | null>(null)
   const [remaining, setRemaining] = useState(0)
   const [seen, setSeen] = useState<number[]>([])
@@ -94,6 +114,21 @@ export function TonightPicker() {
     return (
       <div>
         <p className="eyebrow m-0 text-flame">Question {stepNumber} of 5</p>
+        {prefilled && (
+          <p className="mt-2 font-mono text-[0.75rem] text-slate">
+            Prefilled from your taste profile ·{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setPrefilled(false)
+                reset()
+              }}
+              className="cursor-pointer border-none bg-transparent p-0 font-inherit text-flame underline underline-offset-2"
+            >
+              start fresh
+            </button>
+          </p>
+        )}
 
         {axis ? (
           <>

@@ -6,6 +6,7 @@ import {
   TASTE_AXES,
   type TasteAxis,
 } from './taxonomy'
+import { parseVector, encodeVector, type TasteVector } from './tasteProfile'
 
 /**
  * Catalog filter state lives entirely in the URL (design spec §7: "filter state
@@ -20,7 +21,7 @@ import {
  * URLs keep meaning what they meant.
  */
 
-export type SortKey = 'newest' | 'quickest' | 'top' | TasteAxis
+export type SortKey = 'newest' | 'quickest' | 'top' | 'foryou' | TasteAxis
 
 export type TasteRange = { min: number; max: number }
 
@@ -45,6 +46,8 @@ export type CatalogFilters = {
   makeAhead: boolean
   /** Keeps/reheats well (finish.storageDays ≥ 2). */
   keepsWell: boolean
+  /** Saved taste profile, for the "For your taste" sort. Absent = no profile. */
+  tasteVector: TasteVector | null
   /** Free-text search over recipe titles. */
   q: string
   page: number
@@ -61,7 +64,7 @@ const INGREDIENT_VALUES = new Set(MAIN_INGREDIENTS.map((i) => i.value))
 export const CALORIE_MIN = 100
 export const CALORIE_MAX = 1200
 export const CALORIE_STEP = 50
-const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', ...TASTE_AXES])
+const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', 'foryou', ...TASTE_AXES])
 
 /** The rating thresholds the catalog offers as filter chips. */
 export const RATING_CHOICES = [3, 4, 4.5] as const
@@ -170,6 +173,7 @@ export function parseFilters(params: RawSearchParams): CatalogFilters {
     onePan: first(params.onepan) === '1',
     makeAhead: first(params.prep) === '1',
     keepsWell: first(params.keeps) === '1',
+    tasteVector: parseVector(first(params.tp)),
     q: (first(params.q) ?? '').trim().slice(0, 80),
     page: Number.isNaN(parsedPage) ? 1 : Math.max(1, parsedPage),
     sort: sortParam && SORT_VALUES.has(sortParam) ? (sortParam as SortKey) : 'newest',
@@ -206,6 +210,9 @@ export function sortExpression(sort: SortKey): string {
   if (sort === 'quickest') return 'totalMinutes'
   if (sort === 'newest') return '-publishedAt'
   if (sort === 'top') return '-ratingScore'
+  // 'foryou' is a distance sort computed in findRecipes; fall back to newest for
+  // the DB query it can't express.
+  if (sort === 'foryou') return '-publishedAt'
   // Sorting *by* an axis means "most of it first" — the interesting direction.
   return `-${sort}`
 }
@@ -298,6 +305,7 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
   if (filters.onePan) params.set('onepan', '1')
   if (filters.makeAhead) params.set('prep', '1')
   if (filters.keepsWell) params.set('keeps', '1')
+  if (filters.tasteVector) params.set('tp', encodeVector(filters.tasteVector))
   for (const [axis, range] of Object.entries(filters.taste)) {
     params.set(axis, encodeTasteRange(range))
   }

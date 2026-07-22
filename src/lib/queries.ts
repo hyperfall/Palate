@@ -4,6 +4,7 @@ import config from '@payload-config'
 import type { Author, BrandCard, Cuisine, Recipe } from '@/payload-types'
 import { buildWhere, sortExpression, type CatalogFilters } from './filters'
 import { scoreRecipe, bandRecipes, type Have, type Bands, type RequiredIngredient } from './pantry'
+import { distance } from './tasteProfile'
 
 /**
  * Read-side data access, via Payload's local API straight against Postgres
@@ -30,6 +31,30 @@ export async function findRecipes(
   { page = 1, limit = 24 }: { page?: number; limit?: number } = {},
 ): Promise<CatalogPage> {
   const payload = await getPayloadClient()
+
+  // "For your taste" ranks by distance to the saved profile — a computed order
+  // the DB sort can't express, so load the matched set and sort/paginate in app
+  // (the catalog is small). Falls through to the normal path with no profile.
+  if (filters.sort === 'foryou' && filters.tasteVector) {
+    const tv = filters.tasteVector
+    const all = await payload.find({ collection: 'recipes', where: buildWhere(filters) as never, depth: 1, limit: 500 })
+    const vecOf = (r: Recipe) => ({
+      spiciness: r.spiciness ?? 0,
+      sweetness: r.sweetness ?? 0,
+      richness: r.richness ?? 0,
+      effort: r.effort ?? 0,
+    })
+    const sorted = [...all.docs].sort((a, b) => distance(tv, vecOf(a)) - distance(tv, vecOf(b)))
+    const totalDocs = sorted.length
+    const start = (page - 1) * limit
+    return {
+      recipes: sorted.slice(start, start + limit),
+      totalDocs,
+      totalPages: Math.max(1, Math.ceil(totalDocs / limit)),
+      page,
+    }
+  }
+
   const result = await payload.find({
     collection: 'recipes',
     where: buildWhere(filters) as never,

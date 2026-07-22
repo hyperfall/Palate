@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import { TonightPicker } from '@/components/TonightPicker'
 
@@ -25,6 +26,13 @@ export default async function TonightPage() {
             <p className="mt-3 text-slate">
               Answer five questions. You get one recipe, not a grid — the board decides so you
               don’t have to.
+            </p>
+            <p className="mt-3 font-mono text-[0.8125rem] text-slate">
+              Tired of answering?{' '}
+              <Link href="/taste" className="text-flame underline underline-offset-4 hover:no-underline">
+                Set your taste profile
+              </Link>{' '}
+              and we’ll prefill these.
             </p>
           </header>
 

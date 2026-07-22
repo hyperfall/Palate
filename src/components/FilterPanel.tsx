@@ -27,6 +27,7 @@ import {
   tasteLabel,
   type TasteAxis,
 } from '@/lib/taxonomy'
+import { readTasteProfile } from '@/lib/useTasteProfile'
 import { AXIS_COLOR } from './TasteGauge'
 
 /**
@@ -266,6 +267,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'newest', label: 'Newest' },
   { value: 'quickest', label: 'Quickest' },
   { value: 'top', label: 'Top rated' },
+  { value: 'foryou', label: 'For your taste' },
   ...TASTE_AXES.map((axis) => ({
     value: axis,
     label: `Most ${TASTE_AXIS_LABELS[axis].title.toLowerCase()}`,
@@ -651,6 +653,7 @@ export function FilterPanel({
                     d.onePan = false
                     d.makeAhead = false
                     d.keepsWell = false
+                    d.tasteVector = null
                     d.q = ''
                   })
                 }}
@@ -675,7 +678,15 @@ export function SortSelect({ filters }: { filters: CatalogFilters }) {
       <span className="eyebrow">Sort</span>
       <select
         value={filters.sort}
-        onChange={(e) => commit((d) => void (d.sort = e.target.value as SortKey))}
+        onChange={(e) => {
+          const value = e.target.value as SortKey
+          commit((d) => {
+            d.sort = value
+            // Attach the saved taste profile so the server can rank by it; a
+            // visitor with no profile just gets the newest-order fallback.
+            d.tasteVector = value === 'foryou' ? readTasteProfile() : null
+          })
+        }}
         className="cursor-pointer appearance-none rounded border border-rule bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-[0.8125rem] font-medium text-ink focus:border-flame focus:outline-none"
         style={{
           backgroundImage:

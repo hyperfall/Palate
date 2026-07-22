@@ -79,7 +79,7 @@ export function LineListInput({
   }
 
   return (
-    <div role="group" aria-label={ariaLabel} className="grid gap-2">
+    <div role="group" aria-label={ariaLabel} className="grid grid-cols-1 gap-2">
       {value.map((line, i) => (
         <div key={i} className="flex items-center gap-2">
           {numbered && (

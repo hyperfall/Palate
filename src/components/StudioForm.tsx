@@ -30,7 +30,11 @@ import {
 
 const inputCls =
   'w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none'
-const labelCls = 'grid gap-1.5'
+// grid-cols-1 (minmax(0,1fr)) rather than a bare `grid` (implicit auto column):
+// an auto column sizes to its content's max-content and overflows a narrow phone
+// column; minmax(0,1fr) makes every stacked field fill — and never exceed — its
+// container.
+const labelCls = 'grid grid-cols-1 gap-1.5'
 
 // Field defaults, named once so a post-submit reset restores exactly the initial
 // state — no stale cuisine/diet/taste/story carrying into the next recipe.
@@ -301,7 +305,7 @@ export function StudioForm({
 
   return (
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
-    <form onSubmit={submit} className="grid min-w-0 gap-6">
+    <form onSubmit={submit} className="grid min-w-0 grid-cols-1 gap-6">
       <label className={labelCls}>
         <span className="eyebrow">Recipe title</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputCls} />
@@ -610,7 +614,9 @@ export function StudioForm({
           type="button"
           onClick={() => setPreviewOpen(true)}
           aria-haspopup="dialog"
-          className="fixed right-5 bottom-5 z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg xl:hidden"
+          // Clear the fixed bottom nav on phones (it's ~3.25rem tall, sm:hidden);
+          // on tablets there's no bottom bar, so sit closer to the edge.
+          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
         >
           <span aria-hidden="true">◉</span> Live preview
         </button>

@@ -110,7 +110,7 @@ export function IngredientRowsInput({
     'min-w-0 rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none'
 
   return (
-    <div role="group" aria-label="Ingredients" className="grid gap-2">
+    <div role="group" aria-label="Ingredients" className="grid grid-cols-1 gap-2">
       <datalist id="ingredient-units">
         {UNIT_SUGGESTIONS.map((u) => (
           <option key={u} value={u} />

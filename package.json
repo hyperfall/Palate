@@ -24,7 +24,8 @@
     "purge:imports": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/purgeImports.ts",
     "seed:cook-depth": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedCookDepth.ts",
     "clean:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/cleanIngredientNames.ts",
-    "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts"
+    "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts",
+    "seed:constraints": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedConstraints.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.86.0",

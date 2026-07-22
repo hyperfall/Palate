@@ -294,6 +294,30 @@ export interface Recipe {
    */
   costPerServing?: number | null;
   /**
+   * Kitchen-reality filter: what a cook needs to make this.
+   */
+  equipment?:
+    | (
+        | 'stovetop'
+        | 'oven'
+        | 'microwave'
+        | 'grill'
+        | 'blender'
+        | 'food-processor'
+        | 'slow-cooker'
+        | 'air-fryer'
+        | 'no-cook'
+      )[]
+    | null;
+  /**
+   * Cooks in a single pan/pot.
+   */
+  onePan?: boolean | null;
+  /**
+   * Can be partly or fully made in advance.
+   */
+  makeAhead?: boolean | null;
+  /**
    * Optional. Feeds Recipe JSON-LD when present.
    */
   nutrition?: {
@@ -758,6 +782,30 @@ export interface Submission {
    */
   costPerServing?: number | null;
   /**
+   * Kitchen-reality filter: what a cook needs to make this.
+   */
+  equipment?:
+    | (
+        | 'stovetop'
+        | 'oven'
+        | 'microwave'
+        | 'grill'
+        | 'blender'
+        | 'food-processor'
+        | 'slow-cooker'
+        | 'air-fryer'
+        | 'no-cook'
+      )[]
+    | null;
+  /**
+   * Cooks in a single pan/pot.
+   */
+  onePan?: boolean | null;
+  /**
+   * Can be partly or fully made in advance.
+   */
+  makeAhead?: boolean | null;
+  /**
    * Optional. Feeds Recipe JSON-LD when present.
    */
   nutrition?: {
@@ -1006,6 +1054,9 @@ export interface RecipesSelect<T extends boolean = true> {
   totalMinutes?: T;
   difficulty?: T;
   costPerServing?: T;
+  equipment?: T;
+  onePan?: T;
+  makeAhead?: T;
   nutrition?:
     | T
     | {
@@ -1233,6 +1284,9 @@ export interface SubmissionsSelect<T extends boolean = true> {
   totalMinutes?: T;
   difficulty?: T;
   costPerServing?: T;
+  equipment?: T;
+  onePan?: T;
+  makeAhead?: T;
   nutrition?:
     | T
     | {

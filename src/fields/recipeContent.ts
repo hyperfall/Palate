@@ -204,6 +204,31 @@ export function recipeFacetFields(): Field[] {
       },
     },
     {
+      type: 'row',
+      fields: [
+        {
+          name: 'equipment',
+          type: 'select',
+          hasMany: true,
+          index: true,
+          options: [
+            { label: 'Stovetop', value: 'stovetop' },
+            { label: 'Oven', value: 'oven' },
+            { label: 'Microwave', value: 'microwave' },
+            { label: 'Grill / broiler', value: 'grill' },
+            { label: 'Blender', value: 'blender' },
+            { label: 'Food processor', value: 'food-processor' },
+            { label: 'Slow cooker', value: 'slow-cooker' },
+            { label: 'Air fryer', value: 'air-fryer' },
+            { label: 'No-cook', value: 'no-cook' },
+          ],
+          admin: { description: 'Kitchen-reality filter: what a cook needs to make this.' },
+        },
+        { name: 'onePan', type: 'checkbox', defaultValue: false, index: true, admin: { description: 'Cooks in a single pan/pot.' } },
+        { name: 'makeAhead', type: 'checkbox', defaultValue: false, index: true, admin: { description: 'Can be partly or fully made in advance.' } },
+      ],
+    },
+    {
       name: 'nutrition',
       type: 'group',
       admin: { description: 'Optional. Feeds Recipe JSON-LD when present.' },

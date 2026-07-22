@@ -272,6 +272,21 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   })),
 ]
 
+const EQUIPMENT_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: 'stovetop', label: 'Stovetop' },
+  { value: 'oven', label: 'Oven' },
+  { value: 'grill', label: 'Grill' },
+  { value: 'no-cook', label: 'No-cook' },
+  { value: 'blender', label: 'Blender' },
+  { value: 'food-processor', label: 'Food processor' },
+]
+const COST_BUCKETS: Array<{ value: number | null; label: string }> = [
+  { value: null, label: 'Any' },
+  { value: 200, label: '≤ £2' },
+  { value: 300, label: '≤ £3' },
+  { value: 500, label: '≤ £5' },
+]
+
 export function FilterPanel({
   filters,
   cuisines,
@@ -524,6 +539,65 @@ export function FilterPanel({
             ))}
           </div>
         </FacetGroup>
+
+        <FacetGroup
+          label="Kitchen"
+          activeCount={
+            filters.equipment.length +
+            (filters.onePan ? 1 : 0) +
+            (filters.makeAhead ? 1 : 0) +
+            (filters.keepsWell ? 1 : 0)
+          }
+          defaultOpen={false}
+        >
+          <div className="flex flex-wrap gap-2">
+            <Chip active={filters.onePan} onClick={() => commit((d) => void (d.onePan = !d.onePan))}>
+              One pan
+            </Chip>
+            <Chip active={filters.makeAhead} onClick={() => commit((d) => void (d.makeAhead = !d.makeAhead))}>
+              Make-ahead
+            </Chip>
+            <Chip active={filters.keepsWell} onClick={() => commit((d) => void (d.keepsWell = !d.keepsWell))}>
+              Keeps well
+            </Chip>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {EQUIPMENT_OPTIONS.map((o) => (
+              <Chip
+                key={o.value}
+                active={filters.equipment.includes(o.value)}
+                onClick={() =>
+                  commit((d) => {
+                    d.equipment = d.equipment.includes(o.value)
+                      ? d.equipment.filter((x) => x !== o.value)
+                      : [...d.equipment, o.value]
+                  })
+                }
+              >
+                {o.label}
+              </Chip>
+            ))}
+          </div>
+        </FacetGroup>
+
+        <FacetGroup
+          label="Budget"
+          hint="per serving"
+          activeCount={filters.maxCost !== null ? 1 : 0}
+          defaultOpen={false}
+        >
+          <div className="flex flex-wrap gap-2">
+            {COST_BUCKETS.map((b) => (
+              <Chip
+                key={b.label}
+                active={b.value === null ? filters.maxCost === null : filters.maxCost === b.value}
+                onClick={() => commit((d) => void (d.maxCost = b.value))}
+              >
+                {b.label}
+              </Chip>
+            ))}
+          </div>
+        </FacetGroup>
       </div>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt whenever the URL-derived filters change
@@ -572,6 +646,11 @@ export function FilterPanel({
                     d.maxMinutes = null
                     d.maxCalories = null
                     d.minRating = null
+                    d.maxCost = null
+                    d.equipment = []
+                    d.onePan = false
+                    d.makeAhead = false
+                    d.keepsWell = false
                     d.q = ''
                   })
                 }}

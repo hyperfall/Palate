@@ -37,6 +37,14 @@ export type CatalogFilters = {
   maxCalories: number | null
   /** Minimum rating (on the 0–5 scale). Absent = unconstrained. */
   minRating: number | null
+  /** Per-serving cost ceiling in cents. Absent = unconstrained. */
+  maxCost: number | null
+  /** Required equipment tags (additive — a recipe must carry all selected). */
+  equipment: string[]
+  onePan: boolean
+  makeAhead: boolean
+  /** Keeps/reheats well (finish.storageDays ≥ 2). */
+  keepsWell: boolean
   /** Free-text search over recipe titles. */
   q: string
   page: number
@@ -57,6 +65,13 @@ const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', ...TASTE_AXES]
 
 /** The rating thresholds the catalog offers as filter chips. */
 export const RATING_CHOICES = [3, 4, 4.5] as const
+
+/** Per-serving cost ceilings offered as chips (cents ≈ pence). */
+export const COST_CHOICES = [200, 300, 500] as const
+/** Equipment values a recipe may require (mirrors the schema select). */
+export const EQUIPMENT_VALUES = new Set<string>([
+  'stovetop', 'oven', 'microwave', 'grill', 'blender', 'food-processor', 'slow-cooker', 'air-fryer', 'no-cook',
+])
 
 /** Parses a `rating` param into an allowed threshold, or null when unconstrained/invalid. */
 export function parseMinRating(raw: string | undefined): number | null {
@@ -146,6 +161,15 @@ export function parseFilters(params: RawSearchParams): CatalogFilters {
         ? null
         : Math.max(CALORIE_MIN, parsedKcal),
     minRating: parseMinRating(first(params.rating)),
+    maxCost: (() => {
+      const c = first(params.cost)
+      const n = c ? Number.parseInt(c, 10) : Number.NaN
+      return Number.isNaN(n) || n <= 0 ? null : n
+    })(),
+    equipment: asList(params.equip).filter((e) => EQUIPMENT_VALUES.has(e)),
+    onePan: first(params.onepan) === '1',
+    makeAhead: first(params.prep) === '1',
+    keepsWell: first(params.keeps) === '1',
     q: (first(params.q) ?? '').trim().slice(0, 80),
     page: Number.isNaN(parsedPage) ? 1 : Math.max(1, parsedPage),
     sort: sortParam && SORT_VALUES.has(sortParam) ? (sortParam as SortKey) : 'newest',
@@ -167,6 +191,11 @@ export function countActiveFilters(filters: CatalogFilters): number {
     (filters.maxMinutes !== null ? 1 : 0) +
     (filters.maxCalories !== null ? 1 : 0) +
     (filters.minRating !== null ? 1 : 0) +
+    (filters.maxCost !== null ? 1 : 0) +
+    filters.equipment.length +
+    (filters.onePan ? 1 : 0) +
+    (filters.makeAhead ? 1 : 0) +
+    (filters.keepsWell ? 1 : 0) +
     (filters.q ? 1 : 0) +
     Object.keys(filters.taste).length
   )
@@ -226,6 +255,19 @@ export function buildWhere(filters: CatalogFilters): Record<string, unknown> {
     and.push({ ratingScore: { greater_than_equal: filters.minRating } })
   }
 
+  if (filters.maxCost !== null) {
+    and.push({ costPerServing: { less_than_equal: filters.maxCost } })
+  }
+
+  // Equipment is additive: selecting "one-pan-friendly + no-oven" means both.
+  for (const e of filters.equipment) {
+    and.push({ equipment: { contains: e } })
+  }
+
+  if (filters.onePan) and.push({ onePan: { equals: true } })
+  if (filters.makeAhead) and.push({ makeAhead: { equals: true } })
+  if (filters.keepsWell) and.push({ 'finish.storageDays': { greater_than_equal: 2 } })
+
   for (const [axis, range] of Object.entries(filters.taste)) {
     if (range.min > AXIS_MIN) and.push({ [axis]: { greater_than_equal: range.min } })
     if (range.max < AXIS_MAX) and.push({ [axis]: { less_than_equal: range.max } })
@@ -251,6 +293,11 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
   if (filters.maxMinutes !== null) params.set('time', String(filters.maxMinutes))
   if (filters.maxCalories !== null) params.set('kcal', String(filters.maxCalories))
   if (filters.minRating !== null) params.set('rating', String(filters.minRating))
+  if (filters.maxCost !== null) params.set('cost', String(filters.maxCost))
+  for (const e of filters.equipment) params.append('equip', e)
+  if (filters.onePan) params.set('onepan', '1')
+  if (filters.makeAhead) params.set('prep', '1')
+  if (filters.keepsWell) params.set('keeps', '1')
   for (const [axis, range] of Object.entries(filters.taste)) {
     params.set(axis, encodeTasteRange(range))
   }

@@ -560,6 +560,9 @@ export interface Author {
    */
   verified?: boolean | null;
   avatar?: (number | null) | Media;
+  /**
+   * Short profile bio (max 160 chars). Creators can edit their own from /account.
+   */
   bio?: string | null;
   /**
    * Provenance applied to new recipes by this author unless overridden on the recipe itself.

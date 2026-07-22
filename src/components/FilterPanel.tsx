@@ -231,6 +231,35 @@ function FacetGroup({
 }
 
 /**
+ * A labelled region grouping several facets, so the panel reads as a few rooms
+ * rather than a flat list of a dozen. `accent` gives Taste a quiet signature —
+ * a flame edge + faint wash — marking it the centrepiece without a loud hero
+ * treatment (taste is a feature, not a shouting moat).
+ */
+function Section({
+  title,
+  accent = false,
+  children,
+}: {
+  title: string
+  accent?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div className={accent ? 'rounded-r-lg border-l-2 border-flame/40 bg-flame/[0.035] pb-3 pl-3.5' : ''}>
+      <p
+        className={`m-0 pt-3 pb-0.5 font-mono text-[0.625rem] font-bold tracking-[0.18em] uppercase ${
+          accent ? 'text-flame' : 'text-slate/55'
+        }`}
+      >
+        {title}
+      </p>
+      <div className="grid gap-5">{children}</div>
+    </div>
+  )
+}
+
+/**
  * Calorie ceiling — a continuous slider instead of three fixed buckets.
  * Drags live; commits to the URL only on release so the router isn't spammed.
  * Sliding to the top means "no ceiling".
@@ -433,7 +462,7 @@ export function FilterPanel({
 
   const panelBody = useMemo(
     () => (
-      <div className="grid gap-5">
+      <div className="grid gap-6">
         <label className="block">
           <span className="sr-only">Search recipes</span>
           <input
@@ -445,253 +474,266 @@ export function FilterPanel({
           />
         </label>
 
-        <FacetGroup label="Meal" activeCount={filters.courses.length}>
-          <div className="flex flex-wrap gap-2">
-            {COURSES.map((course) => (
-              <Chip
-                key={course.value}
-                active={filters.courses.includes(course.value)}
-                onClick={() => toggleIn('courses', course.value)}
-              >
-                {course.label}
-              </Chip>
-            ))}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup label="Built on" activeCount={filters.ingredients.length} defaultOpen={false}>
-          <div className="flex flex-wrap gap-2">
-            {MAIN_INGREDIENTS.map((ingredient) => (
-              <Chip
-                key={ingredient.value}
-                active={filters.ingredients.includes(ingredient.value)}
-                onClick={() => toggleIn('ingredients', ingredient.value)}
-              >
-                {ingredient.label}
-              </Chip>
-            ))}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup
-          label="Taste"
-          hint="tap · again to widen"
-          activeCount={Object.keys(filters.taste).length}
-        >
-          <div className="grid gap-4">
-            {TASTE_AXES.map((axis) => (
-              <TasteBand
-                key={axis}
-                axis={axis}
-                range={filters.taste[axis] ?? null}
-                onChange={(next) =>
-                  commit((d) => {
-                    if (next) d.taste[axis] = next
-                    else delete d.taste[axis]
-                  })
-                }
-              />
-            ))}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup label="Time" activeCount={filters.maxMinutes !== null ? 1 : 0}>
-          <div className="flex flex-wrap gap-2">
-            {TIME_BUCKETS.map((bucket) => {
-              const isAny = bucket.value === 'any'
-              const active = isAny ? filters.maxMinutes === null : filters.maxMinutes === bucket.max
-              return (
-                <Chip
-                  key={bucket.value}
-                  active={active}
-                  onClick={() =>
-                    commit((d) => {
-                      d.maxMinutes = isAny || active ? null : (bucket.max as number)
-                    })
-                  }
-                >
-                  {bucket.label}
-                </Chip>
-              )
-            })}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup label="Rating" activeCount={filters.minRating !== null ? 1 : 0}>
-          <div className="flex flex-wrap gap-2">
-            <Chip
-              active={filters.minRating === null}
-              onClick={() => commit((d) => void (d.minRating = null))}
-            >
-              Any
-            </Chip>
-            {RATING_CHOICES.map((threshold) => {
-              const active = filters.minRating === threshold
-              return (
-                <Chip
-                  key={threshold}
-                  active={active}
-                  onClick={() =>
-                    commit((d) => void (d.minRating = active ? null : threshold))
-                  }
-                >
-                  {threshold}★+
-                </Chip>
-              )
-            })}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup
-          label="Cuisine"
-          activeCount={filters.cuisines.length}
-          defaultOpen={cuisines.length <= 12}
-        >
-          <div className="flex flex-wrap gap-2">
-            {cuisines.map((cuisine) => (
-              <Chip
-                key={cuisine.slug}
-                active={filters.cuisines.includes(cuisine.slug)}
-                onClick={() => toggleIn('cuisines', cuisine.slug)}
-              >
-                {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
-                {cuisine.name}
-              </Chip>
-            ))}
-          </div>
-        </FacetGroup>
-
-        {/*
-          Allergens, framed as what to avoid. Selecting "Nuts" filters to
-          recipes explicitly tagged nut-free — it shows tagged-safe dishes, never
-          an inference that an untagged recipe is safe. The hint says so plainly.
-          Only allergens with tagged coverage appear, so no chip dead-ends on an
-          empty page; the whole group hides until at least one has coverage.
-        */}
-        {ALLERGENS.some((a) => availableAllergens.includes(a.tag)) && (
-          <FacetGroup
-            label="Avoiding"
-            activeCount={filters.diets.filter((d) => ALLERGEN_TAGS.has(d)).length}
-            defaultOpen={false}
-          >
+        {/* The dish — what it is, before how it tastes. */}
+        <Section title="The dish">
+          <FacetGroup label="Meal" activeCount={filters.courses.length}>
             <div className="flex flex-wrap gap-2">
-              {ALLERGENS.filter((a) => availableAllergens.includes(a.tag)).map((allergen) => (
+              {COURSES.map((course) => (
                 <Chip
-                  key={allergen.tag}
-                  active={filters.diets.includes(allergen.tag)}
-                  onClick={() => toggleIn('diets', allergen.tag)}
+                  key={course.value}
+                  active={filters.courses.includes(course.value)}
+                  onClick={() => toggleIn('courses', course.value)}
                 >
-                  {allergen.label}
+                  {course.label}
                 </Chip>
               ))}
             </div>
-            <p className="mt-2.5 text-[0.75rem] leading-snug text-slate">
-              Shows only recipes tagged free of the allergen — untagged dishes aren’t assumed safe.
-            </p>
           </FacetGroup>
-        )}
 
-        <FacetGroup
-          label="Diet"
-          activeCount={filters.diets.filter((d) => !ALLERGEN_TAGS.has(d)).length}
-          defaultOpen={false}
-        >
-          <div className="flex flex-wrap gap-2">
-            {LIFESTYLE_DIETS.map((tag) => (
+          <FacetGroup label="Built on" activeCount={filters.ingredients.length} defaultOpen={false}>
+            <div className="flex flex-wrap gap-2">
+              {MAIN_INGREDIENTS.map((ingredient) => (
+                <Chip
+                  key={ingredient.value}
+                  active={filters.ingredients.includes(ingredient.value)}
+                  onClick={() => toggleIn('ingredients', ingredient.value)}
+                >
+                  {ingredient.label}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+
+          <FacetGroup
+            label="Cuisine"
+            activeCount={filters.cuisines.length}
+            defaultOpen={cuisines.length <= 12}
+          >
+            <div className="flex flex-wrap gap-2">
+              {cuisines.map((cuisine) => (
+                <Chip
+                  key={cuisine.slug}
+                  active={filters.cuisines.includes(cuisine.slug)}
+                  onClick={() => toggleIn('cuisines', cuisine.slug)}
+                >
+                  {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
+                  {cuisine.name}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+        </Section>
+
+        {/* Taste — the centrepiece, given a quiet flame signature. Quality
+            (Rating) rides here too: how good, alongside how it tastes. */}
+        <Section title="Taste" accent>
+          <FacetGroup
+            label="Taste"
+            hint="tap · again to widen"
+            activeCount={Object.keys(filters.taste).length}
+          >
+            <div className="grid gap-4">
+              {TASTE_AXES.map((axis) => (
+                <TasteBand
+                  key={axis}
+                  axis={axis}
+                  range={filters.taste[axis] ?? null}
+                  onChange={(next) =>
+                    commit((d) => {
+                      if (next) d.taste[axis] = next
+                      else delete d.taste[axis]
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </FacetGroup>
+
+          <FacetGroup label="Rating" activeCount={filters.minRating !== null ? 1 : 0}>
+            <div className="flex flex-wrap gap-2">
               <Chip
-                key={tag.value}
-                active={filters.diets.includes(tag.value)}
-                onClick={() => toggleIn('diets', tag.value)}
+                active={filters.minRating === null}
+                onClick={() => commit((d) => void (d.minRating = null))}
               >
-                {tag.label}
+                Any
               </Chip>
-            ))}
-          </div>
-        </FacetGroup>
+              {RATING_CHOICES.map((threshold) => {
+                const active = filters.minRating === threshold
+                return (
+                  <Chip
+                    key={threshold}
+                    active={active}
+                    onClick={() =>
+                      commit((d) => void (d.minRating = active ? null : threshold))
+                    }
+                  >
+                    {threshold}★+
+                  </Chip>
+                )
+              })}
+            </div>
+          </FacetGroup>
+        </Section>
 
-        <FacetGroup
-          label="Calories"
-          hint="per serving"
-          activeCount={filters.maxCalories !== null ? 1 : 0}
-        >
-          <CalorieBand
-            value={filters.maxCalories}
-            onCommit={(next) => commit((d) => void (d.maxCalories = next))}
-          />
-        </FacetGroup>
+        {/* Time & effort — the practical constraints of a weeknight. */}
+        <Section title="Time & effort">
+          <FacetGroup label="Time" activeCount={filters.maxMinutes !== null ? 1 : 0}>
+            <div className="flex flex-wrap gap-2">
+              {TIME_BUCKETS.map((bucket) => {
+                const isAny = bucket.value === 'any'
+                const active = isAny ? filters.maxMinutes === null : filters.maxMinutes === bucket.max
+                return (
+                  <Chip
+                    key={bucket.value}
+                    active={active}
+                    onClick={() =>
+                      commit((d) => {
+                        d.maxMinutes = isAny || active ? null : (bucket.max as number)
+                      })
+                    }
+                  >
+                    {bucket.label}
+                  </Chip>
+                )
+              })}
+            </div>
+          </FacetGroup>
 
-        <FacetGroup label="Difficulty" activeCount={filters.difficulties.length}>
-          <div className="flex flex-wrap gap-2">
-            {DIFFICULTIES.map((level) => (
-              <Chip
-                key={level.value}
-                active={filters.difficulties.includes(level.value)}
-                onClick={() => toggleIn('difficulties', level.value)}
-              >
-                {level.label}
+          <FacetGroup label="Difficulty" activeCount={filters.difficulties.length}>
+            <div className="flex flex-wrap gap-2">
+              {DIFFICULTIES.map((level) => (
+                <Chip
+                  key={level.value}
+                  active={filters.difficulties.includes(level.value)}
+                  onClick={() => toggleIn('difficulties', level.value)}
+                >
+                  {level.label}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+
+          <FacetGroup
+            label="Kitchen"
+            activeCount={
+              filters.equipment.length +
+              (filters.onePan ? 1 : 0) +
+              (filters.makeAhead ? 1 : 0) +
+              (filters.keepsWell ? 1 : 0)
+            }
+            defaultOpen={false}
+          >
+            <div className="flex flex-wrap gap-2">
+              <Chip active={filters.onePan} onClick={() => commit((d) => void (d.onePan = !d.onePan))}>
+                One pan
               </Chip>
-            ))}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup
-          label="Kitchen"
-          activeCount={
-            filters.equipment.length +
-            (filters.onePan ? 1 : 0) +
-            (filters.makeAhead ? 1 : 0) +
-            (filters.keepsWell ? 1 : 0)
-          }
-          defaultOpen={false}
-        >
-          <div className="flex flex-wrap gap-2">
-            <Chip active={filters.onePan} onClick={() => commit((d) => void (d.onePan = !d.onePan))}>
-              One pan
-            </Chip>
-            <Chip active={filters.makeAhead} onClick={() => commit((d) => void (d.makeAhead = !d.makeAhead))}>
-              Make-ahead
-            </Chip>
-            <Chip active={filters.keepsWell} onClick={() => commit((d) => void (d.keepsWell = !d.keepsWell))}>
-              Keeps well
-            </Chip>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {EQUIPMENT_OPTIONS.map((o) => (
-              <Chip
-                key={o.value}
-                active={filters.equipment.includes(o.value)}
-                onClick={() =>
-                  commit((d) => {
-                    d.equipment = d.equipment.includes(o.value)
-                      ? d.equipment.filter((x) => x !== o.value)
-                      : [...d.equipment, o.value]
-                  })
-                }
-              >
-                {o.label}
+              <Chip active={filters.makeAhead} onClick={() => commit((d) => void (d.makeAhead = !d.makeAhead))}>
+                Make-ahead
               </Chip>
-            ))}
-          </div>
-        </FacetGroup>
-
-        <FacetGroup
-          label="Budget"
-          hint="per serving"
-          activeCount={filters.maxCost !== null ? 1 : 0}
-          defaultOpen={false}
-        >
-          <div className="flex flex-wrap gap-2">
-            {COST_BUCKETS.map((b) => (
-              <Chip
-                key={b.label}
-                active={b.value === null ? filters.maxCost === null : filters.maxCost === b.value}
-                onClick={() => commit((d) => void (d.maxCost = b.value))}
-              >
-                {b.label}
+              <Chip active={filters.keepsWell} onClick={() => commit((d) => void (d.keepsWell = !d.keepsWell))}>
+                Keeps well
               </Chip>
-            ))}
-          </div>
-        </FacetGroup>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {EQUIPMENT_OPTIONS.map((o) => (
+                <Chip
+                  key={o.value}
+                  active={filters.equipment.includes(o.value)}
+                  onClick={() =>
+                    commit((d) => {
+                      d.equipment = d.equipment.includes(o.value)
+                        ? d.equipment.filter((x) => x !== o.value)
+                        : [...d.equipment, o.value]
+                    })
+                  }
+                >
+                  {o.label}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+
+          <FacetGroup
+            label="Budget"
+            hint="per serving"
+            activeCount={filters.maxCost !== null ? 1 : 0}
+            defaultOpen={false}
+          >
+            <div className="flex flex-wrap gap-2">
+              {COST_BUCKETS.map((b) => (
+                <Chip
+                  key={b.label}
+                  active={b.value === null ? filters.maxCost === null : filters.maxCost === b.value}
+                  onClick={() => commit((d) => void (d.maxCost = b.value))}
+                >
+                  {b.label}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+
+          <FacetGroup
+            label="Calories"
+            hint="per serving"
+            activeCount={filters.maxCalories !== null ? 1 : 0}
+          >
+            <CalorieBand
+              value={filters.maxCalories}
+              onCommit={(next) => commit((d) => void (d.maxCalories = next))}
+            />
+          </FacetGroup>
+        </Section>
+
+        {/* Dietary — needs and restrictions, kept together at the foot. */}
+        <Section title="Dietary">
+          <FacetGroup
+            label="Diet"
+            activeCount={filters.diets.filter((d) => !ALLERGEN_TAGS.has(d)).length}
+            defaultOpen={false}
+          >
+            <div className="flex flex-wrap gap-2">
+              {LIFESTYLE_DIETS.map((tag) => (
+                <Chip
+                  key={tag.value}
+                  active={filters.diets.includes(tag.value)}
+                  onClick={() => toggleIn('diets', tag.value)}
+                >
+                  {tag.label}
+                </Chip>
+              ))}
+            </div>
+          </FacetGroup>
+
+          {/*
+            Allergens, framed as what to avoid. Selecting "Nuts" filters to
+            recipes explicitly tagged nut-free — it shows tagged-safe dishes, never
+            an inference that an untagged recipe is safe. The hint says so plainly.
+            Only allergens with tagged coverage appear, so no chip dead-ends on an
+            empty page; the whole group hides until at least one has coverage.
+          */}
+          {ALLERGENS.some((a) => availableAllergens.includes(a.tag)) && (
+            <FacetGroup
+              label="Avoiding"
+              activeCount={filters.diets.filter((d) => ALLERGEN_TAGS.has(d)).length}
+              defaultOpen={false}
+            >
+              <div className="flex flex-wrap gap-2">
+                {ALLERGENS.filter((a) => availableAllergens.includes(a.tag)).map((allergen) => (
+                  <Chip
+                    key={allergen.tag}
+                    active={filters.diets.includes(allergen.tag)}
+                    onClick={() => toggleIn('diets', allergen.tag)}
+                  >
+                    {allergen.label}
+                  </Chip>
+                ))}
+              </div>
+              <p className="mt-2.5 text-[0.75rem] leading-snug text-slate">
+                Shows only recipes tagged free of the allergen — untagged dishes aren’t assumed safe.
+              </p>
+            </FacetGroup>
+          )}
+        </Section>
       </div>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt whenever the URL-derived filters change

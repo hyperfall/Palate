@@ -28,6 +28,14 @@ describe('normalizeItem', () => {
     expect(normalizeItem('1 tsp ground cumin')).toBe('cumin')
     expect(normalizeItem('50g feta')).toBe('feta')
   })
+  it('collapses a trailing count-unit to the base ingredient (item-first phrasing)', () => {
+    expect(normalizeItem('3 garlic cloves')).toBe('garlic')
+    expect(normalizeItem('garlic cloves, minced')).toBe('garlic')
+    expect(normalizeItem('thyme sprigs')).toBe('thyme')
+    expect(normalizeItem('2 celery stalks')).toBe('celery')
+    expect(normalizeItem('4 sprigs thyme')).toBe('thyme') // leading unit path still works
+    expect(normalizeItem('ground cloves')).toBe('clove') // the spice, alone, survives
+  })
   it('strips leading/trailing descriptors', () => {
     expect(normalizeItem('extra-virgin olive oil')).toBe('olive oil')
     expect(normalizeItem('freshly ground black pepper')).toBe('black pepper')

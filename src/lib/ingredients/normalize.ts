@@ -15,6 +15,15 @@ const TAIL_MARKERS = [' to taste', ' for garnish', ' plus more', ' for dusting',
 /** Mass nouns that already end in "-ss(es)" but have no distinct singular form. */
 const INVARIANT = new Set(['molasses'])
 
+/**
+ * Count-units that, when they TRAIL another word, describe a form of the base
+ * ingredient rather than a distinct ingredient — "garlic clove" is garlic,
+ * "thyme sprig" is thyme. Leading units are already peeled by parseIngredientLine
+ * ("3 cloves garlic" → "garlic"); this catches the item-first phrasing so the two
+ * don't split into near-duplicate canonicals.
+ */
+const TRAILING_COUNT_UNITS = new Set(['clove', 'sprig', 'stalk'])
+
 export function singularize(word: string): string {
   if (word.length < 4) return word
   if (INVARIANT.has(word)) return word
@@ -45,5 +54,12 @@ export function normalizeItem(raw: string): string {
   const kept = s.split(' ').filter((w) => w && !DESCRIPTORS.has(w))
   if (kept.length === 0) return ''
   kept[kept.length - 1] = singularize(kept[kept.length - 1])
+  // Drop a trailing count-unit ("garlic clove" → "garlic") so item-first phrasing
+  // collapses to the same canonical as "cloves garlic". Only when it isn't the
+  // whole name, so the spice "clove" survives on its own.
+  if (kept.length > 1 && TRAILING_COUNT_UNITS.has(kept[kept.length - 1])) {
+    kept.pop()
+    kept[kept.length - 1] = singularize(kept[kept.length - 1])
+  }
   return kept.join(' ')
 }

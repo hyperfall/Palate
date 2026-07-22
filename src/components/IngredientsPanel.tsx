@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { convertMeasure, humanizeQuantity } from '@/lib/units'
 import { useUnitSystem } from '@/lib/useUnitSystem'
 import type { SubRow } from '@/lib/substitutions'
+import { SubstitutionPopover } from './SubstitutionPopover'
 
 /**
  * Ingredients with a servings scaler — a control that earns its JavaScript.
@@ -173,10 +174,21 @@ export function IngredientsPanel({
 
           return (
             <li key={ingredient.id ?? index} className="leader text-[1.0625rem] leading-snug">
-              <span>
-                {ingredient.item}
-                {ingredient.note ? <span className="text-slate">, {ingredient.note}</span> : null}
-              </span>
+              {(() => {
+                const canonical =
+                  ingredient.ingredient && typeof ingredient.ingredient === 'object' ? ingredient.ingredient : null
+                const subs = canonical?.substitutions ?? []
+                return (
+                  <span>
+                    {subs.length > 0 ? (
+                      <SubstitutionPopover item={ingredient.item} substitutions={subs} />
+                    ) : (
+                      ingredient.item
+                    )}
+                    {ingredient.note ? <span className="text-slate">, {ingredient.note}</span> : null}
+                  </span>
+                )
+              })()}
               <span className="leader__dots" aria-hidden="true" />
               {measure ? <span className="datum shrink-0">{measure}</span> : null}
             </li>

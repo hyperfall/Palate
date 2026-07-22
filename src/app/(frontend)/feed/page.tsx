@@ -21,8 +21,8 @@ export default async function FeedPage() {
       <div className="shell py-14">
         <div className="max-w-[46ch]">
           <p className="eyebrow m-0">Your feed</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">The latest from creators you follow.</h1>
-          <p className="mt-3 text-slate">Sign in and follow a few creators to build your feed.</p>
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">The latest from creators you follow.</h1>
+          <p className="mt-3 text-slate max-sm:hidden">Sign in and follow a few creators to build your feed.</p>
           <Link href="/account" className="btn-primary mt-6 inline-block">
             Sign in
           </Link>
@@ -56,7 +56,7 @@ export default async function FeedPage() {
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[56ch]">
         <p className="eyebrow m-0">Your feed</p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">From creators you follow.</h1>
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">From creators you follow.</h1>
       </header>
 
       {recipes.length === 0 ? (

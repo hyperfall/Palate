@@ -62,11 +62,11 @@ export default async function CatalogPage({
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-5">
         <div>
           <p className="eyebrow m-0">The catalog</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">
             Filter by taste, not just by ingredient.
           </h1>
         </div>
-        <p className="m-0 max-w-[44ch] text-[0.9375rem] leading-snug text-slate">
+        <p className="m-0 max-w-[44ch] text-[0.9375rem] leading-snug text-slate max-sm:hidden">
           Every recipe is measured on four axes. Pick the band you actually want tonight — from
           “no heat at all” to “nothing short of fiery”.
         </p>

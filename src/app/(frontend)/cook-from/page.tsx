@@ -70,8 +70,8 @@ export default async function CookFromPage({
       <div className="shell py-14">
         <div className="max-w-[46ch]">
           <p className="eyebrow m-0">What can I make?</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Cook from what you have.</h1>
-          <p className="mt-3 text-slate">
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
+          <p className="mt-3 text-slate max-sm:hidden">
             Your pantry saves to your account, so it’s there every time. Sign in to add what’s in
             your kitchen.
           </p>
@@ -96,8 +96,8 @@ export default async function CookFromPage({
       <div className="max-w-[72rem]">
         <header className="max-w-[56ch]">
           <p className="eyebrow m-0">What can I make?</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Cook from what you have.</h1>
-          <p className="mt-3 text-slate">
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
+          <p className="mt-3 text-slate max-sm:hidden">
             Add a few ingredients from your kitchen — the board sorts into what you can cook right
             now, what’s one or two items away, and what needs a bigger trip.
           </p>

@@ -33,7 +33,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[56ch]">
         <p className="eyebrow m-0">A shared week</p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Someone’s meal plan.</h1>
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Someone’s meal plan.</h1>
         <p className="mt-3 text-slate">
           The recipes and one consolidated shopping list. Want your own?{' '}
           <Link href="/plan" className="text-flame underline underline-offset-4">

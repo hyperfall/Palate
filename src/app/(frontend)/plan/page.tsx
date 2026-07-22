@@ -23,8 +23,8 @@ export default async function PlanPage() {
       <div className="shell py-14">
         <div className="max-w-[46ch]">
           <p className="eyebrow m-0">Your week</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Plan the week.</h1>
-          <p className="mt-3 text-slate">
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Plan the week.</h1>
+          <p className="mt-3 text-slate max-sm:hidden">
             Assign recipes to days and get one shopping list — overlaps netted, staples dropped. Your
             plan saves to your account.
           </p>
@@ -59,8 +59,8 @@ export default async function PlanPage() {
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[56ch]">
         <p className="eyebrow m-0">Your week</p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Plan the week.</h1>
-        <p className="mt-3 text-slate">
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Plan the week.</h1>
+        <p className="mt-3 text-slate max-sm:hidden">
           Add recipes to days from any recipe page. The shopping list nets what overlaps and drops
           what you’ve marked as a staple.
         </p>

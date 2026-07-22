@@ -21,7 +21,7 @@ export default async function CuisinesPage() {
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-5">
         <div>
           <p className="eyebrow m-0">Browse</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Cuisines</h1>
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cuisines</h1>
         </div>
         <p className="m-0 max-w-[46ch] text-[0.9375rem] leading-snug text-slate">
           Each cuisine balances the same four things differently.{' '}

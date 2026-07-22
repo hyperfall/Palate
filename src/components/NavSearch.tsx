@@ -254,7 +254,10 @@ export function NavSearch() {
           id="nav-search-listbox"
           role="listbox"
           aria-label="Search suggestions"
-          className="scroll-rail absolute top-full right-0 left-0 z-50 mt-2 max-h-[72vh] overflow-y-auto rounded-md border border-ink/30 bg-card p-1.5 text-ink shadow-(--shadow-block)"
+          // On phones the search box is narrow (it shares the header row), so the
+          // panel breaks out to a near-full-width fixed sheet under the header
+          // instead of being pinned to the box's width.
+          className="scroll-rail absolute top-full right-0 left-0 z-50 mt-2 max-h-[72vh] overflow-y-auto rounded-md border border-ink/30 bg-card p-1.5 text-ink shadow-(--shadow-block) max-sm:fixed max-sm:inset-x-2 max-sm:top-16 max-sm:mt-0 max-sm:max-h-[70vh]"
         >
           {showIdlePanel ? (
             <ul className="m-0 list-none p-0">

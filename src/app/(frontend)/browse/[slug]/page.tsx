@@ -41,7 +41,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
             Collections
           </Link>
         </p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">{collection.title}</h1>
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">{collection.title}</h1>
         <p className="mt-3 text-slate">
           {collection.blurb} <span className="text-slate/70">· {totalDocs} recipes</span>
         </p>

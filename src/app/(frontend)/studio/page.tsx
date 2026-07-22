@@ -22,8 +22,8 @@ export default async function StudioPage() {
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[58ch]">
         <p className="eyebrow m-0 text-flame">Creator Studio</p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Put your recipe on the pass.</h1>
-        <p className="mt-3 text-slate">
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Put your recipe on the pass.</h1>
+        <p className="mt-3 text-slate max-sm:hidden">
           Your food, your photo, your name — with a link back to wherever you create. Submissions
           are reviewed by a human before they go live.
         </p>

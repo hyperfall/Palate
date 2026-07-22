@@ -14,15 +14,17 @@ import { ThemeToggle } from './ThemeToggle'
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-pan-line bg-pan text-milk">
-      <div className="shell flex flex-wrap items-center gap-x-6 gap-y-2.5 py-3">
+      <div className="shell flex flex-wrap items-center gap-x-3 gap-y-2.5 py-2.5 sm:gap-x-6 sm:py-3">
         <Link
           href="/"
-          className="font-display text-[1.375rem] leading-none text-milk no-underline"
+          className="shrink-0 font-display text-[1.375rem] leading-none text-milk no-underline"
         >
           {SITE.name}
         </Link>
 
-        <div className="order-last w-full sm:order-none sm:w-auto sm:min-w-0 sm:flex-1 sm:px-4 lg:px-10">
+        {/* Search shares the wordmark's row on phones (was its own full row);
+            it only breaks out to a wider centre column at sm+. */}
+        <div className="min-w-0 flex-1 sm:px-4 lg:px-10">
           <NavSearch />
         </div>
 

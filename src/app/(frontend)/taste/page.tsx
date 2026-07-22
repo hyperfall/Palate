@@ -55,8 +55,8 @@ export default async function TastePage() {
       <div className="shell py-14">
         <div className="max-w-[46ch]">
           <p className="eyebrow m-0">Find your taste</p>
-          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Rate a few dishes.</h1>
-          <p className="mt-3 text-slate">
+          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Rate a few dishes.</h1>
+          <p className="mt-3 text-slate max-sm:hidden">
             Your taste profile saves to your account, then personalises tonight’s pick and the
             catalog. Sign in to build it.
           </p>
@@ -74,8 +74,8 @@ export default async function TastePage() {
     <div className="shell py-10 lg:py-14">
       <div className="max-w-[46rem]">
         <p className="eyebrow m-0">Find your taste</p>
-        <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Rate a few dishes.</h1>
-        <p className="mt-3 max-w-[52ch] text-slate">
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Rate a few dishes.</h1>
+        <p className="mt-3 max-w-[52ch] text-slate max-sm:hidden">
           Say yes to what you’d happily eat. We’ll average the ones you like into a taste profile —
           then tonight’s pick and the catalog can start from it.
         </p>

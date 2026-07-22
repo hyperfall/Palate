@@ -89,7 +89,7 @@ export default async function StudentsPage({
       <header className="max-w-[58ch]">
         <p className="eyebrow m-0">For students</p>
         <h1 className="mt-1 text-[clamp(2rem,3.5vw,3.25rem)]">Studying hard?</h1>
-        <p className="mt-3 text-lg text-slate">
+        <p className="mt-3 text-lg text-slate max-sm:hidden">
           Proper food for tight budgets, busy weeks, and whoever turns up.
         </p>
       </header>

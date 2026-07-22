@@ -22,8 +22,8 @@ export default async function TonightPage() {
         <div>
           <header className="max-w-[56ch]">
             <p className="eyebrow m-0">Tonight</p>
-            <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Pick dinner for me.</h1>
-            <p className="mt-3 text-slate">
+            <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Pick dinner for me.</h1>
+            <p className="mt-3 text-slate max-sm:hidden">
               Answer five questions. You get one recipe, not a grid — the board decides so you
               don’t have to.
             </p>

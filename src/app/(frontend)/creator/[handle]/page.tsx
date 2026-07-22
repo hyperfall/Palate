@@ -3,6 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { FollowButton } from '@/components/FollowButton'
+
 import { RecipeCard } from '@/components/RecipeCard'
 import { imageFrom } from '@/lib/media'
 import { findAuthorByHandle, findAuthorsWithHandles, findRecipesByAuthor } from '@/lib/queries'
@@ -106,6 +108,10 @@ export default async function CreatorPage({ params }: { params: Promise<{ handle
           {author.bio && (
             <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-milk/80">{author.bio}</p>
           )}
+
+          <div className="mt-6">
+            <FollowButton authorSlug={author.slug} />
+          </div>
         </div>
       </header>
 

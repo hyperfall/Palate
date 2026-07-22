@@ -17,6 +17,7 @@ export type PlanEntry = {
 }
 
 export type PlannedRecipe = {
+  title: string
   ingredients: PlanIngredient[]
   costPerServing: number | null
   servings: number
@@ -109,6 +110,7 @@ export async function loadPlannedRecipes(slugs: string[]): Promise<Map<string, P
       }
     })
     out.set(r.slug, {
+      title: r.title,
       ingredients,
       costPerServing: r.costPerServing ?? null,
       servings: r.servings ?? 1,

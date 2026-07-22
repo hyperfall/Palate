@@ -380,6 +380,12 @@ export function AccountPanel() {
           <Link href="/collections" className="btn-primary">
             My collections →
           </Link>
+          <Link
+            href="/feed"
+            className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+          >
+            Your feed →
+          </Link>
           <button
             type="button"
             onClick={async () => {

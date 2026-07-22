@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { MealBoard } from '@/components/MealBoard'
+import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
 import { consolidateShoppingList, weeklyCost } from '@/lib/mealPlan'
 import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/planData'
@@ -63,6 +64,11 @@ export default async function PlanPage() {
           Add recipes to days from any recipe page. The shopping list nets what overlaps and drops
           what you’ve marked as a staple.
         </p>
+        {entries.length > 0 && (
+          <div className="mt-4">
+            <SharePlan slugs={[...new Set(entries.map((e) => e.slug))]} />
+          </div>
+        )}
       </header>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">

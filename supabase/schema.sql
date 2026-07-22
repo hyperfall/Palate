@@ -142,3 +142,33 @@ create policy "own taste" on public.taste_profile
 drop policy if exists "own plan" on public.meal_plan;
 create policy "own plan" on public.meal_plan
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ── Phase 4: growth (shared plans, follows) ─────────────────────────────────
+-- Public share links for a week's plan/shopping list. The unguessable id IS the
+-- token; anyone with the link may read, only the owner may create/delete.
+create table if not exists public.plan_shares (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  recipe_slugs text[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+alter table public.plan_shares enable row level security;
+drop policy if exists "create own share" on public.plan_shares;
+create policy "create own share" on public.plan_shares for insert with check (user_id = auth.uid());
+drop policy if exists "delete own share" on public.plan_shares;
+create policy "delete own share" on public.plan_shares for delete using (user_id = auth.uid());
+drop policy if exists "read shares by link" on public.plan_shares;
+create policy "read shares by link" on public.plan_shares for select using (true);
+
+-- Follows: a viewer follows a creator by their public author slug.
+create table if not exists public.follows (
+  follower_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  author_slug text not null,
+  created_at timestamptz not null default now(),
+  primary key (follower_id, author_slug)
+);
+create index if not exists follows_follower_idx on public.follows (follower_id);
+alter table public.follows enable row level security;
+drop policy if exists "own follows" on public.follows;
+create policy "own follows" on public.follows
+  for all using (follower_id = auth.uid()) with check (follower_id = auth.uid());

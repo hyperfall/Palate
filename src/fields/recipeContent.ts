@@ -78,6 +78,13 @@ export function recipeBodyFields({ requireHero = true }: { requireHero?: boolean
               'Optional key linking this ingredient to an affiliate product. Phase 1 stores it; Phase 2 resolves it.',
           },
         },
+        {
+          name: 'ingredient',
+          type: 'relationship',
+          relationTo: 'ingredients',
+          admin: { readOnly: true, description: 'Auto-linked canonical ingredient.' },
+        },
+        { name: 'needsReview', type: 'checkbox', defaultValue: false, admin: { readOnly: true } },
       ],
     },
     {
@@ -93,6 +100,13 @@ export function recipeBodyFields({ requireHero = true }: { requireHero?: boolean
           type: 'number',
           min: 0,
           admin: { description: 'Optional. Renders an inline timer for this step.' },
+        },
+        {
+          name: 'uses',
+          type: 'relationship',
+          relationTo: 'ingredients',
+          hasMany: true,
+          admin: { description: 'Canonical ingredients this step uses.' },
         },
       ],
     },

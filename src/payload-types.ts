@@ -172,6 +172,11 @@ export interface Recipe {
      * Optional key linking this ingredient to an affiliate product. Phase 1 stores it; Phase 2 resolves it.
      */
     affiliateKey?: string | null;
+    /**
+     * Auto-linked canonical ingredient.
+     */
+    ingredient?: (number | null) | Ingredient;
+    needsReview?: boolean | null;
     id?: string | null;
   }[];
   steps: {
@@ -181,6 +186,10 @@ export interface Recipe {
      * Optional. Renders an inline timer for this step.
      */
     timerSeconds?: number | null;
+    /**
+     * Canonical ingredients this step uses.
+     */
+    uses?: (number | Ingredient)[] | null;
     id?: string | null;
   }[];
   /**
@@ -404,6 +413,52 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients".
+ */
+export interface Ingredient {
+  id: number;
+  name: string;
+  /**
+   * Leave blank to generate from the title. Changing this changes the public URL.
+   */
+  slug: string;
+  /**
+   * Other names that map here.
+   */
+  aliases?: string[] | null;
+  category?:
+    | ('produce' | 'dairy' | 'protein' | 'oil-fat' | 'grain-legume' | 'spice-herb' | 'condiment' | 'bakery' | 'other')
+    | null;
+  /**
+   * Discrete items (eggs, cloves).
+   */
+  countable?: boolean | null;
+  /**
+   * Optional — enables weight⇄volume when known.
+   */
+  densityGPerMl?: number | null;
+  substitutions?:
+    | {
+        sub?: (number | null) | Ingredient;
+        /**
+         * Free-text sub when not a catalog ingredient.
+         */
+        subText?: string | null;
+        kind: 'flavor' | 'texture' | 'cupboard';
+        /**
+         * e.g. "1:1", "use ¾".
+         */
+        ratio?: string | null;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  needsReview?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cuisines".
  */
 export interface Cuisine {
@@ -525,52 +580,6 @@ export interface BrandCard {
   createdAt: string;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ingredients".
- */
-export interface Ingredient {
-  id: number;
-  name: string;
-  /**
-   * Leave blank to generate from the title. Changing this changes the public URL.
-   */
-  slug: string;
-  /**
-   * Other names that map here.
-   */
-  aliases?: string[] | null;
-  category?:
-    | ('produce' | 'dairy' | 'protein' | 'oil-fat' | 'grain-legume' | 'spice-herb' | 'condiment' | 'bakery' | 'other')
-    | null;
-  /**
-   * Discrete items (eggs, cloves).
-   */
-  countable?: boolean | null;
-  /**
-   * Optional — enables weight⇄volume when known.
-   */
-  densityGPerMl?: number | null;
-  substitutions?:
-    | {
-        sub?: (number | null) | Ingredient;
-        /**
-         * Free-text sub when not a catalog ingredient.
-         */
-        subText?: string | null;
-        kind: 'flavor' | 'texture' | 'cupboard';
-        /**
-         * e.g. "1:1", "use ¾".
-         */
-        ratio?: string | null;
-        note?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  needsReview?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Creator submissions from /studio. Approve to publish; promotion is automatic.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -615,6 +624,11 @@ export interface Submission {
      * Optional key linking this ingredient to an affiliate product. Phase 1 stores it; Phase 2 resolves it.
      */
     affiliateKey?: string | null;
+    /**
+     * Auto-linked canonical ingredient.
+     */
+    ingredient?: (number | null) | Ingredient;
+    needsReview?: boolean | null;
     id?: string | null;
   }[];
   steps: {
@@ -624,6 +638,10 @@ export interface Submission {
      * Optional. Renders an inline timer for this step.
      */
     timerSeconds?: number | null;
+    /**
+     * Canonical ingredients this step uses.
+     */
+    uses?: (number | Ingredient)[] | null;
     id?: string | null;
   }[];
   /**
@@ -915,6 +933,8 @@ export interface RecipesSelect<T extends boolean = true> {
         item?: T;
         note?: T;
         affiliateKey?: T;
+        ingredient?: T;
+        needsReview?: T;
         id?: T;
       };
   steps?:
@@ -923,6 +943,7 @@ export interface RecipesSelect<T extends boolean = true> {
         text?: T;
         image?: T;
         timerSeconds?: T;
+        uses?: T;
         id?: T;
       };
   finish?:
@@ -1136,6 +1157,8 @@ export interface SubmissionsSelect<T extends boolean = true> {
         item?: T;
         note?: T;
         affiliateKey?: T;
+        ingredient?: T;
+        needsReview?: T;
         id?: T;
       };
   steps?:
@@ -1144,6 +1167,7 @@ export interface SubmissionsSelect<T extends boolean = true> {
         text?: T;
         image?: T;
         timerSeconds?: T;
+        uses?: T;
         id?: T;
       };
   finish?:

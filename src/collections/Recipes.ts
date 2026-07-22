@@ -3,6 +3,8 @@ import type { CollectionConfig } from 'payload'
 import { PROVENANCE } from '../lib/taxonomy'
 import { deriveTotalMinutes, recipeBodyFields, recipeFacetFields } from '../fields/recipeContent'
 import { slugField } from '../fields/slug'
+import { normalizeItem } from '../lib/ingredients/normalize'
+import { matchIngredient, type Candidate } from '../lib/ingredients/match'
 
 /** Design spec §5 `recipes`. */
 export const Recipes: CollectionConfig = {
@@ -25,6 +27,41 @@ export const Recipes: CollectionConfig = {
         deriveTotalMinutes(data)
         if (data?.status === 'published' && !data?.publishedAt) {
           data.publishedAt = new Date().toISOString()
+        }
+        return data
+      },
+      async ({ data, req }) => {
+        const rows = (data.ingredients ?? []) as Array<{
+          item?: string
+          ingredient?: unknown
+          needsReview?: boolean
+        }>
+        if (!rows.some((r) => r.item && !r.ingredient)) return data
+
+        const found = await req.payload.find({ collection: 'ingredients', limit: 1000, depth: 0, req })
+        const candidates: Candidate[] = found.docs.map((d) => ({
+          id: d.id as number,
+          name: d.name as string,
+          aliases: (d.aliases as string[] | undefined) ?? [],
+        }))
+
+        for (const row of rows) {
+          if (row.ingredient || !row.item) continue
+          const normalized = normalizeItem(row.item)
+          if (!normalized) continue
+          const match = matchIngredient(normalized, candidates)
+          if (match) {
+            row.ingredient = match.id
+            continue
+          }
+          const created = await req.payload.create({
+            collection: 'ingredients',
+            req,
+            data: { name: normalized, needsReview: true } as never,
+          })
+          candidates.push({ id: created.id as number, name: normalized, aliases: [] })
+          row.ingredient = created.id
+          row.needsReview = true
         }
         return data
       },

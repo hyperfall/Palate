@@ -31,6 +31,13 @@ describe('scoreRecipe', () => {
     expect(s.missing).toEqual([])
     expect(s.viaSub[0].sub).toBe('plain yogurt')
   })
+  it('covers via a bare-number sub id (unpopulated relationship)', () => {
+    const required = [req(5, 'buttermilk', [{ sub: 9, kind: 'cupboard' }])]
+    const have = [{ id: 9, name: 'yogurt' }]
+    const s = scoreRecipe('R', required, have)
+    expect(s.missing).toEqual([])
+    expect(s.coveredCount).toBe(1)
+  })
 })
 
 describe('bandRecipes', () => {

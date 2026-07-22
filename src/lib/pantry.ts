@@ -26,9 +26,16 @@ export type Bands<R> = { cookNow: Scored<R>[]; almost: Scored<R>[]; gettingThere
 /** A curated sub is usable when the cook holds the sub's resolved ingredient (by id) or its label (by name). */
 function subYouHold(subs: SubRow[] | null | undefined, haveIds: Set<number>, haveNames: Set<string>): string | null {
   for (const row of subs ?? []) {
-    const subObj = row.sub && typeof row.sub === 'object' ? row.sub : null
-    const subId = subObj && typeof (subObj as { id?: number }).id === 'number' ? (subObj as { id: number }).id : null
-    const label = (subObj?.name ?? row.subText ?? '').trim()
+    let subId: number | null = null
+    let label = ''
+    if (typeof row.sub === 'number') {
+      subId = row.sub
+    } else if (row.sub && typeof row.sub === 'object') {
+      const o = row.sub as { id?: number; name?: string | null }
+      if (typeof o.id === 'number') subId = o.id
+      label = (o.name ?? '').trim()
+    }
+    if (!label) label = (row.subText ?? '').trim()
     if ((subId !== null && haveIds.has(subId)) || (label && haveNames.has(label.toLowerCase()))) {
       return label || 'a substitute'
     }

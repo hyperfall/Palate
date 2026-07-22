@@ -51,12 +51,6 @@ export function SiteHeader() {
               Plan
             </Link>
             <Link
-              href="/taste-night"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Quiz
-            </Link>
-            <Link
               href="/students"
               className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
             >

@@ -5,6 +5,7 @@ import React from 'react'
 import { ConsentProvider } from '@/components/ConsentManager'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { MobileNav } from '@/components/MobileNav'
+import { QuizNudge } from '@/components/QuizNudge'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SITE } from '@/lib/site'
@@ -101,6 +102,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           </main>
           <SiteFooter />
           <MobileNav />
+          <QuizNudge />
           <GoogleAnalytics />
         </ConsentProvider>
       </body>

@@ -19,6 +19,7 @@ const COOK_LINKS = [
 
 const BROWSE_LINKS = [
   { href: '/recipes', label: 'All recipes', datum: 'the board' },
+  { href: '/browse', label: 'Collections', datum: 'curated' },
   { href: '/cuisines', label: 'Cuisines', datum: 'by country' },
   { href: '/collections', label: 'Saved', datum: 'your shelf' },
 ] as const

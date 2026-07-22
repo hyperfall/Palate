@@ -117,7 +117,7 @@ export function QuizNudge() {
             if (e.target === e.currentTarget) setOpen(false)
           }}
         >
-          <div className="relative my-auto w-full max-w-[52rem] rounded-lg border border-rule bg-paper p-6 shadow-(--shadow-block) sm:p-10">
+          <div className="relative my-auto w-full max-w-[52rem] rounded-lg border border-rule bg-paper px-6 pt-14 pb-6 shadow-(--shadow-block) sm:px-10 sm:pb-10">
             <button
               type="button"
               onClick={() => setOpen(false)}

@@ -3,6 +3,7 @@ import config from '@payload-config'
 
 import type { Author, BrandCard, Cuisine, Recipe } from '@/payload-types'
 import { buildWhere, sortExpression, type CatalogFilters } from './filters'
+import { scoreRecipe, bandRecipes, type Have, type Bands, type RequiredIngredient } from './pantry'
 
 /**
  * Read-side data access, via Payload's local API straight against Postgres
@@ -227,4 +228,37 @@ export async function findAuthorsWithHandles(): Promise<Author[]> {
     limit: 1000,
   })
   return result.docs.filter((author) => Boolean(author.handle))
+}
+
+/**
+ * "What can I make from what I have" — score every published recipe against
+ * the cook's pantry and band it (cookNow / almost / gettingThere). Depth 2
+ * resolves each ingredient row's canonical ingredient and that ingredient's
+ * substitutions, both of which `scoreRecipe` needs. Only ingredient rows
+ * linked to a canonical ingredient can match (see normalizeCatalog.ts).
+ */
+export async function findRecipesByPantry(
+  have: Have[],
+  { maxMinutes = null }: { maxMinutes?: number | null } = {},
+): Promise<Bands<Recipe>> {
+  if (have.length === 0) return { cookNow: [], almost: [], gettingThere: [] }
+  const payload = await getPayloadClient()
+  const where: Record<string, unknown> = { and: [PUBLISHED] as Record<string, unknown>[] }
+  if (maxMinutes) (where.and as Record<string, unknown>[]).push({ totalMinutes: { less_than_equal: maxMinutes } })
+
+  const result = await payload.find({ collection: 'recipes', where: where as never, depth: 2, limit: 500 })
+
+  const scored = result.docs.map((recipe) => {
+    const required: RequiredIngredient[] = (recipe.ingredients ?? [])
+      .map((row) => (typeof row.ingredient === 'object' && row.ingredient ? row.ingredient : null))
+      .filter((ing): ing is NonNullable<typeof ing> => Boolean(ing))
+      .map((ing) => ({
+        id: ing.id as number,
+        name: String(ing.name),
+        substitutions: (ing as { substitutions?: unknown }).substitutions as never,
+      }))
+    return scoreRecipe(recipe, required, have)
+  })
+
+  return bandRecipes(scored)
 }

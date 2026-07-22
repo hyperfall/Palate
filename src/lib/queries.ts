@@ -51,7 +51,10 @@ export async function findRecipeBySlug(slug: string): Promise<Recipe | null> {
   const result = await payload.find({
     collection: 'recipes',
     where: { and: [PUBLISHED, { slug: { equals: slug } }] },
-    // depth 2 so the cuisine's own hero image resolves for breadcrumbs/related.
+    // depth 2 resolves: the cuisine's own hero image (breadcrumbs/related), each
+    // ingredient's canonical link → its substitutions, and each step's `uses` →
+    // ingredient names. Substitutions and cook-mode step chips depend on this —
+    // don't lower it without moving those reads to a shallower shape.
     depth: 2,
     limit: 1,
   })

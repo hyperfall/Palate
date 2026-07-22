@@ -5,8 +5,10 @@ import config from '../payload.config'
 /**
  * Seeds a small, real editorial set so substitutions + step timing are visible:
  * common-ingredient swaps on canonical ingredients, and step→ingredient links
- * on one flagship recipe. Idempotent — matches ingredients by name, skips a
- * recipe that already has step uses. Run: npm run seed:cook-depth
+ * on one flagship recipe. Idempotent by construction — every write fully
+ * replaces its array field (no appends), and both the substitution match and
+ * the step→ingredient linking are scoped to Weeknight Shakshuka's OWN linked
+ * ingredients, never a global catalog scan. Run: npm run seed:cook-depth
  */
 const SUBS: Record<string, Array<{ subText: string; kind: 'flavor' | 'texture' | 'cupboard'; ratio?: string; note?: string }>> = {
   'olive oil': [
@@ -62,14 +64,14 @@ async function run() {
     console.log(`subs → ${name} (matched "${matchedName}")`)
   }
 
-  // Link steps → ingredients on the flagship recipe by matching names in text.
+  // Link steps → ingredients by matching names in step text — but only among
+  // ingredients THIS recipe uses, so a step can never link something the recipe
+  // doesn't contain (and no global catalog scan).
   if (recipe) {
-    const ingredients = await payload.find({ collection: 'ingredients', limit: 1000, depth: 0 })
-    const byName = new Map(ingredients.docs.map((d) => [String(d.name).toLowerCase(), d.id as number]))
     const steps = (recipe.steps ?? []).map((step: { text: string; uses?: unknown }) => {
-      const uses = [...byName.entries()]
-        .filter(([name]) => step.text.toLowerCase().includes(name))
-        .map(([, id]) => id)
+      const uses = [...recipeIngredients.entries()]
+        .filter(([, ingName]) => step.text.toLowerCase().includes(ingName.toLowerCase()))
+        .map(([id]) => id)
       return { ...step, uses: uses.length ? uses : step.uses }
     })
     await payload.update({ collection: 'recipes', id: recipe.id, data: { steps } as never })

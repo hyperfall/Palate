@@ -9,7 +9,12 @@ const EVENT = 'palate:units-change'
 
 function read(): UnitSystem {
   if (typeof window === 'undefined') return 'metric'
-  return window.localStorage.getItem(KEY) === 'us' ? 'us' : 'metric'
+  try {
+    return window.localStorage.getItem(KEY) === 'us' ? 'us' : 'metric'
+  } catch {
+    // Safari private mode / storage disabled — fall back to the default.
+    return 'metric'
+  }
 }
 
 /**
@@ -33,7 +38,11 @@ export function useUnitSystem(): readonly [UnitSystem, (next: UnitSystem) => voi
   }, [])
 
   const update = (next: UnitSystem) => {
-    window.localStorage.setItem(KEY, next)
+    try {
+      window.localStorage.setItem(KEY, next)
+    } catch {
+      // Storage unavailable — the choice still applies for this session.
+    }
     setSystem(next)
     window.dispatchEvent(new Event(EVENT))
   }

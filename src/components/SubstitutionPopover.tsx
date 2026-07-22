@@ -19,8 +19,15 @@ export function SubstitutionPopover({ item, substitutions }: { item: string; sub
     const onPointerDown = (e: PointerEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
     }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [])
 
   return (
@@ -29,6 +36,7 @@ export function SubstitutionPopover({ item, substitutions }: { item: string; sub
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        aria-haspopup="true"
         className="cursor-pointer border-none bg-transparent p-0 text-left font-inherit text-ink underline decoration-dotted decoration-rule underline-offset-4 hover:decoration-flame"
       >
         {item}

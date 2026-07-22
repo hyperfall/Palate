@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { BrandSlot } from '@/components/BrandSlot'
+import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
@@ -277,7 +278,9 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <p className="m-0 text-[1.1875rem] leading-relaxed">{step.text}</p>
+                    <p className="m-0 text-[1.1875rem] leading-relaxed">
+                      <ConvertedText text={step.text} />
+                    </p>
                     {step.timerSeconds ? (
                       <p className="eyebrow mt-2">≈ {formatTimer(step.timerSeconds)}</p>
                     ) : null}

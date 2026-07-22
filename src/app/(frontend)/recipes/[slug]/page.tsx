@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { BrandSlot } from '@/components/BrandSlot'
+import { AddToPlan } from '@/components/AddToPlan'
 import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
 import { SaveRecipe } from '@/components/SaveRecipe'
@@ -157,6 +158,11 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   finish={recipe.finish ?? null}
                 />
                 <SaveRecipe
+                  slug={recipe.slug}
+                  title={recipe.title}
+                  image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
+                />
+                <AddToPlan
                   slug={recipe.slug}
                   title={recipe.title}
                   image={imageFrom(recipe.heroImage, 'card')?.url ?? null}

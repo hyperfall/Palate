@@ -45,6 +45,12 @@ export function SiteHeader() {
               Cook from
             </Link>
             <Link
+              href="/plan"
+              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
+            >
+              Plan
+            </Link>
+            <Link
               href="/taste-night"
               className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
             >

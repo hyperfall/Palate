@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 import { plainTextToLexical } from '@/lib/lexical'
-import { validateRecipeNumbers } from '@/lib/recipeLimits'
+import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { getPayloadClient } from '@/lib/queries'
 import { isCreator, serverUser } from '@/lib/supabase/server'
 
@@ -62,11 +62,15 @@ export async function POST(request: NextRequest) {
   if (
     !recipe.title?.trim() ||
     !recipe.cuisine ||
-    !recipe.ingredients?.length ||
-    !recipe.steps?.length
+    !Array.isArray(recipe.ingredients) ||
+    recipe.ingredients.length < MIN_INGREDIENTS ||
+    !Array.isArray(recipe.steps) ||
+    recipe.steps.length < MIN_STEPS
   ) {
     return NextResponse.json(
-      { error: 'A recipe needs a title, cuisine, ingredients, and steps.' },
+      {
+        error: `A recipe needs a title, cuisine, at least ${MIN_INGREDIENTS} ingredients, and ${MIN_STEPS} steps.`,
+      },
       { status: 400 },
     )
   }

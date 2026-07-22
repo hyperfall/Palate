@@ -67,6 +67,16 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
     [rawUrl],
   )
 
+  // Same for the cropped blob: revoke it when it's replaced (re-crop / clear) or
+  // when the picker unmounts (the pickerKey bump after a submit), so cropped
+  // photos don't leak across a session of uploads.
+  useEffect(
+    () => () => {
+      if (doneUrl) URL.revokeObjectURL(doneUrl)
+    },
+    [doneUrl],
+  )
+
   /** Clamp panning so the image always covers the frame. */
   const clampOffset = useCallback(
     (next: { x: number; y: number }, z: number) => {

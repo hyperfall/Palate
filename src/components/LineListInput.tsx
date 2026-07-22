@@ -68,9 +68,12 @@ export function LineListInput({
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
     if (lines.length === 0) return
     const next = [...value]
-    // Merge the first pasted line into the current row's existing text,
-    // then insert the rest as new rows after it.
-    next.splice(i, 1, (value[i] + lines[0]).trim(), ...lines.slice(1))
+    // Merge the first pasted line into the current row: append after any
+    // existing text with a space (never weld two words together), or just take
+    // the pasted line when the row is empty — the common paste-into-blank case.
+    const existing = value[i].trim()
+    const head = existing ? `${existing} ${lines[0]}` : lines[0]
+    next.splice(i, 1, head, ...lines.slice(1))
     onChange(next)
     focusRow(i + lines.length - 1)
   }

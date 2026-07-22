@@ -8,7 +8,8 @@ import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/c
 import { LineListInput } from '@/components/LineListInput'
 import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
-import { validateRecipeNumbers } from '@/lib/recipeLimits'
+import { VideoEmbed } from '@/components/VideoEmbed'
+import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import {
   COURSES,
@@ -31,6 +32,10 @@ const inputCls =
   'w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none'
 const labelCls = 'grid gap-1.5'
 
+// Field defaults, named once so a post-submit reset restores exactly the initial
+// state — no stale cuisine/diet/taste/story carrying into the next recipe.
+const INITIAL_TASTE: Record<TasteAxis, number> = { spiciness: 0, sweetness: 0, richness: 2, effort: 1 }
+
 export function StudioForm({
   cuisines,
 }: {
@@ -52,6 +57,9 @@ export function StudioForm({
   const [title, setTitle] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
+  // Debounced copy that drives the preview embed, so the iframe doesn't remount
+  // on every keystroke while the creator is still typing the URL.
+  const [videoPreview, setVideoPreview] = useState('')
   const [story, setStory] = useState('')
   const [cuisine, setCuisine] = useState('')
   const [course, setCourse] = useState('dinner')
@@ -61,12 +69,8 @@ export function StudioForm({
   const [prepMinutes, setPrepMinutes] = useState(10)
   const [cookMinutes, setCookMinutes] = useState(20)
   const [diets, setDiets] = useState<string[]>([])
-  const [taste, setTaste] = useState<Record<TasteAxis, number>>({
-    spiciness: 0,
-    sweetness: 0,
-    richness: 2,
-    effort: 1,
-  })
+  const [taste, setTaste] = useState<Record<TasteAxis, number>>({ ...INITIAL_TASTE })
+  const [creatorBusy, setCreatorBusy] = useState(false)
   const [ingredientRows, setIngredientRows] = useState<IngredientRow[]>([
     { ...emptyIngredientRow },
     { ...emptyIngredientRow },
@@ -97,12 +101,18 @@ export function StudioForm({
       .catch(() => setGate('anonymous'))
   }, [supabase])
 
+  useEffect(() => {
+    const t = setTimeout(() => setVideoPreview(videoUrl.trim()), 500)
+    return () => clearTimeout(t)
+  }, [videoUrl])
+
   if (gate === 'checking') return null
 
   if (gate === 'anonymous') {
     return (
       <div className="ticket-card max-w-[34rem] p-6">
-        <p className="eyebrow m-0 text-flame">Creators sign in first</p>
+        <p className="eyebrow m-0 text-flame">Creator studio</p>
+        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Sign in to publish</p>
         <p className="mt-2 text-slate">
           Create an account (pick “I’m a creator” at sign-up) and come straight back here.
         </p>
@@ -116,24 +126,38 @@ export function StudioForm({
   if (gate === 'cook') {
     return (
       <div className="ticket-card max-w-[34rem] p-6">
-        <p className="eyebrow m-0 text-flame">You’re signed in as a cook</p>
+        <p className="eyebrow m-0 text-flame">Signed in as a cook</p>
+        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Switch on creator mode</p>
         <p className="mt-2 text-slate">
           Switch this account to a creator account to publish recipes — everything you’ve saved
           stays exactly as it is.
         </p>
         <button
           type="button"
-          className="btn-primary mt-5"
+          disabled={creatorBusy}
+          className="btn-primary mt-5 disabled:opacity-60"
           onClick={async () => {
-            if (!supabase) return
+            if (!supabase || creatorBusy) return
+            setNotice(null)
+            setCreatorBusy(true)
             const { error } = await supabase.auth.updateUser({
               data: { account_type: 'creator' },
             })
-            if (!error) setGate('creator')
+            setCreatorBusy(false)
+            if (error) {
+              setNotice({ kind: 'error', text: 'Could not switch your account — try again in a moment.' })
+              return
+            }
+            setGate('creator')
           }}
         >
-          Become a creator
+          {creatorBusy ? 'Switching…' : 'Become a creator'}
         </button>
+        {notice?.kind === 'error' && (
+          <p role="alert" className="mt-3 m-0 text-[0.9375rem] text-heat">
+            {notice.text}
+          </p>
+        )}
       </div>
     )
   }
@@ -159,11 +183,14 @@ export function StudioForm({
       .filter(Boolean)
       .map((text) => ({ text }))
 
-    if (!title.trim() || !cuisine || ingredients.length < 2 || steps.length < 2) {
-      setNotice({
-        kind: 'error',
-        text: 'Needs a title, a cuisine, at least two ingredients and two steps.',
-      })
+    const missing = [
+      !title.trim() && 'a title',
+      !cuisine && 'a cuisine',
+      ingredients.length < MIN_INGREDIENTS && `at least ${MIN_INGREDIENTS} ingredients`,
+      steps.length < MIN_STEPS && `at least ${MIN_STEPS} steps`,
+    ].filter(Boolean)
+    if (missing.length > 0) {
+      setNotice({ kind: 'error', text: `Still needs ${missing.join(', ')}.` })
       return
     }
 
@@ -211,6 +238,8 @@ export function StudioForm({
         kind: 'ok',
         text: 'Submitted — a human reviews it next, then it goes live under your name.',
       })
+      // Full reset — every field back to its initial state, so nothing (cuisine,
+      // diet, taste, story…) silently rides into the creator's next recipe.
       setTitle('')
       setPhoto(null)
       setPhotoUrl(null)
@@ -218,6 +247,17 @@ export function StudioForm({
       setIngredientRows([{ ...emptyIngredientRow }, { ...emptyIngredientRow }, { ...emptyIngredientRow }])
       setStepRows(['', '', ''])
       setVideoUrl('')
+      setVideoPreview('')
+      setStory('')
+      setCuisine('')
+      setCourse('dinner')
+      setMainIngredient('vegetables')
+      setDifficulty('easy')
+      setServings(2)
+      setPrepMinutes(10)
+      setCookMinutes(20)
+      setDiets([])
+      setTaste({ ...INITIAL_TASTE })
     } catch (error) {
       setNotice({
         kind: 'error',
@@ -235,8 +275,11 @@ export function StudioForm({
     `Serves ${servings}`,
   ].filter(Boolean)
   const previewIngredients = ingredientRows
-    .map((r) => [r.quantity.trim(), r.unit.trim(), r.item.trim()].filter(Boolean).join(' '))
-    .filter(Boolean)
+    .map((r) => ({
+      item: r.item.trim(),
+      measure: [r.quantity.trim(), r.unit.trim()].filter(Boolean).join(' '),
+    }))
+    .filter((r) => r.item)
   const previewSteps = stepRows.map((l) => l.trim()).filter(Boolean)
 
   return (
@@ -252,6 +295,7 @@ export function StudioForm({
           <span className="eyebrow">Your photo of the dish</span>
           <ImagePicker
             key={pickerKey}
+            compact
             aspect={4 / 3}
             onCropped={(file, url) => {
               setPhoto(file)
@@ -401,7 +445,10 @@ export function StudioForm({
       </div>
 
       <div className={labelCls}>
-        <span className="eyebrow">Ingredients — quantity, unit, then name (paste a list to fill rows fast)</span>
+        <span className="eyebrow">Ingredients</span>
+        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+          Quantity, unit, then name — paste a whole list to fill rows fast.
+        </span>
         <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
       </div>
 
@@ -433,16 +480,18 @@ export function StudioForm({
       </button>
     </form>
 
-    {/* Live preview — the recipe page, forming as they type. */}
-    <aside aria-label="Recipe preview" className="hidden min-w-0 xl:block xl:sticky xl:top-24">
+    {/* Live preview — the recipe page, forming as they type. Below xl it stacks
+        under the form (was hidden entirely) so phone/tablet creators still see it;
+        it only pins to the side on the wide two-column layout. */}
+    <aside aria-label="Recipe preview" className="min-w-0 xl:sticky xl:top-24">
       <p className="eyebrow m-0">Live preview — how it will look</p>
       <div className="ticket-card mt-3 overflow-hidden">
         <div className="relative bg-pan text-milk">
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
-            <img src={photoUrl} alt="" className="aspect-[16/9] w-full object-cover opacity-60" />
+            <img src={photoUrl} alt="" className="aspect-[4/3] w-full object-cover opacity-60" />
           ) : (
-            <div className="grid aspect-[16/9] w-full place-items-center bg-pan-deep">
+            <div className="grid aspect-[4/3] w-full place-items-center bg-pan-deep">
               <span className="font-mono text-[0.8125rem] text-milk/50">your photo lands here</span>
             </div>
           )}
@@ -454,35 +503,36 @@ export function StudioForm({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-b border-rule p-4">
-          {profile.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- account avatar
-            <img src={profile.avatarUrl} alt="" width={36} height={36} className="h-9 w-9 rounded-full border border-rule object-cover" />
-          ) : (
-            <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-full border border-rule bg-wash font-display">
-              {(profile.name ?? 'C')[0]?.toUpperCase()}
-            </span>
-          )}
-          <div className="min-w-0">
-            <p className="m-0 flex items-center gap-1.5 font-body text-[0.9375rem] font-semibold text-ink">
-              <span className="truncate">{profile.name ?? 'Your name'}</span>
-              {profile.verified && (
-                <span title="Verified creator" className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-flame text-[0.625rem] text-paper">✓</span>
-              )}
-            </p>
-            {profile.username && (
-              <p className="m-0 font-mono text-[0.75rem] text-slate">@{profile.username}</p>
+        {/* Byline — matches the published recipe page exactly (plain "Written by",
+            no avatar), so the preview never promises a treatment that won't ship. */}
+        <div className="border-b border-rule p-4">
+          <p className="m-0 flex flex-wrap items-center gap-1.5 text-[0.9375rem] leading-snug text-slate">
+            Written by <span className="font-semibold text-ink">{profile.name ?? 'Your name'}</span>
+            {profile.verified && (
+              <span title="Verified creator" className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-flame text-[0.625rem] text-paper">✓</span>
             )}
-          </div>
+            {profile.username && (
+              <span className="font-mono text-[0.75rem] text-slate">@{profile.username}</span>
+            )}
+          </p>
         </div>
 
         <div className="grid gap-5 p-4">
           <div>
             <p className="eyebrow m-0">Ingredients</p>
-            <ul className="m-0 mt-2 list-none space-y-1.5 p-0">
-              {(previewIngredients.length ? previewIngredients : ['2 tbsp of something delicious…']).slice(0, 8).map((line, i) => (
-                <li key={i} className="border-b border-rule pb-1.5 text-[0.9375rem] break-words [overflow-wrap:anywhere]">{line}</li>
-              ))}
+            <ul className="m-0 mt-2 list-none space-y-2 p-0">
+              {(previewIngredients.length
+                ? previewIngredients
+                : [{ item: 'something delicious', measure: '2 tbsp' }]
+              )
+                .slice(0, 8)
+                .map((row, i) => (
+                  <li key={i} className="leader text-[0.9375rem] leading-snug">
+                    <span className="break-words [overflow-wrap:anywhere]">{row.item}</span>
+                    <span className="leader__dots" aria-hidden="true" />
+                    {row.measure ? <span className="datum shrink-0">{row.measure}</span> : null}
+                  </li>
+                ))}
               {previewIngredients.length > 8 && (
                 <li className="pt-1 font-mono text-[0.75rem] text-slate">+ {previewIngredients.length - 8} more</li>
               )}
@@ -502,6 +552,17 @@ export function StudioForm({
               )}
             </ol>
           </div>
+
+          {/* The creator's video, embedded exactly as viewers will see it —
+              a recognised link becomes a player, anything else a Watch link. */}
+          {videoPreview && (
+            <div>
+              <p className="eyebrow m-0">Watch</p>
+              <div className="mt-2">
+                <VideoEmbed url={videoPreview} title="Recipe video preview" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </aside>

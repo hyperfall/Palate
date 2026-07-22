@@ -62,6 +62,16 @@ export function IngredientRowsInput({
 
   const rowIsEmpty = (r: IngredientRow) => !r.quantity && !r.unit && !r.item
 
+  // Enter in the quantity/unit cells would otherwise implicitly submit the whole
+  // form (they're bare inputs); instead advance to the item field of the row, so
+  // Enter always means "move along this row" rather than "submit mid-entry".
+  const onCellEnter = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      focusItem(i)
+    }
+  }
+
   const onItemKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, i: number) => {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -116,6 +126,7 @@ export function IngredientRowsInput({
             aria-label={`Quantity ${i + 1}`}
             placeholder="1"
             onChange={(e) => setAt(i, { quantity: e.target.value })}
+            onKeyDown={(e) => onCellEnter(e, i)}
             className={`${cellCls} w-14 shrink-0 text-center tabular-nums`}
           />
           <input
@@ -126,7 +137,8 @@ export function IngredientRowsInput({
             aria-label={`Unit ${i + 1}`}
             placeholder="unit"
             onChange={(e) => setAt(i, { unit: e.target.value })}
-            className={`${cellCls} w-24 shrink-0`}
+            onKeyDown={(e) => onCellEnter(e, i)}
+            className={`${cellCls} w-20 shrink-0 sm:w-24`}
           />
           <input
             ref={(el) => {

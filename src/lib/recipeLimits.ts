@@ -16,6 +16,11 @@ export const RECIPE_LIMITS = {
   quantityMax: 10_000, // per-ingredient numeric ceiling
 } as const
 
+// A real recipe is at least two ingredients and two steps. Both the studio form
+// and the submit route import these so the floor can't drift between them.
+export const MIN_INGREDIENTS = 2
+export const MIN_STEPS = 2
+
 const TASTE_AXES = ['spiciness', 'sweetness', 'richness', 'effort'] as const
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v)

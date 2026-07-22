@@ -19,6 +19,7 @@ import { lexicalToPlainText } from '@/lib/lexical'
 import { imageFrom } from '@/lib/media'
 import { findAllRecipeSlugs, findRecipeBySlug, findRelatedRecipes } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
+import { buildCookSteps } from '@/lib/stepIngredients'
 import type { Provenance } from '@/lib/taxonomy'
 
 export const revalidate = 3600 // ISR — §8 asks for SSG/ISR on recipe pages.
@@ -139,10 +140,19 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 )}
                 <CookModeLauncher
                   title={recipe.title}
-                  steps={(recipe.steps ?? []).map((step) => ({
-                    text: step.text,
-                    timerSeconds: step.timerSeconds,
-                  }))}
+                  steps={buildCookSteps(
+                    (recipe.steps ?? []).map((step) => ({
+                      text: step.text,
+                      timerSeconds: step.timerSeconds,
+                      uses: Array.isArray(step.uses)
+                        ? step.uses.map((u) =>
+                            typeof u === 'object' && u
+                              ? { name: u.name, substitutions: u.substitutions }
+                              : u,
+                          )
+                        : null,
+                    })),
+                  )}
                   finish={recipe.finish ?? null}
                 />
                 <SaveRecipe

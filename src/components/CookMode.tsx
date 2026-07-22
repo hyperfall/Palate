@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-type CookStep = { text: string; timerSeconds?: number | null }
+import type { CookStep } from '@/lib/stepIngredients'
+import { SubstitutionPopover } from './SubstitutionPopover'
 
 type Finish = {
   storageDays?: number | null
@@ -305,6 +306,28 @@ export function CookMode({
               <p className="mt-3 font-body text-[clamp(1.375rem,3vw,2.125rem)] leading-snug font-medium">
                 {step?.text}
               </p>
+
+              {step && step.uses.length > 0 && (
+                <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <span className="eyebrow text-slate">You'll need</span>
+                  {step.uses.map((use) =>
+                    use.substitutions && use.substitutions.length > 0 ? (
+                      <span key={use.name} className="chip !cursor-auto !py-1">
+                        <SubstitutionPopover item={use.name} substitutions={use.substitutions} />
+                      </span>
+                    ) : (
+                      <span key={use.name} className="chip !min-h-0 !cursor-default !py-1">
+                        {use.name}
+                      </span>
+                    ),
+                  )}
+                </div>
+              )}
+              {step && step.prepAhead.length > 0 && (
+                <p className="mt-4 font-mono text-[0.8125rem] text-flame">
+                  Coming up — take out: {step.prepAhead.join(', ')}.
+                </p>
+              )}
 
               {step?.timerSeconds ? (
                 <div className="mt-8 flex items-center gap-4">

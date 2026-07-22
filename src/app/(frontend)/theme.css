@@ -1,0 +1,62 @@
+/*
+ * Design tokens — "the kitchen pass" light/dark theme.
+ *
+ * Split out of styles.css so the palette (the part most often tuned) lives in
+ * one focused place. styles.css @imports this right after Tailwind, so the
+ * tokens and the utilities they generate (bg-card, text-flame, …) are available
+ * to every layer below.
+ *
+ * Every token is light-dark(): light = kitchen tile by day, dark = the same
+ * kitchen after close — warm espresso charcoal, soft cream text, and the flame
+ * accent kept its ember warmth (a warm room at night, not a cold lab). Contrast
+ * holds at a comfortable 12–14:1. Which side renders is pure CSS via
+ * color-scheme (in styles.css) — no boot script, no flash; the toggle stamps
+ * data-theme to override the OS.
+ */
+
+@theme {
+  /* Work surface. Warm eggshell by day; warm espresso near-black by night. */
+  --color-paper: light-dark(#f1f2ec, #171310);
+  --color-wash: light-dark(#e7e9df, #1e1813);
+  --color-rule: light-dark(#d3d6c8, #372c22);
+  --color-slate: light-dark(#5d6455, #ab9f8f);
+  --color-ink: light-dark(#1a1d15, #ece6da);
+
+  /* The pass — cast-iron green by day; the deepest warm char at night. Chrome
+     only: header, hero, footer. */
+  --color-pan: light-dark(#26301f, #14100c);
+  --color-pan-deep: light-dark(#1c2417, #0e0b08);
+  --color-pan-line: light-dark(#3a4630, #2c2219);
+  --color-milk: light-dark(#eef0e4, #ece6da); /* text on the pan */
+
+  /* The single action accent — ember warm in both themes (never cools off). */
+  --color-flame: light-dark(#e4572e, #f2683c);
+  --color-flame-deep: light-dark(#c33f1a, #ff7d4d);
+  /* Text set on a flame surface. */
+  --color-on-flame: light-dark(#1a1d15, #160d06);
+  /* Flame as small TEXT on the dark pan — lifted for AA contrast (≥6:1). */
+  --color-flame-text: light-dark(#ff9068, #ff9a70);
+
+  /* Kitchen-tape yellow by day; deep amber tape after close. Ticker only. */
+  --color-butter: light-dark(#e9b44c, #241a0f);
+
+  /* Card surface — a step off the paper (lighter than paper in the dark). */
+  --color-card: light-dark(#fbfcf7, #201a13);
+
+  /* The four taste axes. Semantic in both themes (heat stays red), lifted
+     and slightly desaturated in the dark so they read without glare. */
+  --color-heat: light-dark(#c2412a, #d97a5e);
+  --color-sweetness: light-dark(#b07f22, #d0aa5f);
+  --color-richness: light-dark(#5d6b38, #9aad6a);
+  --color-effort: light-dark(#46506a, #8f9fd0);
+
+  --font-display: var(--font-young-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SF Mono', monospace;
+  --font-body: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+
+  --text-eyebrow: 0.875rem;
+
+  /* Print-block elevation: a hard offset, not a blur. */
+  --shadow-block: 0.375rem 0.375rem 0 light-dark(rgb(26 29 21 / 0.9), rgb(0 0 0 / 0.55));
+  --shadow-block-sm: 0.25rem 0.25rem 0 light-dark(rgb(26 29 21 / 0.9), rgb(0 0 0 / 0.55));
+}

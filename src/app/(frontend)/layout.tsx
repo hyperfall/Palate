@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { Figtree, IBM_Plex_Mono, Young_Serif } from 'next/font/google'
 import React from 'react'
 
+import { ConsentProvider } from '@/components/ConsentManager'
+import { GoogleAnalytics } from '@/components/GoogleAnalytics'
+import { MobileNav } from '@/components/MobileNav'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { SITE } from '@/lib/site'
@@ -60,7 +63,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       // data-theme is stamped by the boot script before React hydrates.
       suppressHydrationWarning
     >
-      <body className="flex min-h-screen flex-col">
+      {/*
+        On phones the fixed bottom tab bar overlays the page, so the body carries
+        matching bottom clearance (bar height + home-indicator safe area). Desktop
+        has no bar, so the padding is removed at sm+.
+      */}
+      <body className="flex min-h-screen flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
         {/*
           Theme boot — runs synchronously before any content paints, so there
           is no light-mode flash. Stored choice wins; otherwise the OS decides.
@@ -86,11 +94,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         >
           Skip to content
         </a>
-        <SiteHeader />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        <ConsentProvider>
+          <SiteHeader />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <SiteFooter />
+          <MobileNav />
+          <GoogleAnalytics />
+        </ConsentProvider>
       </body>
     </html>
   )

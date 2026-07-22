@@ -1,0 +1,350 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState, type ReactNode } from 'react'
+
+import { supabaseBrowser } from '@/lib/supabase/client'
+import { ThemeToggle } from './ThemeToggle'
+
+/**
+ * The mobile app-shell nav: a fixed bottom bar with four thumb tabs and a
+ * center chevron that expands the full menu as a bottom sheet (all destinations,
+ * auth actions, and appearance) — one surface, nothing hidden off-screen. Phones
+ * only (sm:hidden); desktop uses the inline top nav.
+ */
+
+const stroke = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+}
+
+type NavItem = { href: string; label: string; icon: ReactNode }
+
+const NAV: NavItem[] = [
+  {
+    href: '/',
+    label: 'Home',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M4 11 12 4l8 7" />
+        <path d="M6 10v9h12v-9" />
+        <path d="M10 19v-5h4v5" />
+      </svg>
+    ),
+  },
+  {
+    href: '/recipes',
+    label: 'Recipes',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M4 12h16" />
+        <path d="M6 12a6 6 0 0 0 12 0" />
+        <path d="M9 12V6M15 12V6" />
+      </svg>
+    ),
+  },
+  {
+    href: '/tonight',
+    label: 'Tonight',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M12 3v18M3 12h18" />
+        <path d="M6 6l12 12M18 6 6 18" />
+      </svg>
+    ),
+  },
+  {
+    href: '/taste-night',
+    label: 'Quiz',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.2 9.3a2.8 2.8 0 1 1 3.6 3c-.7.4-1 .8-1 1.6" />
+        <circle cx="11.8" cy="16.6" r="0.6" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
+  {
+    href: '/students',
+    label: 'Students',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M12 4 2 9l10 5 10-5z" />
+        <path d="M6 11.5V16c0 1.1 2.7 2 6 2s6-.9 6-2v-4.5" />
+      </svg>
+    ),
+  },
+  {
+    href: '/cuisines',
+    label: 'Cuisines',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18" />
+        <path d="M12 3c2.8 2.6 2.8 15.4 0 18M12 3c-2.8 2.6-2.8 15.4 0 18" />
+      </svg>
+    ),
+  },
+  {
+    href: '/collections',
+    label: 'Saved',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M6 4h12v16l-6-4-6 4z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/account',
+    label: 'Account',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <circle cx="12" cy="8.5" r="3.5" />
+        <path d="M5.5 19.5c0-3.4 2.9-5.5 6.5-5.5s6.5 2.1 6.5 5.5" />
+      </svg>
+    ),
+  },
+]
+
+/** The four quick tabs that flank the center chevron. */
+const TAB_HREFS = ['/', '/recipes', '/collections', '/account']
+
+export function MobileNav() {
+  const pathname = usePathname()
+  const supabase = supabaseBrowser()
+  const [open, setOpen] = useState(false)
+  const [session, setSession] = useState<{
+    signedIn: boolean
+    label: string | null
+    avatarUrl: string | null
+    creator: boolean
+  }>({ signedIn: false, label: null, avatarUrl: null, creator: false })
+
+  useEffect(() => {
+    if (!supabase) return
+    const read = (user: { user_metadata?: Record<string, unknown> } | null) =>
+      setSession({
+        signedIn: Boolean(user),
+        label:
+          (user?.user_metadata?.username as string | undefined) ??
+          (user?.user_metadata?.display_name as string | undefined) ??
+          null,
+        avatarUrl: (user?.user_metadata?.avatar_url as string | undefined) ?? null,
+        creator: user?.user_metadata?.account_type === 'creator',
+      })
+    supabase.auth
+      .getUser()
+      .then(({ data }) => read(data.user))
+      .catch(() => {})
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => read(s?.user ?? null))
+    return () => sub.subscription.unsubscribe()
+  }, [supabase])
+
+  // Any navigation closes the sheet.
+  useEffect(() => setOpen(false), [pathname])
+
+  // Escape closes; lock the page scroll behind the sheet while it's open.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+
+  const tabs = TAB_HREFS.map((h) => NAV.find((n) => n.href === h)!).filter(Boolean)
+
+  const Tab = ({ item }: { item: NavItem }) => {
+    const active = isActive(item.href)
+    return (
+      <Link
+        href={item.href}
+        aria-current={active ? 'page' : undefined}
+        className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 no-underline transition-colors ${
+          active ? 'text-flame' : 'text-milk/65 hover:text-milk'
+        }`}
+      >
+        {item.icon}
+        <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
+          {item.label}
+        </span>
+      </Link>
+    )
+  }
+
+  return (
+    <>
+      {/* Bottom sheet — the full menu, sitting just above the bar. */}
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-50 max-h-[74vh] overflow-y-auto rounded-t-2xl border-t border-rule bg-paper text-ink shadow-block sm:hidden"
+          >
+            <div className="mx-auto mt-2.5 h-1 w-9 rounded-full bg-rule" />
+            <div className="flex items-center justify-between px-5 pt-2 pb-1">
+              <span className="font-display text-[1.25rem]">Palate</span>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-full border border-rule text-slate transition-colors hover:text-ink"
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" {...stroke}>
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+
+            <nav aria-label="All sections" className="px-2 pb-1">
+              <ul className="m-0 list-none p-0">
+                {NAV.map((item) => {
+                  const active = isActive(item.href)
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        aria-current={active ? 'page' : undefined}
+                        className={`flex items-center gap-3.5 rounded-lg border-l-2 px-4 py-3 no-underline transition-colors ${
+                          active
+                            ? 'border-flame bg-flame/10 text-flame'
+                            : 'border-transparent text-ink hover:bg-wash'
+                        }`}
+                      >
+                        <span className={active ? 'text-flame' : 'text-slate'}>{item.icon}</span>
+                        <span className="text-[1.0625rem] font-medium">{item.label}</span>
+                      </Link>
+                    </li>
+                  )
+                })}
+                {session.creator && (
+                  <li>
+                    <Link
+                      href="/studio"
+                      className={`flex items-center gap-3.5 rounded-lg border-l-2 px-4 py-3 no-underline transition-colors ${
+                        isActive('/studio')
+                          ? 'border-flame bg-flame/10 text-flame'
+                          : 'border-transparent text-ink hover:bg-wash'
+                      }`}
+                    >
+                      <span className={isActive('/studio') ? 'text-flame' : 'text-slate'}>
+                        <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+                          <path d="M4 7h16v13H4z" />
+                          <path d="M9 7V4h6v3" />
+                        </svg>
+                      </span>
+                      <span className="text-[1.0625rem] font-medium">Studio</span>
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </nav>
+
+            {/* Auth — a profile row when signed in, CTAs when not. */}
+            <div className="border-t border-rule px-5 py-4">
+              {session.signedIn ? (
+                <Link
+                  href="/account"
+                  className="flex items-center gap-3 no-underline"
+                >
+                  <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-rule bg-wash text-slate">
+                    {session.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- small avatar
+                      <img src={session.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="20" height="20" {...stroke}>
+                        <circle cx="12" cy="8.5" r="3.5" />
+                        <path d="M5.5 19.5c0-3.4 2.9-5.5 6.5-5.5s6.5 2.1 6.5 5.5" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-body text-[1rem] font-semibold text-ink">
+                      {session.label ? `@${session.label}` : 'Your account'}
+                    </span>
+                    <span className="block font-mono text-[0.75rem] text-slate">View account →</span>
+                  </span>
+                </Link>
+              ) : (
+                <div className="grid gap-2">
+                  <Link href="/account" className="btn-primary justify-center text-center">
+                    Create account
+                  </Link>
+                  <Link
+                    href="/account"
+                    className="rounded border border-rule px-4 py-2.5 text-center font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-ink uppercase no-underline transition-colors hover:border-ink"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Appearance — theme control folded in, like the reference. */}
+            <div className="flex items-center justify-between border-t border-rule px-5 py-3.5">
+              <span className="font-body text-[0.9375rem] text-slate">Appearance</span>
+              <ThemeToggle colorClass="border-ink/25 text-ink" />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* The bar itself — always above the backdrop so the chevron can close. */}
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-pan-line bg-pan text-milk sm:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <ul className="m-0 grid list-none grid-cols-5 p-0">
+          <li>{tabs[0] && <Tab item={tabs[0]} />}</li>
+          <li>{tabs[1] && <Tab item={tabs[1]} />}</li>
+          <li>
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              className={`flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
+                open ? 'text-flame' : 'text-milk/80 hover:text-milk'
+              }`}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                {...stroke}
+                className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+              >
+                <path d="M6 15l6-6 6 6" />
+              </svg>
+              <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
+                Menu
+              </span>
+            </button>
+          </li>
+          <li>{tabs[2] && <Tab item={tabs[2]} />}</li>
+          <li>{tabs[3] && <Tab item={tabs[3]} />}</li>
+        </ul>
+      </nav>
+    </>
+  )
+}

@@ -14,7 +14,11 @@ function effectiveTheme(): 'dark' | 'light' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-export function ThemeToggle() {
+/**
+ * `colorClass` sets the border + text colour so the control adapts to its
+ * surface: milk on the dark pan header (default), ink on the light menu sheet.
+ */
+export function ThemeToggle({ colorClass = 'border-milk/30 text-milk' }: { colorClass?: string }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('theme')
@@ -41,7 +45,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="Switch between light and dark theme"
-      className="grid h-8 w-8 cursor-pointer place-items-center rounded border border-milk/30 bg-transparent font-mono text-[0.9375rem] leading-none text-milk transition-colors hover:border-flame hover:text-flame"
+      className={`grid h-8 w-8 cursor-pointer place-items-center rounded border bg-transparent font-mono text-[0.9375rem] leading-none transition-colors hover:border-flame hover:text-flame ${colorClass}`}
     >
       <span className="light-only" aria-hidden="true">
         ☾

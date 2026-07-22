@@ -51,6 +51,10 @@ export const Submissions: CollectionConfig = {
         const authorName = doc.creatorName || 'Palate community'
         const creatorId = (doc.creatorId as string | null) || null
 
+        // Every nested write passes `req` so it runs inside the approval's own
+        // transaction. Without it the self-update below deadlocks on this
+        // submission's row lock, and a mid-way failure orphans the author/recipe.
+        //
         // Dedup on the STABLE creator id, never the display name — two
         // different people called "John" must not collapse into one profile.
         const existing = creatorId
@@ -58,26 +62,45 @@ export const Submissions: CollectionConfig = {
               collection: 'authors',
               where: { creatorId: { equals: creatorId } },
               limit: 1,
+              req,
             })
           : await payload.find({
               collection: 'authors',
               where: { name: { equals: authorName } },
               limit: 1,
+              req,
             })
-        const avatarId = relId(doc.creatorAvatar)
-        const author =
-          existing.docs[0] ??
-          (await payload.create({
+
+        let author = existing.docs[0]
+        if (!author) {
+          // The author slug is unique, but two different creators can share a
+          // display name — so suffix the slug when the base is already taken.
+          const base = slugify(authorName) || 'creator'
+          let slug = base
+          for (let n = 2; ; n++) {
+            const taken = await payload.find({
+              collection: 'authors',
+              where: { slug: { equals: slug } },
+              limit: 1,
+              req,
+            })
+            if (taken.totalDocs === 0) break
+            slug = `${base}-${n}`
+          }
+          const avatarId = relId(doc.creatorAvatar)
+          author = await payload.create({
             collection: 'authors',
+            req,
             data: {
               name: authorName,
-              slug: slugify(authorName),
+              slug,
               provenanceDefault: 'community',
               ...(creatorId ? { creatorId } : {}),
               ...(doc.creatorHandle ? { handle: doc.creatorHandle as string } : {}),
               ...(avatarId ? { avatar: avatarId } : {}),
             },
-          }))
+          })
+        }
 
         const {
           id: _id,
@@ -100,6 +123,7 @@ export const Submissions: CollectionConfig = {
 
         const recipe = await payload.create({
           collection: 'recipes',
+          req,
           data: {
             ...(body as object),
             // heroImage may arrive populated (object) at this depth — pass the id.
@@ -115,6 +139,7 @@ export const Submissions: CollectionConfig = {
           collection: 'submissions',
           id: doc.id,
           data: { promotedRecipe: recipe.id },
+          req,
         })
         return doc
       },

@@ -54,31 +54,48 @@ export function RecipeCard({
           )}
         </div>
 
-        <div className={featured ? 'p-5 sm:p-6' : 'p-4'}>
-          <p className="eyebrow m-0">
-            {cuisine ? `${cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}${cuisine.name} · ` : ''}
-            {formatMinutes(recipe.totalMinutes)} · Serves {recipe.servings}
-          </p>
+        <div
+          className={`relative isolate overflow-hidden bg-card ${featured ? 'p-5 sm:p-6' : 'p-4'}`}
+        >
+          {/*
+            Ambient wash — a blurred copy of the hero image that blooms up from
+            under the photo on hover. Reuses the already-loaded image URL (no
+            extra request); decorative, so hidden from assistive tech.
+          */}
+          {image && (
+            <div
+              aria-hidden="true"
+              className="card-ambient"
+              style={{ backgroundImage: `url("${image.url}")` }}
+            />
+          )}
 
-          <h3
-            className={`mt-2 text-ink group-hover:underline ${
-              featured
-                ? 'text-[clamp(1.5rem,2vw,2.25rem)]'
-                : 'text-[1.1875rem] leading-tight'
-            }`}
-          >
-            {recipe.title}
-          </h3>
+          <div className="relative z-10">
+            <p className="eyebrow m-0">
+              {cuisine ? `${cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}${cuisine.name} · ` : ''}
+              {formatMinutes(recipe.totalMinutes)} · Serves {recipe.servings}
+            </p>
 
-          <TasteTags
-            recipe={{
-              spiciness: recipe.spiciness,
-              sweetness: recipe.sweetness,
-              richness: recipe.richness,
-              effort: recipe.effort,
-            }}
-            className="mt-3"
-          />
+            <h3
+              className={`mt-2 text-ink group-hover:underline ${
+                featured
+                  ? 'text-[clamp(1.5rem,2vw,2.25rem)]'
+                  : 'text-[1.1875rem] leading-tight'
+              }`}
+            >
+              {recipe.title}
+            </h3>
+
+            <TasteTags
+              recipe={{
+                spiciness: recipe.spiciness,
+                sweetness: recipe.sweetness,
+                richness: recipe.richness,
+                effort: recipe.effort,
+              }}
+              className="mt-3"
+            />
+          </div>
         </div>
       </Link>
     </article>

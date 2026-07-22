@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { CookieSettingsButton } from '@/components/ConsentManager'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { SITE } from '@/lib/site'
 import { TASTE_AXES, TASTE_AXIS_LABELS } from '@/lib/taxonomy'
@@ -100,11 +101,17 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-pan-line">
-        <div className="shell flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 py-5">
+        <div className="shell flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 py-5">
           <p className="eyebrow m-0 text-milk/80">
             Partner cards on this site are marked. We take no money to change a recipe.
           </p>
-          <p className="eyebrow m-0 text-milk/40">Recipes first, since day one</p>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame" />
+            <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame">
+              Do Not Sell or Share My Info
+            </CookieSettingsButton>
+            <p className="eyebrow m-0 text-milk/40">Recipes first, since day one</p>
+          </div>
         </div>
       </div>
     </footer>

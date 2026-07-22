@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { inferProfile, encodeVector, type TasteVector, type DishRating } from '@/lib/tasteProfile'
-import { useTasteProfile } from '@/lib/useTasteProfile'
+import { saveTasteProfile } from '@/lib/tasteProfileStore'
 import { TastePanel } from './TasteGauge'
 
 export type OnboardingDish = {
@@ -24,16 +24,15 @@ export function TasteOnboarding({ dishes }: { dishes: OnboardingDish[] }) {
   const [index, setIndex] = useState(0)
   const [ratings, setRatings] = useState<DishRating[]>([])
   const [result, setResult] = useState<TasteVector | null | undefined>(undefined)
-  const [, setProfile] = useTasteProfile()
 
-  const rate = (liked: boolean) => {
+  const rate = async (liked: boolean) => {
     const next = [...ratings, { liked, dish: dishes[index].taste }]
     setRatings(next)
     if (index + 1 < dishes.length) {
       setIndex(index + 1)
     } else {
       const profile = inferProfile(next)
-      setProfile(profile)
+      if (profile) await saveTasteProfile(profile)
       setResult(profile)
     }
   }

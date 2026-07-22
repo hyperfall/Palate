@@ -3,51 +3,25 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-import { Select } from './controls'
-
-/**
- * The pantry control. Chips are the state that matters — everything else
- * (autocomplete, time cap) just adds or narrows them. State lives in the URL
- * (`?have=slug,slug&time=45`) so the results page can render server-side and
- * a reload restores exactly what was there; a copy of the pantry mirrors to
- * `localStorage` so a bare `/cook-from` visit can offer it back.
- */
+import { Select } from '@/components/controls'
+import { supabaseBrowser } from '@/lib/supabase/client'
 
 type Ingredient = { slug: string; name: string }
 
-const STORAGE_KEY = 'palate:pantry'
-
-const TIME_OPTIONS: Array<{ value: string; label: string; minutes: number | null }> = [
-  { value: 'any', label: 'Any time', minutes: null },
-  { value: '15', label: 'Under 15 min', minutes: 15 },
-  { value: '30', label: 'Under 30 min', minutes: 30 },
-  { value: '45', label: 'Under 45 min', minutes: 45 },
-  { value: '60', label: 'Under 1 hour', minutes: 60 },
+const TIME_OPTIONS = [
+  { label: 'Any time', value: '' },
+  { label: '≤ 15 min', value: '15' },
+  { label: '≤ 30 min', value: '30' },
+  { label: '≤ 45 min', value: '45' },
+  { label: '≤ 60 min', value: '60' },
 ]
 
-function readStoredPantry(): Ingredient[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? (JSON.parse(raw) as unknown) : null
-    const have = (parsed as { have?: unknown } | null)?.have
-    if (!Array.isArray(have)) return []
-    return have.filter(
-      (item): item is Ingredient =>
-        Boolean(item) && typeof item.slug === 'string' && typeof item.name === 'string',
-    )
-  } catch {
-    return []
-  }
-}
-
-function writeStoredPantry(have: Ingredient[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ have }))
-  } catch {
-    // Private browsing / quota — the URL is still the source of truth.
-  }
-}
-
+/**
+ * The pantry control for /cook-from. Chips are the signed-in user's saved
+ * pantry (Supabase); adding/removing writes a pantry row and refreshes so the
+ * server re-computes what's cookable. Max-time stays a URL param (a filter, not
+ * pantry state).
+ */
 export function PantryFinder({
   initialHave,
   initialTime,
@@ -55,135 +29,117 @@ export function PantryFinder({
   initialHave: Ingredient[]
   initialTime: number | null
 }) {
+  const supabase = supabaseBrowser()
   const router = useRouter()
-  const [have, setHave] = useState<Ingredient[]>(initialHave)
-  const [time, setTime] = useState<number | null>(initialTime)
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Ingredient[]>([])
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [restoreOffer, setRestoreOffer] = useState<Ingredient[] | null>(null)
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const haveSlugs = new Set(initialHave.map((h) => h.slug))
 
-  const commit = (nextHave: Ingredient[], nextTime: number | null) => {
-    writeStoredPantry(nextHave)
-    const params = new URLSearchParams()
-    if (nextHave.length > 0) params.set('have', nextHave.map((h) => h.slug).join(','))
-    if (nextTime) params.set('time', String(nextTime))
-    router.push(`/cook-from${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false })
-  }
-
-  // Offer the last pantry back when arriving with an empty one — a bare
-  // visit (or a cleared URL) shouldn't force retyping the whole list.
   useEffect(() => {
-    if (initialHave.length > 0) return
-    const stored = readStoredPantry()
-    if (stored.length > 0) setRestoreOffer(stored)
-    // Only on mount: initialHave/initialTime are the page's own read of the URL.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const restore = () => {
-    if (!restoreOffer) return
-    setHave(restoreOffer)
-    commit(restoreOffer, time)
-    setRestoreOffer(null)
-  }
-
-  // Debounced autocomplete against the suggest endpoint.
-  useEffect(() => {
-    const q = query.trim()
-    if (q.length < 2) {
+    if (query.trim().length < 2) {
       setSuggestions([])
       return
     }
-    const controller = new AbortController()
-    const t = setTimeout(() => {
-      fetch(`/cook-from/suggest?q=${encodeURIComponent(q)}`, { signal: controller.signal })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((payload: { suggestions?: Ingredient[] } | null) => {
-          if (payload) {
-            const haveSlugs = new Set(have.map((h) => h.slug))
-            setSuggestions((payload.suggestions ?? []).filter((s) => !haveSlugs.has(s.slug)))
-            setDropdownOpen(true)
-          }
-        })
-        .catch(() => {})
+    const ctrl = new AbortController()
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/cook-from/suggest?q=${encodeURIComponent(query.trim())}`, { signal: ctrl.signal })
+        const data = (await res.json()) as { suggestions?: Ingredient[] }
+        setSuggestions((data.suggestions ?? []).filter((s) => !haveSlugs.has(s.slug)))
+      } catch {
+        // aborted or offline — leave suggestions as they are
+      }
     }, 200)
     return () => {
       clearTimeout(t)
-      controller.abort()
+      ctrl.abort()
     }
-  }, [query, have])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
   useEffect(() => {
-    const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setDropdownOpen(false)
+    const onDown = (e: PointerEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
   }, [])
 
-  const addIngredient = (ingredient: Ingredient) => {
-    if (have.some((h) => h.slug === ingredient.slug)) return
-    const next = [...have, ingredient]
-    setHave(next)
+  const add = async (ing: Ingredient) => {
+    if (!supabase || busy) return
+    setBusy(true)
     setQuery('')
     setSuggestions([])
-    setDropdownOpen(false)
-    commit(next, time)
+    try {
+      const { error } = await supabase
+        .from('pantry')
+        .upsert(
+          { ingredient_slug: ing.slug, ingredient_name: ing.name, is_staple: false },
+          { onConflict: 'user_id,ingredient_slug' },
+        )
+      if (!error) router.refresh()
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const removeIngredient = (slug: string) => {
-    const next = have.filter((h) => h.slug !== slug)
-    setHave(next)
-    commit(next, time)
+  const remove = async (slug: string) => {
+    if (!supabase || busy) return
+    setBusy(true)
+    try {
+      const { error } = await supabase.from('pantry').delete().eq('ingredient_slug', slug)
+      if (!error) router.refresh()
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const onTimeChange = (value: string) => {
-    const option = TIME_OPTIONS.find((o) => o.value === value) ?? TIME_OPTIONS[0]
-    setTime(option.minutes)
-    commit(have, option.minutes)
+  const setTime = (value: string) => {
+    const params = new URLSearchParams(window.location.search)
+    if (value) params.set('time', value)
+    else params.delete('time')
+    const qs = params.toString()
+    router.push(`/cook-from${qs ? `?${qs}` : ''}`)
   }
 
   return (
-    <div ref={rootRef} className="grid gap-4">
-      {restoreOffer && (
-        <div className="flex flex-wrap items-center gap-3 rounded border border-rule bg-card px-4 py-3">
-          <p className="m-0 flex-1 text-[0.8125rem] text-slate">
-            Restore your last pantry ({restoreOffer.length} item{restoreOffer.length === 1 ? '' : 's'})?
-          </p>
-          <button
-            type="button"
-            onClick={restore}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-2 hover:underline"
-          >
-            Restore
-          </button>
-          <button
-            type="button"
-            onClick={() => setRestoreOffer(null)}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-slate uppercase underline-offset-2 hover:underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {initialHave.map((h) => (
+          <span key={h.slug} className="chip !cursor-default">
+            {h.name}
+            <button
+              type="button"
+              onClick={() => void remove(h.slug)}
+              aria-label={`Remove ${h.name}`}
+              className="ml-1.5 cursor-pointer border-none bg-transparent p-0 text-slate hover:text-heat"
+            >
+              ✕
+            </button>
+          </span>
+        ))}
+        {initialHave.length === 0 && (
+          <span className="text-[0.9375rem] text-slate/70">Add what’s in your kitchen…</span>
+        )}
+      </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="relative min-w-0 flex-1">
-          <label className="block">
-            <span className="eyebrow m-0">Add an ingredient</span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onFocus={() => suggestions.length > 0 && setDropdownOpen(true)}
-              placeholder="e.g. chicken thigh"
-              className="mt-1.5 w-full rounded border border-rule bg-transparent px-3.5 py-2.5 font-mono text-[0.8125rem] text-ink placeholder:text-slate focus:border-flame focus:outline-none"
-            />
-          </label>
-
-          {dropdownOpen && suggestions.length > 0 && (
+      <div className="flex flex-wrap items-center gap-3">
+        <div ref={rootRef} className="relative min-w-[16rem] flex-1">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setOpen(true)
+            }}
+            onFocus={() => suggestions.length > 0 && setOpen(true)}
+            placeholder="e.g. chicken thigh"
+            className="w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+          />
+          {open && suggestions.length > 0 && (
             <ul
               role="listbox"
               aria-label="Ingredient suggestions"
@@ -193,9 +149,10 @@ export function PantryFinder({
                 <li key={s.slug} role="option" aria-selected={false}>
                   <button
                     type="button"
+                    disabled={busy}
                     onPointerDown={(e) => {
                       e.preventDefault()
-                      addIngredient(s)
+                      void add(s)
                     }}
                     className="w-full cursor-pointer rounded p-2 text-left font-mono text-[0.8125rem] text-ink hover:bg-wash"
                   >
@@ -206,40 +163,17 @@ export function PantryFinder({
             </ul>
           )}
         </div>
-
-        <label className="block">
-          <span className="eyebrow m-0">Time</span>
-          <div className="mt-1.5 min-w-[9.5rem]">
-            <Select
-              value={time ? String(time) : 'any'}
-              onChange={onTimeChange}
-              ariaLabel="Maximum cook time"
-            >
-              {TIME_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-          </div>
+        <label className="flex items-center gap-2">
+          <span className="eyebrow">Max time</span>
+          <Select value={initialTime ? String(initialTime) : ''} onChange={setTime} ariaLabel="Max time">
+            {TIME_OPTIONS.map((o) => (
+              <option key={o.label} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
         </label>
       </div>
-
-      {have.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {have.map((item) => (
-            <button
-              key={item.slug}
-              type="button"
-              onClick={() => removeIngredient(item.slug)}
-              className="chip"
-              aria-label={`Remove ${item.name}`}
-            >
-              {item.name} <span aria-hidden="true">✕</span>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

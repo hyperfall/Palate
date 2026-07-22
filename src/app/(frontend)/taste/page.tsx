@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
 
+import Link from 'next/link'
+
 import { TasteOnboarding, type OnboardingDish } from '@/components/TasteOnboarding'
 import { imageFrom } from '@/lib/media'
 import { getPayloadClient } from '@/lib/queries'
+import { serverUser } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
   title: 'Find your taste',
@@ -46,6 +49,25 @@ async function pickDishes(): Promise<OnboardingDish[]> {
 }
 
 export default async function TastePage() {
+  const user = await serverUser()
+  if (!user) {
+    return (
+      <div className="shell py-14">
+        <div className="max-w-[46ch]">
+          <p className="eyebrow m-0">Find your taste</p>
+          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Rate a few dishes.</h1>
+          <p className="mt-3 text-slate">
+            Your taste profile saves to your account, then personalises tonight’s pick and the
+            catalog. Sign in to build it.
+          </p>
+          <Link href="/account" className="btn-primary mt-6 inline-block">
+            Sign in
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   const dishes = await pickDishes()
 
   return (

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { TASTE_AXES, TASTE_AXIS_LABELS, type TasteAxis } from '@/lib/taxonomy'
-import { readTasteProfile } from '@/lib/useTasteProfile'
+import { fetchTasteProfile } from '@/lib/tasteProfileStore'
 import { CookingLoader } from './CookingLoader'
 import { AXIS_COLOR, TastePanel } from './TasteGauge'
 
@@ -42,19 +42,24 @@ export function TonightPicker() {
   // Seed the taste answers from a saved profile so a returning visitor jumps
   // straight to "how long have you got?" — they can still step Back to adjust.
   useEffect(() => {
-    const profile = readTasteProfile()
-    if (!profile) return
-    setAnswers((a) =>
-      Object.keys(a).length > 0
-        ? a
-        : {
-            spiciness: profile.spiciness,
-            sweetness: profile.sweetness,
-            richness: profile.richness,
-            effort: profile.effort,
-          },
-    )
-    setPrefilled(true)
+    let active = true
+    void fetchTasteProfile().then((profile) => {
+      if (!active || !profile) return
+      setAnswers((a) =>
+        Object.keys(a).length > 0
+          ? a
+          : {
+              spiciness: profile.spiciness,
+              sweetness: profile.sweetness,
+              richness: profile.richness,
+              effort: profile.effort,
+            },
+      )
+      setPrefilled(true)
+    })
+    return () => {
+      active = false
+    }
   }, [])
   const [pick, setPick] = useState<Pick | null>(null)
   const [remaining, setRemaining] = useState(0)

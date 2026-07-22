@@ -69,6 +69,28 @@ export async function getPantryStaples(): Promise<Pantry> {
   return { ids, names }
 }
 
+/** The user's full pantry, each row resolved to its canonical ingredient id (null if unmatched). */
+export async function getUserPantry(): Promise<Array<{ id: number | null; slug: string; name: string }>> {
+  const supabase = await userScoped()
+  if (!supabase) return []
+  const { data } = await supabase.from('pantry').select('ingredient_slug,ingredient_name').order('created_at')
+  const rows = data ?? []
+  if (rows.length === 0) return []
+  const payload = await getPayloadClient()
+  const found = await payload.find({
+    collection: 'ingredients',
+    where: { slug: { in: rows.map((r) => r.ingredient_slug as string) } },
+    depth: 0,
+    limit: 300,
+  })
+  const bySlug = new Map(found.docs.map((d) => [String(d.slug), d.id as number]))
+  return rows.map((r) => ({
+    id: bySlug.get(r.ingredient_slug as string) ?? null,
+    slug: r.ingredient_slug as string,
+    name: r.ingredient_name as string,
+  }))
+}
+
 /** Resolve planned slugs → ingredients (canonical-linked), cost, servings, leftover ideas. */
 export async function loadPlannedRecipes(slugs: string[]): Promise<Map<string, PlannedRecipe>> {
   const out = new Map<string, PlannedRecipe>()

@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import type { Recipe } from '@/payload-types'
 import { PantryFinder } from '@/components/PantryFinder'
 import { RecipeCard } from '@/components/RecipeCard'
 import type { Have, Scored } from '@/lib/pantry'
-import { findRecipesByPantry, getPayloadClient } from '@/lib/queries'
+import { getUserPantry } from '@/lib/planData'
+import { findRecipesByPantry } from '@/lib/queries'
+import { serverUser } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,12 +15,6 @@ export const metadata: Metadata = {
   title: 'What can I make?',
   description:
     'Add what is in your kitchen and Palate sorts the catalog into what you can cook now, what is one or two items away, and what is a bigger stretch.',
-}
-
-function parseSlugs(raw: string | string[] | undefined): string[] {
-  const value = Array.isArray(raw) ? raw[0] : raw
-  if (!value) return []
-  return Array.from(new Set(value.split(',').map((s) => s.trim()).filter(Boolean)))
 }
 
 function parseTime(raw: string | string[] | undefined): number | null {
@@ -54,9 +51,9 @@ function Band({ title, items }: { title: string; items: Scored<Recipe>[] }) {
 }
 
 /**
- * "What can I make?" — the pantry-first counterpart to the filter-first
- * catalog. Slugs live in the URL so the page can resolve them server-side and
- * stay linkable/reloadable; `PantryFinder` owns the client interaction.
+ * "What can I make?" — the pantry-first counterpart to the filter-first catalog.
+ * The pantry is the signed-in user's saved ingredient list (Supabase); the page
+ * reads it server-side and `PantryFinder` owns add/remove.
  */
 export default async function CookFromPage({
   searchParams,
@@ -64,31 +61,33 @@ export default async function CookFromPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const params = await searchParams
-  const slugs = parseSlugs(params.have)
   const maxMinutes = parseTime(params.time)
 
-  let have: Have[] = []
-  let initialHave: Array<{ slug: string; name: string }> = []
-  if (slugs.length > 0) {
-    const payload = await getPayloadClient()
-    const result = await payload.find({
-      collection: 'ingredients',
-      where: { slug: { in: slugs } },
-      depth: 0,
-      limit: 50,
-    })
-    // Payload returns docs in DB order; restore the order the cook built (the
-    // order the slugs appear in the URL) so shared/reloaded links keep their
-    // chip order.
-    const ordered = [...result.docs].sort(
-      (a, b) => slugs.indexOf(String(a.slug)) - slugs.indexOf(String(b.slug)),
+  const user = await serverUser()
+  if (!user) {
+    return (
+      <div className="shell py-14">
+        <div className="max-w-[46ch]">
+          <p className="eyebrow m-0">What can I make?</p>
+          <h1 className="mt-1 text-[clamp(1.875rem,3vw,2.75rem)]">Cook from what you have.</h1>
+          <p className="mt-3 text-slate">
+            Your pantry saves to your account, so it’s there every time. Sign in to add what’s in
+            your kitchen.
+          </p>
+          <Link href="/account" className="btn-primary mt-6 inline-block">
+            Sign in
+          </Link>
+        </div>
+      </div>
     )
-    have = ordered.map((d) => ({ id: d.id, name: String(d.name) }))
-    initialHave = ordered.map((d) => ({ slug: String(d.slug), name: String(d.name) }))
   }
 
+  const pantry = await getUserPantry()
+  const have: Have[] = pantry.filter((p) => p.id !== null).map((p) => ({ id: p.id as number, name: p.name }))
+  const initialHave = pantry.map((p) => ({ slug: p.slug, name: p.name }))
+
   const bands = await findRecipesByPantry(have, { maxMinutes })
-  const hasInput = have.length > 0
+  const hasInput = pantry.length > 0
   const totalResults = bands.cookNow.length + bands.almost.length + bands.gettingThere.length
 
   return (

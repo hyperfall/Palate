@@ -27,7 +27,7 @@ import {
   tasteLabel,
   type TasteAxis,
 } from '@/lib/taxonomy'
-import { readTasteProfile } from '@/lib/useTasteProfile'
+import { fetchTasteProfile } from '@/lib/tasteProfileStore'
 import { AXIS_COLOR } from './TasteGauge'
 
 /**
@@ -678,13 +678,14 @@ export function SortSelect({ filters }: { filters: CatalogFilters }) {
       <span className="eyebrow">Sort</span>
       <select
         value={filters.sort}
-        onChange={(e) => {
+        onChange={async (e) => {
           const value = e.target.value as SortKey
+          // Attach the saved taste profile (from Supabase) so the server can rank
+          // by it; a visitor with no profile just gets the newest-order fallback.
+          const tv = value === 'foryou' ? await fetchTasteProfile() : null
           commit((d) => {
             d.sort = value
-            // Attach the saved taste profile so the server can rank by it; a
-            // visitor with no profile just gets the newest-order fallback.
-            d.tasteVector = value === 'foryou' ? readTasteProfile() : null
+            d.tasteVector = tv
           })
         }}
         className="cursor-pointer appearance-none rounded border border-rule bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-[0.8125rem] font-medium text-ink focus:border-flame focus:outline-none"

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { SITE } from '@/lib/site'
+import { HeaderNav } from './HeaderNav'
 import { NavAccount } from './NavAccount'
 import { NavSearch } from './NavSearch'
 import { ThemeToggle } from './ThemeToggle'
@@ -32,42 +33,7 @@ export function SiteHeader() {
             top bar. Only the theme toggle (no bottom-bar equivalent) stays.
           */}
           <div className="hidden items-center gap-x-7 sm:flex">
-            <Link
-              href="/tonight"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-flame-text uppercase no-underline transition-colors hover:text-milk"
-            >
-              Tonight
-            </Link>
-            <Link
-              href="/cook-from"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Cook from
-            </Link>
-            <Link
-              href="/plan"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Plan
-            </Link>
-            <Link
-              href="/students"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Students
-            </Link>
-            <Link
-              href="/recipes"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Recipes
-            </Link>
-            <Link
-              href="/cuisines"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/85 uppercase no-underline transition-colors hover:text-flame"
-            >
-              Cuisines
-            </Link>
+            <HeaderNav />
             <NavAccount />
             {/* Theme lives in the mobile menu drawer, so it's desktop-only here. */}
             <ThemeToggle />

@@ -9,6 +9,7 @@ import sharp from 'sharp'
 import { Authors } from './collections/Authors'
 import { BrandCards } from './collections/BrandCards'
 import { Cuisines } from './collections/Cuisines'
+import { Ingredients } from './collections/Ingredients'
 import { Media } from './collections/Media'
 import { Recipes } from './collections/Recipes'
 import { Submissions } from './collections/Submissions'
@@ -43,7 +44,7 @@ export default buildConfig({
       titleSuffix: ' — Recipe platform',
     },
   },
-  collections: [Recipes, Cuisines, Authors, BrandCards, Media, Submissions, Users],
+  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

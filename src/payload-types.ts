@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     recipes: Recipe;
+    ingredients: Ingredient;
     cuisines: Cuisine;
     authors: Author;
     brandCards: BrandCard;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     recipes: RecipesSelect<false> | RecipesSelect<true>;
+    ingredients: IngredientsSelect<false> | IngredientsSelect<true>;
     cuisines: CuisinesSelect<false> | CuisinesSelect<true>;
     authors: AuthorsSelect<false> | AuthorsSelect<true>;
     brandCards: BrandCardsSelect<false> | BrandCardsSelect<true>;
@@ -523,6 +525,52 @@ export interface BrandCard {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients".
+ */
+export interface Ingredient {
+  id: number;
+  name: string;
+  /**
+   * Leave blank to generate from the title. Changing this changes the public URL.
+   */
+  slug: string;
+  /**
+   * Other names that map here.
+   */
+  aliases?: string[] | null;
+  category?:
+    | ('produce' | 'dairy' | 'protein' | 'oil-fat' | 'grain-legume' | 'spice-herb' | 'condiment' | 'bakery' | 'other')
+    | null;
+  /**
+   * Discrete items (eggs, cloves).
+   */
+  countable?: boolean | null;
+  /**
+   * Optional — enables weight⇄volume when known.
+   */
+  densityGPerMl?: number | null;
+  substitutions?:
+    | {
+        sub?: (number | null) | Ingredient;
+        /**
+         * Free-text sub when not a catalog ingredient.
+         */
+        subText?: string | null;
+        kind: 'flavor' | 'texture' | 'cupboard';
+        /**
+         * e.g. "1:1", "use ¾".
+         */
+        ratio?: string | null;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  needsReview?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Creator submissions from /studio. Approve to publish; promotion is automatic.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -780,6 +828,10 @@ export interface PayloadLockedDocument {
         value: number | Recipe;
       } | null)
     | ({
+        relationTo: 'ingredients';
+        value: number | Ingredient;
+      } | null)
+    | ({
         relationTo: 'cuisines';
         value: number | Cuisine;
       } | null)
@@ -917,6 +969,31 @@ export interface RecipesSelect<T extends boolean = true> {
   slug?: T;
   status?: T;
   publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ingredients_select".
+ */
+export interface IngredientsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  aliases?: T;
+  category?: T;
+  countable?: T;
+  densityGPerMl?: T;
+  substitutions?:
+    | T
+    | {
+        sub?: T;
+        subText?: T;
+        kind?: T;
+        ratio?: T;
+        note?: T;
+        id?: T;
+      };
+  needsReview?: T;
   updatedAt?: T;
   createdAt?: T;
 }

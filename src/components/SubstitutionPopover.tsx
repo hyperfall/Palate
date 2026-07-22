@@ -12,8 +12,22 @@ import { groupSubstitutions, type SubRow } from '@/lib/substitutions'
  */
 export function SubstitutionPopover({ item, substitutions }: { item: string; substitutions: SubRow[] }) {
   const [open, setOpen] = useState(false)
+  // Flip the panel toward whichever edge has room so it never clips off-screen
+  // (right edge of the ingredients column, or the bottom of cook mode's rail).
+  const [pos, setPos] = useState<{ right: boolean; up: boolean }>({ right: false, up: false })
   const rootRef = useRef<HTMLSpanElement>(null)
   const groups = groupSubstitutions(substitutions)
+
+  useEffect(() => {
+    if (!open || !rootRef.current) return
+    const r = rootRef.current.getBoundingClientRect()
+    const W = 272 // ~17rem
+    const H = 320 // generous upper bound for the panel
+    setPos({
+      right: r.left + W > window.innerWidth - 8,
+      up: r.bottom + H > window.innerHeight - 8,
+    })
+  }, [open])
 
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {
@@ -42,7 +56,11 @@ export function SubstitutionPopover({ item, substitutions }: { item: string; sub
         {item}
       </button>
       {open && (
-        <span className="absolute top-full left-0 z-40 mt-1.5 block w-[17rem] rounded-md border border-ink/25 bg-card p-3.5 text-ink shadow-(--shadow-block)">
+        <span
+          className={`absolute z-40 block w-[min(17rem,90vw)] max-h-[min(20rem,70vh)] overflow-y-auto rounded-md border border-ink/25 bg-card p-3.5 text-ink shadow-(--shadow-block) ${
+            pos.right ? 'right-0' : 'left-0'
+          } ${pos.up ? 'bottom-full mb-1.5' : 'top-full mt-1.5'}`}
+        >
           <span className="eyebrow block">Swap for</span>
           {groups.map((group) => (
             <span key={group.kind} className="mt-2.5 block">

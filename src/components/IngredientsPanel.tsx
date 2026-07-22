@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { convertMeasure, humanizeQuantity } from '@/lib/units'
 import { useUnitSystem } from '@/lib/useUnitSystem'
@@ -41,18 +41,21 @@ export function IngredientsPanel({
   const factor = servings / baseServings
   const [unitSystem, setUnitSystem] = useUnitSystem()
 
-  const measureFor = (ing: Ingredient): string => {
-    const parsed = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
-    // Non-numeric ("a handful") is left verbatim — scaling it would be a lie.
-    if (Number.isNaN(parsed)) return [ing.quantity, ing.unit].filter(Boolean).join(' ')
-    const scaled = parsed * factor
-    const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
-    const converted = ing.unit
-      ? convertMeasure(scaled, ing.unit, unitSystem)
-      : { quantity: scaled, unit: '' }
-    const qty = humanizeQuantity(converted.quantity, { countable: Boolean(canonical?.countable) })
-    return [qty, converted.unit].filter(Boolean).join(' ')
-  }
+  const measureFor = useCallback(
+    (ing: Ingredient): string => {
+      const parsed = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
+      // Non-numeric ("a handful") is left verbatim — scaling it would be a lie.
+      if (Number.isNaN(parsed)) return [ing.quantity, ing.unit].filter(Boolean).join(' ')
+      const scaled = parsed * factor
+      const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
+      const converted = ing.unit
+        ? convertMeasure(scaled, ing.unit, unitSystem)
+        : { quantity: scaled, unit: '' }
+      const qty = humanizeQuantity(converted.quantity, { countable: Boolean(canonical?.countable) })
+      return [qty, converted.unit].filter(Boolean).join(' ')
+    },
+    [factor, unitSystem],
+  )
 
   // Editable value buffer — click the number and type "12" instead of tapping
   // + ten times. Focused shows the raw number; committing clamps to 1–24.

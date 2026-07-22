@@ -44,7 +44,9 @@ export function buildCookSteps(steps: RawStep[]): CookStep[] {
     uses: resolveUses(s.uses),
   }))
 
-  // First step index where each ingredient name is used.
+  // First step index where each ingredient name is used, then bucket each name
+  // under the step one before its first use — a single pass, so the final map is
+  // a lookup rather than a scan per step.
   const firstUse = new Map<string, number>()
   resolved.forEach((step, i) => {
     for (const use of step.uses) {
@@ -52,10 +54,14 @@ export function buildCookSteps(steps: RawStep[]): CookStep[] {
     }
   })
 
-  return resolved.map((step, i) => ({
-    ...step,
-    prepAhead: [...firstUse.entries()]
-      .filter(([, firstIndex]) => firstIndex === i + 1)
-      .map(([name]) => name),
-  }))
+  const prepByStep = new Map<number, string[]>()
+  for (const [name, firstIndex] of firstUse) {
+    if (firstIndex < 1) continue // first used on step 0 — no earlier step to nudge on
+    const at = firstIndex - 1
+    const bucket = prepByStep.get(at)
+    if (bucket) bucket.push(name)
+    else prepByStep.set(at, [name])
+  }
+
+  return resolved.map((step, i) => ({ ...step, prepAhead: prepByStep.get(i) ?? [] }))
 }

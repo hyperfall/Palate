@@ -9,7 +9,10 @@ export type UnitSystem = 'us' | 'metric'
 
 // ml per US volume unit that we treat as system-specific.
 const US_VOLUME_ML: Record<string, number> = { cup: 240, floz: 29.6, 'fl oz': 29.6 }
-// grams per US weight unit.
+// grams per US weight unit. Bare "oz" is weight by design — fluid ounces are
+// their own entry ("fl oz"/"floz") in US_VOLUME_ML above, which is how a recipe
+// should spell a liquid ounce. A plain "oz" is treated as weight rather than
+// guessed, so we never silently convert "8 oz milk" as if it were grams-by-volume.
 const US_WEIGHT_G: Record<string, number> = { oz: 28, lb: 454 }
 
 const round1 = (n: number) => Math.round(n * 10) / 10

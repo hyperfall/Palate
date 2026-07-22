@@ -58,6 +58,8 @@ export const Authors: CollectionConfig = {
     {
       name: 'bio',
       type: 'textarea',
+      maxLength: 160,
+      admin: { description: 'Short profile bio (max 160 chars). Creators can edit their own from /account.' },
     },
     {
       name: 'provenanceDefault',

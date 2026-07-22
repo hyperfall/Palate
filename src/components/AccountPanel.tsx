@@ -117,6 +117,88 @@ function UsernameField({
   )
 }
 
+const BIO_MAX = 160
+
+/**
+ * Self-service bio, for creators. Loads the current bio (from their author
+ * profile) on mount and self-hides for non-creators or before a profile exists;
+ * saves on the button, character-capped Instagram-style.
+ */
+function BioField() {
+  const [state, setState] = useState<{ show: boolean; hasProfile: boolean }>({ show: false, hasProfile: false })
+  const [bio, setBio] = useState('')
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+
+  useEffect(() => {
+    let active = true
+    void fetch('/account/bio')
+      .then((r) => r.json())
+      .then((d: { creator?: boolean; hasProfile?: boolean; bio?: string }) => {
+        if (!active) return
+        setState({ show: Boolean(d.creator), hasProfile: Boolean(d.hasProfile) })
+        setBio(d.bio ?? '')
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
+
+  if (!state.show) return null
+
+  const save = async () => {
+    setStatus('saving')
+    try {
+      const res = await fetch('/account/bio', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ bio }),
+      })
+      setStatus(res.ok ? 'saved' : 'idle')
+    } catch {
+      setStatus('idle')
+    }
+  }
+
+  return (
+    <div className="mt-5 grid gap-1 border-t border-rule pt-4">
+      <span className="eyebrow">Creator bio</span>
+      {state.hasProfile ? (
+        <>
+          <textarea
+            value={bio}
+            maxLength={BIO_MAX}
+            rows={2}
+            placeholder="A line about you and your cooking."
+            onChange={(e) => {
+              setBio(e.target.value)
+              setStatus('idle')
+            }}
+            className="resize-none rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+          />
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => void save()}
+              disabled={status === 'saving'}
+              className="chip w-fit disabled:opacity-60"
+            >
+              {status === 'saved' ? '✓ Saved' : status === 'saving' ? 'Saving…' : 'Save bio'}
+            </button>
+            <span className="font-mono text-[0.75rem] text-slate">
+              {bio.length}/{BIO_MAX}
+            </span>
+          </div>
+        </>
+      ) : (
+        <p className="m-0 text-[0.8125rem] text-slate">
+          Publish your first recipe to open your creator profile, then add a bio here.
+        </p>
+      )}
+    </div>
+  )
+}
+
 /**
  * The full account flow, still on one card: sign in, create account (with a
  * display name), show/hide password, forgot-password email, the recovery
@@ -266,6 +348,8 @@ export function AccountPanel() {
             />
           </div>
         </div>
+        <BioField />
+
         <dl className="m-0 mt-5 grid max-w-[24rem] gap-2">
           <div className="leader">
             <dt className="eyebrow">Email</dt>

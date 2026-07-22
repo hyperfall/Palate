@@ -253,46 +253,35 @@
       box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* Apple-ish: a gentle lift + slight grow with a soft, diffuse shadow, on a
-     spring-like ease — noticeable, never jumpy. Keyboard focus lifts always;
-     pointer hover lifts only where hover truly exists, so it never sticks on a
-     touch device after a back-navigation. */
-  .ticket-card:focus-within {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow:
-      0 18px 38px -16px rgb(0 0 0 / 0.4),
-      0 0 26px -4px color-mix(in oklab, var(--color-flame) 48%, transparent);
+  /* Apple-ish lift + soft glow. Lift, glow, and ambient intensity are theme vars
+     so each has one place to tune. Keyboard focus lifts always; pointer hover
+     only where hover exists, so it never sticks on touch after a back-nav. */
+  .ticket-card {
+    --card-lift: 0 18px 38px -16px rgb(0 0 0 / 0.4);
+    --card-glow: 0 0 14px -6px color-mix(in oklab, var(--color-flame) 24%, transparent);
+    --card-ambient-opacity: 0.45;
   }
-  :root[data-theme='dark'] .ticket-card:focus-within {
-    box-shadow:
-      0 18px 40px -14px rgb(0 0 0 / 0.7),
-      0 0 30px -2px color-mix(in oklab, var(--color-flame) 55%, transparent);
+  :root[data-theme='dark'] .ticket-card {
+    --card-lift: 0 18px 40px -14px rgb(0 0 0 / 0.7);
+    --card-glow: 0 0 18px -8px color-mix(in oklab, var(--color-flame) 30%, transparent);
+    --card-ambient-opacity: 0.3;
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) .ticket-card:focus-within {
-      box-shadow:
-        0 18px 40px -14px rgb(0 0 0 / 0.7),
-        0 0 30px -2px color-mix(in oklab, var(--color-flame) 55%, transparent);
+    :root:not([data-theme='light']) .ticket-card {
+      --card-lift: 0 18px 40px -14px rgb(0 0 0 / 0.7);
+      --card-glow: 0 0 18px -8px color-mix(in oklab, var(--color-flame) 30%, transparent);
+      --card-ambient-opacity: 0.3;
     }
+  }
+
+  .ticket-card:focus-within {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--card-lift), var(--card-glow);
   }
   @media (hover: hover) {
     .ticket-card:hover {
       transform: translateY(-4px) scale(1.02);
-      box-shadow:
-        0 18px 38px -16px rgb(0 0 0 / 0.4),
-        0 0 26px -4px color-mix(in oklab, var(--color-flame) 48%, transparent);
-    }
-    :root[data-theme='dark'] .ticket-card:hover {
-      box-shadow:
-        0 18px 40px -14px rgb(0 0 0 / 0.7),
-        0 0 30px -2px color-mix(in oklab, var(--color-flame) 55%, transparent);
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme='light']) .ticket-card:hover {
-        box-shadow:
-          0 18px 40px -14px rgb(0 0 0 / 0.7),
-          0 0 30px -2px color-mix(in oklab, var(--color-flame) 55%, transparent);
-      }
+      box-shadow: var(--card-lift), var(--card-glow);
     }
   }
 
@@ -316,10 +305,10 @@
 
   /*
    * Ambient card body — a heavily blurred, saturated copy of the hero image,
-   * masked so it bleeds down from under the photo. Hidden at rest; blooms in only
-   * on the hovered/focused card. On the light surface it blends by COLOUR (hue
-   * only — no murk); on dark it overlays normally and glows. Behind the z-10
-   * card body content.
+   * masked so it bleeds down from under the photo. Hidden at rest; blooms in
+   * only on hover/focus. Overlays normally so it actually reads on BOTH surfaces
+   * (the old colour-blend was invisible on the light card); per-theme intensity
+   * via --card-ambient-opacity. Behind the z-10 card body content.
    */
   .card-ambient {
     position: absolute;
@@ -329,48 +318,19 @@
     background-size: cover;
     background-position: center;
     transform: scale(1.3);
-    filter: blur(30px) saturate(1.5);
+    filter: blur(30px) saturate(1.4);
     -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 92%);
     mask-image: linear-gradient(to bottom, black 0%, transparent 92%);
-    mix-blend-mode: color;
-    /* Hidden at rest — the wash blooms in only on the hovered/focused card. */
+    mix-blend-mode: normal;
     opacity: 0;
     transition: opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
   }
-  :root[data-theme='dark'] .card-ambient {
-    mix-blend-mode: normal;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) .card-ambient {
-      mix-blend-mode: normal;
-    }
-  }
-
-  /* Eased back from 0.68/0.5 — the wash blooms strongest right behind the meta
-     line and title, so keep it subtle enough that ink/slate text contrast holds
-     while it's in. */
   .ticket-card:focus-within .card-ambient {
-    opacity: 0.52;
-  }
-  :root[data-theme='dark'] .ticket-card:focus-within .card-ambient {
-    opacity: 0.4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) .ticket-card:focus-within .card-ambient {
-      opacity: 0.4;
-    }
+    opacity: var(--card-ambient-opacity);
   }
   @media (hover: hover) {
     .ticket-card:hover .card-ambient {
-      opacity: 0.52;
-    }
-    :root[data-theme='dark'] .ticket-card:hover .card-ambient {
-      opacity: 0.4;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme='light']) .ticket-card:hover .card-ambient {
-        opacity: 0.4;
-      }
+      opacity: var(--card-ambient-opacity);
     }
   }
 

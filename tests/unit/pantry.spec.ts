@@ -44,18 +44,20 @@ describe('bandRecipes', () => {
   const scored = (id: string, missing: string[], used: number, required = missing.length + used) => ({
     recipe: id, missing, viaSub: [], requiredCount: required, coveredCount: required - missing.length, usedCount: used,
   })
-  it('bands by missing count and drops near-useless matches', () => {
+  it('bands by missing count; shows any recipe you use ≥2 of, no missing cap', () => {
     const b = bandRecipes([
       scored('now', [], 2),
       scored('one', ['feta'], 3),
       scored('three', ['a', 'b', 'c'], 3),
       scored('single-use-nearmiss', ['x'], 1), // uses <2 of yours -> dropped from near-miss
-      scored('too-many', ['a', 'b', 'c', 'd', 'e', 'f'], 3), // missing >5 -> dropped
+      // uses 3 of yours but is missing 7 (e.g. shakshuka from a 3-item pantry) —
+      // shown in "getting there", ranked after closer matches.
+      scored('bigger-shop', ['a', 'b', 'c', 'd', 'e', 'f', 'g'], 3),
       scored('uses-none', [], 0), // uses none of yours -> dropped entirely
     ])
     expect(b.cookNow.map((r) => r.recipe)).toEqual(['now'])
     expect(b.almost.map((r) => r.recipe)).toEqual(['one'])
-    expect(b.gettingThere.map((r) => r.recipe)).toEqual(['three'])
+    expect(b.gettingThere.map((r) => r.recipe)).toEqual(['three', 'bigger-shop'])
   })
   it('ranks within the full result by missing asc then match ratio desc', () => {
     // m2-high: required 8, covered 6 -> ratio .75 ; m2-low: required 4, covered 2 -> ratio .5

@@ -86,12 +86,15 @@ export function bandRecipes<R>(scored: Scored<R>[]): Bands<R> {
   const ratio = (s: Scored<R>) => (s.requiredCount ? s.coveredCount / s.requiredCount : 0)
   const shown = scored
     .filter((s) => s.usedCount >= 1) // must use at least one of the cook's ingredients
-    .filter((s) => s.missing.length === 0 || (s.usedCount >= 2 && s.missing.length <= 5))
+    // A near-miss just needs to genuinely use ≥2 of your ingredients; there's no
+    // cap on how many it's missing, because real recipes carry 8–12 ingredients
+    // and the ranking (fewest-missing first) already surfaces the closest ones.
+    .filter((s) => s.missing.length === 0 || s.usedCount >= 2)
     .sort((a, b) => a.missing.length - b.missing.length || ratio(b) - ratio(a))
 
   return {
     cookNow: shown.filter((s) => s.missing.length === 0),
     almost: shown.filter((s) => s.missing.length >= 1 && s.missing.length <= 2),
-    gettingThere: shown.filter((s) => s.missing.length >= 3 && s.missing.length <= 5),
+    gettingThere: shown.filter((s) => s.missing.length >= 3),
   }
 }

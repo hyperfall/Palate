@@ -190,7 +190,7 @@ export function PantryFinder({
               className="scroll-rail absolute top-full left-0 z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-md border border-ink/30 bg-card p-1.5 text-ink shadow-(--shadow-block)"
             >
               {suggestions.map((s) => (
-                <li key={s.slug}>
+                <li key={s.slug} role="option" aria-selected={false}>
                   <button
                     type="button"
                     onPointerDown={(e) => {

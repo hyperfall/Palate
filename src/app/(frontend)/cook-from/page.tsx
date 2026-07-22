@@ -77,8 +77,14 @@ export default async function CookFromPage({
       depth: 0,
       limit: 50,
     })
-    have = result.docs.map((d) => ({ id: d.id, name: String(d.name) }))
-    initialHave = result.docs.map((d) => ({ slug: String(d.slug), name: String(d.name) }))
+    // Payload returns docs in DB order; restore the order the cook built (the
+    // order the slugs appear in the URL) so shared/reloaded links keep their
+    // chip order.
+    const ordered = [...result.docs].sort(
+      (a, b) => slugs.indexOf(String(a.slug)) - slugs.indexOf(String(b.slug)),
+    )
+    have = ordered.map((d) => ({ id: d.id, name: String(d.name) }))
+    initialHave = ordered.map((d) => ({ slug: String(d.slug), name: String(d.name) }))
   }
 
   const bands = await findRecipesByPantry(have, { maxMinutes })

@@ -33,3 +33,37 @@ export function countWords(value: LexicalValue): number {
   if (!text) return 0
   return text.split(/\s+/).filter(Boolean).length
 }
+
+/**
+ * Build a minimal, valid Lexical editor state from plain text — for the studio
+ * form, where creators type a story in a textarea rather than the rich editor.
+ * Blank lines split paragraphs. Returns null for empty input so the field stays
+ * unset rather than storing an empty document.
+ */
+export function plainTextToLexical(text: string) {
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+  if (paragraphs.length === 0) return null
+  return {
+    root: {
+      type: 'root',
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr',
+      children: paragraphs.map((p) => ({
+        type: 'paragraph',
+        format: '',
+        indent: 0,
+        version: 1,
+        direction: 'ltr',
+        textFormat: 0,
+        children: [
+          { type: 'text', text: p, format: 0, style: '', mode: 'normal', detail: 0, version: 1 },
+        ],
+      })),
+    },
+  }
+}

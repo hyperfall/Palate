@@ -72,7 +72,9 @@ export async function findAllRecipeSlugs(): Promise<Array<{ slug: string; update
 
 export async function findCuisines(): Promise<Cuisine[]> {
   const payload = await getPayloadClient()
-  const result = await payload.find({ collection: 'cuisines', depth: 1, limit: 100, sort: 'name' })
+  // All cuisines (208+ seeded) — never truncate, or the studio dropdown silently
+  // drops options past the first page (this is why "Levantine" went missing).
+  const result = await payload.find({ collection: 'cuisines', depth: 1, limit: 1000, sort: 'name' })
   return result.docs
 }
 

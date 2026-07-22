@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { ImagePicker } from '@/components/ImagePicker'
+import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
 import { LineListInput } from '@/components/LineListInput'
 import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
+import { validateRecipeNumbers } from '@/lib/recipeLimits'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import {
   COURSES,
@@ -50,6 +52,7 @@ export function StudioForm({
   const [title, setTitle] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState('')
+  const [story, setStory] = useState('')
   const [cuisine, setCuisine] = useState('')
   const [course, setCourse] = useState('dinner')
   const [mainIngredient, setMainIngredient] = useState('vegetables')
@@ -64,7 +67,11 @@ export function StudioForm({
     richness: 2,
     effort: 1,
   })
-  const [ingredientRows, setIngredientRows] = useState<string[]>(['', '', ''])
+  const [ingredientRows, setIngredientRows] = useState<IngredientRow[]>([
+    { ...emptyIngredientRow },
+    { ...emptyIngredientRow },
+    { ...emptyIngredientRow },
+  ])
   const [stepRows, setStepRows] = useState<string[]>(['', '', ''])
 
   useEffect(() => {
@@ -136,9 +143,17 @@ export function StudioForm({
     setNotice(null)
 
     const ingredients = ingredientRows
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .map((item) => ({ item }))
+      .map((r) => ({
+        quantity: r.quantity.trim(),
+        unit: r.unit.trim(),
+        item: r.item.trim(),
+      }))
+      .filter((r) => r.item)
+      .map((r) => ({
+        item: r.item,
+        ...(r.quantity ? { quantity: r.quantity } : {}),
+        ...(r.unit ? { unit: r.unit } : {}),
+      }))
     const steps = stepRows
       .map((l) => l.trim())
       .filter(Boolean)
@@ -149,6 +164,20 @@ export function StudioForm({
         kind: 'error',
         text: 'Needs a title, a cuisine, at least two ingredients and two steps.',
       })
+      return
+    }
+
+    // Steppers already clamp, but ingredient quantities are freeform — catch any
+    // out-of-range number here so the creator gets a friendly message, not a 400.
+    const rangeError = validateRecipeNumbers({
+      servings,
+      prepMinutes,
+      cookMinutes,
+      ...taste,
+      ingredients,
+    })
+    if (rangeError) {
+      setNotice({ kind: 'error', text: rangeError })
       return
     }
 
@@ -169,6 +198,7 @@ export function StudioForm({
           cookMinutes,
           dietaryTags: diets,
           videoUrl: videoUrl.trim() || undefined,
+          story: story.trim() || undefined,
           ...taste,
           ingredients,
           steps,
@@ -185,7 +215,7 @@ export function StudioForm({
       setPhoto(null)
       setPhotoUrl(null)
       setPickerKey((k) => k + 1)
-      setIngredientRows(['', '', ''])
+      setIngredientRows([{ ...emptyIngredientRow }, { ...emptyIngredientRow }, { ...emptyIngredientRow }])
       setStepRows(['', '', ''])
       setVideoUrl('')
     } catch (error) {
@@ -204,7 +234,9 @@ export function StudioForm({
     `${prepMinutes + cookMinutes} min`,
     `Serves ${servings}`,
   ].filter(Boolean)
-  const previewIngredients = ingredientRows.map((l) => l.trim()).filter(Boolean)
+  const previewIngredients = ingredientRows
+    .map((r) => [r.quantity.trim(), r.unit.trim(), r.item.trim()].filter(Boolean).join(' '))
+    .filter(Boolean)
   const previewSteps = stepRows.map((l) => l.trim()).filter(Boolean)
 
   return (
@@ -247,6 +279,17 @@ export function StudioForm({
           />
         </label>
       </div>
+
+      <label className={labelCls}>
+        <span className="eyebrow">Notes / story (optional)</span>
+        <textarea
+          value={story}
+          onChange={(e) => setStory(e.target.value)}
+          rows={4}
+          placeholder="A short note — a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
+          className={`${inputCls} resize-y`}
+        />
+      </label>
 
       <div className="grid gap-6 sm:grid-cols-3">
         <label className={labelCls}>
@@ -358,16 +401,8 @@ export function StudioForm({
       </div>
 
       <div className={labelCls}>
-        <span className="eyebrow">Ingredients — one per row (paste a list to fill rows fast)</span>
-        <LineListInput
-          value={ingredientRows}
-          onChange={setIngredientRows}
-          ariaLabel="Ingredient"
-          addLabel="Add ingredient"
-          placeholder={(i) =>
-            i === 0 ? '2 tbsp gochujang' : i === 1 ? '400g chicken thighs' : 'add another…'
-          }
-        />
+        <span className="eyebrow">Ingredients — quantity, unit, then name (paste a list to fill rows fast)</span>
+        <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
       </div>
 
       <div className={labelCls}>

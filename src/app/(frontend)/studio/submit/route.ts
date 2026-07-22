@@ -1,5 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { parseIngredientLine } from '@/lib/ingredients/parse'
+import { plainTextToLexical } from '@/lib/lexical'
+import { validateRecipeNumbers } from '@/lib/recipeLimits'
 import { getPayloadClient } from '@/lib/queries'
 import { isCreator, serverUser } from '@/lib/supabase/server'
 
@@ -68,6 +71,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Server-side range gate — the form clamps these, but a crafted POST bypasses
+  // the form. Reject unrealistic numbers before anything touches the database.
+  const numberError = validateRecipeNumbers(recipe)
+  if (numberError) {
+    return NextResponse.json({ error: numberError }, { status: 400 })
+  }
+
   const payload = await getPayloadClient()
 
   // The creator's own photograph — the whole point of the platform.
@@ -102,14 +112,41 @@ export async function POST(request: NextRequest) {
     heroImage = media.id
   }
 
+  // The creator's avatar id lives in their auth metadata; if that media was since
+  // deleted (e.g. a media cleanup), the stale relationship id fails the insert —
+  // so only attach it when it still resolves.
+  const rawAvatar = user.user_metadata?.avatar_media_id
+  const avatarId =
+    typeof rawAvatar === 'number'
+      ? rawAvatar
+      : typeof rawAvatar === 'string' && /^\d+$/.test(rawAvatar)
+        ? Number(rawAvatar)
+        : null
+  let creatorAvatar: number | null = null
+  if (avatarId !== null) {
+    const avatarMedia = await payload.findByID({ collection: 'media', id: avatarId }).catch(() => null)
+    if (avatarMedia) creatorAvatar = avatarId
+  }
+
   try {
     const submission = await payload.create({
       collection: 'submissions',
       data: {
         title: recipe.title.trim(),
         ...(heroImage ? { heroImage } : {}),
+        ...(recipe.story?.trim() ? { story: plainTextToLexical(recipe.story) } : {}),
         servings: recipe.servings,
-        ingredients: recipe.ingredients,
+        // Pasted lines arrive whole in `item`; split quantity/unit out so the
+        // recipe stores them structured (editor can correct before approval).
+        ingredients: recipe.ingredients.map((ing) => {
+          const parsed = parseIngredientLine(ing.item ?? '')
+          return {
+            quantity: ing.quantity ?? parsed.quantity,
+            unit: ing.unit ?? parsed.unit,
+            item: parsed.item || ing.item,
+            ...(ing.note ? { note: ing.note } : {}),
+          }
+        }),
         steps: recipe.steps,
         cuisine: recipe.cuisine,
         course: recipe.course,
@@ -127,14 +164,15 @@ export async function POST(request: NextRequest) {
         creatorName: user.user_metadata?.display_name ?? null,
         creatorEmail: user.email ?? null,
         creatorHandle: user.user_metadata?.username ?? null,
-        creatorAvatar: user.user_metadata?.avatar_media_id ?? null,
+        creatorAvatar,
         videoUrl: recipe.videoUrl || null,
       } as never,
     })
     return NextResponse.json({ ok: true, id: submission.id })
-  } catch {
-    // Schema validation (bad cuisine id, out-of-range taste axis, unknown
-    // course/diet) reads as a client error, not a server fault.
+  } catch (error) {
+    // Schema/insert validation reads as a client error, not a server fault — but
+    // log the real cause server-side, since it's masked from the client on purpose.
+    console.error('[studio/submit] submission create failed:', error)
     return NextResponse.json(
       { error: 'Some fields didn’t pass validation — check cuisine, meal, and taste values.' },
       { status: 400 },

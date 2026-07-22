@@ -18,7 +18,7 @@ export const Submissions: CollectionConfig = {
   slug: 'submissions',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'moderationStatus', 'submitterEmail', 'createdAt'],
+    defaultColumns: ['title', 'creatorName', 'creatorHandle', 'moderationStatus', 'createdAt'],
     group: 'Community',
     description:
       'Creator submissions from /studio. Approve to publish; promotion is automatic.',
@@ -193,7 +193,8 @@ export const Submissions: CollectionConfig = {
       relationTo: 'users',
       admin: {
         position: 'sidebar',
-        description: 'Populated once community accounts exist.',
+        description:
+          'Legacy Payload-admin submitter link — unused for creator submissions. The real submitter is in Creator name / handle / email above (Supabase account).',
       },
     },
     {

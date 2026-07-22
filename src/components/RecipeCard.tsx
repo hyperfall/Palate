@@ -34,7 +34,11 @@ export function RecipeCard({
     <article className={`ticket-card group ${featured ? 'flex h-full flex-col' : ''}`}>
       <Link
         href={`/recipes/${recipe.slug}${servingsHint ? `?servings=${servingsHint}` : ''}`}
-        className={`no-underline ${featured ? 'flex h-full flex-col' : 'block'}`}
+        // The whole tile is one link; without a name a screen reader would
+        // concatenate the alt, meta, title, rating, and taste labels into one
+        // exhausting announcement. Name it by the dish (and its rating).
+        aria-label={ratingScore > 0 ? `${recipe.title}, rated ${ratingScore} out of 5` : recipe.title}
+        className={`ticket-focus no-underline ${featured ? 'flex h-full flex-col' : 'block'}`}
       >
         <div
           className={`relative overflow-hidden bg-wash ${
@@ -48,12 +52,15 @@ export function RecipeCard({
               fill
               // The featured tile is the home page's LCP — load it eagerly.
               priority={featured}
+              // Matches the real catalog grids: 1-col on phones, 2-col to lg,
+              // 3-col at xl, 4-col beyond — so the browser stops picking a
+              // 25vw candidate for a ~33vw slot.
               sizes={
                 featured
                   ? '(max-width: 640px) 100vw, (max-width: 1280px) 66vw, 50vw'
-                  : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw'
+                  : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'
               }
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.03] group-focus-within:scale-[1.03]"
             />
           )}
         </div>
@@ -75,16 +82,30 @@ export function RecipeCard({
           )}
 
           <div className="relative z-10">
-            <p className="eyebrow m-0">
-              {cuisine ? `${cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}${cuisine.name} · ` : ''}
-              {formatMinutes(recipe.totalMinutes)} · Serves {recipe.servings}
+            {/* One ticket row: a long cuisine name truncates, the time · serves
+                fact never does (it's shrink-0), and a missing cuisine leaves no
+                orphan separator. */}
+            <p
+              className={`eyebrow m-0 flex items-baseline gap-x-1.5 overflow-hidden whitespace-nowrap ${
+                featured ? 'sm:text-[0.9375rem]' : ''
+              }`}
+            >
+              {cuisine && (
+                <span className="min-w-0 shrink truncate">
+                  {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
+                  {cuisine.name} ·
+                </span>
+              )}
+              <span className="shrink-0">
+                {formatMinutes(recipe.totalMinutes)} · Serves {recipe.servings}
+              </span>
             </p>
 
             <h3
-              className={`mt-2 text-ink group-hover:underline ${
+              className={`mt-2 text-ink underline-offset-2 group-hover:underline group-focus-within:underline ${
                 featured
                   ? 'text-[clamp(1.5rem,2vw,2.25rem)]'
-                  : 'text-[1.1875rem] leading-tight'
+                  : 'text-[1.375rem] leading-[1.15]'
               }`}
             >
               {recipe.title}

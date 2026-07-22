@@ -86,3 +86,59 @@ $$;
 
 revoke all on function public.username_available(text) from public;
 grant execute on function public.username_available(text) to anon, authenticated;
+
+-- ── Phase 3: planning layer (meal plan, pantry, taste profile) ──────────────
+-- Run this block once in the Supabase SQL editor (idempotent).
+
+-- The cook's pantry: on-hand ingredients (snapshot slug+name so no cross-DB join).
+-- is_staple marks always-haves the shopping list should never re-list.
+create table if not exists public.pantry (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  ingredient_slug text not null,
+  ingredient_name text not null,
+  is_staple boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (user_id, ingredient_slug)
+);
+create index if not exists pantry_user_idx on public.pantry (user_id);
+
+-- One saved taste profile per user (the 0–5 axes), from the /taste onboarding.
+create table if not exists public.taste_profile (
+  user_id uuid primary key default auth.uid() references auth.users (id) on delete cascade,
+  spiciness int not null check (spiciness between 0 and 5),
+  sweetness int not null check (sweetness between 0 and 5),
+  richness int not null check (richness between 0 and 5),
+  effort int not null check (effort between 0 and 5),
+  updated_at timestamptz not null default now()
+);
+
+-- The weekly board: recipes assigned to weekdays (0=Mon … 6=Sun). Snapshots
+-- slug/title/image like collections do, so no cross-database join is needed.
+create table if not exists public.meal_plan (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  day smallint not null check (day between 0 and 6),
+  recipe_slug text not null,
+  recipe_title text not null,
+  recipe_image text,
+  position int not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists meal_plan_user_idx on public.meal_plan (user_id, day, position);
+
+alter table public.pantry enable row level security;
+alter table public.taste_profile enable row level security;
+alter table public.meal_plan enable row level security;
+
+drop policy if exists "own pantry" on public.pantry;
+create policy "own pantry" on public.pantry
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "own taste" on public.taste_profile;
+create policy "own taste" on public.taste_profile
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+drop policy if exists "own plan" on public.meal_plan;
+create policy "own plan" on public.meal_plan
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());

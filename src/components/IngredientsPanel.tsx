@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { convertMeasure, humanizeQuantity } from '@/lib/units'
 import { useUnitSystem } from '@/lib/useUnitSystem'
-import type { SubRow } from '@/lib/substitutions'
+import { groupSubstitutions, type SubRow } from '@/lib/substitutions'
 import { SubstitutionPopover } from './SubstitutionPopover'
 
 /**
@@ -180,7 +180,7 @@ export function IngredientsPanel({
                 const subs = canonical?.substitutions ?? []
                 return (
                   <span>
-                    {subs.length > 0 ? (
+                    {groupSubstitutions(subs).length > 0 ? (
                       <SubstitutionPopover item={ingredient.item} substitutions={subs} />
                     ) : (
                       ingredient.item

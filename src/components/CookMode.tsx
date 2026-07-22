@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { CookStep } from '@/lib/stepIngredients'
+import { parseIngredientLine } from '@/lib/ingredients/parse'
+import { groupSubstitutions } from '@/lib/substitutions'
+import { convertTemperatures } from '@/lib/units'
+import { useUnitSystem } from '@/lib/useUnitSystem'
 import { SubstitutionPopover } from './SubstitutionPopover'
+
+/** Strips a leftover unit/quantity prefix from a canonical ingredient name. */
+const cleanName = (n: string) => parseIngredientLine(n).item || n
 
 type Finish = {
   storageDays?: number | null
@@ -67,6 +74,7 @@ export function CookMode({
 }) {
   const [index, setIndex] = useState(0)
   const [rescueOpen, setRescueOpen] = useState(false)
+  const [unitSystem] = useUnitSystem()
   const done = index >= steps.length
   const step = done ? null : steps[index]
 
@@ -304,20 +312,23 @@ export function CookMode({
                 {String(index + 1).padStart(2, '0')}
               </span>
               <p className="mt-3 font-body text-[clamp(1.375rem,3vw,2.125rem)] leading-snug font-medium">
-                {step?.text}
+                {step ? convertTemperatures(step.text, unitSystem) : null}
               </p>
 
               {step && step.uses.length > 0 && (
                 <div className="mt-6 flex flex-wrap items-center gap-2">
                   <span className="eyebrow text-slate">You'll need</span>
                   {step.uses.map((use) =>
-                    use.substitutions && use.substitutions.length > 0 ? (
+                    groupSubstitutions(use.substitutions).length > 0 ? (
                       <span key={use.name} className="chip !cursor-auto !py-1">
-                        <SubstitutionPopover item={use.name} substitutions={use.substitutions} />
+                        <SubstitutionPopover
+                          item={cleanName(use.name)}
+                          substitutions={use.substitutions ?? []}
+                        />
                       </span>
                     ) : (
                       <span key={use.name} className="chip !min-h-0 !cursor-default !py-1">
-                        {use.name}
+                        {cleanName(use.name)}
                       </span>
                     ),
                   )}

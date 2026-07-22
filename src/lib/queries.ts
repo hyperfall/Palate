@@ -249,14 +249,24 @@ export async function findRecipesByPantry(
   const result = await payload.find({ collection: 'recipes', where: where as never, depth: 2, limit: 500 })
 
   const scored = result.docs.map((recipe) => {
-    const required: RequiredIngredient[] = (recipe.ingredients ?? [])
-      .map((row) => (typeof row.ingredient === 'object' && row.ingredient ? row.ingredient : null))
-      .filter((ing): ing is NonNullable<typeof ing> => Boolean(ing))
-      .map((ing) => ({
-        id: ing.id as number,
-        name: String(ing.name),
-        substitutions: (ing as { substitutions?: unknown }).substitutions as never,
-      }))
+    const required: RequiredIngredient[] = []
+    let synthetic = 0
+    for (const row of recipe.ingredients ?? []) {
+      if (typeof row.ingredient === 'object' && row.ingredient) {
+        required.push({
+          id: row.ingredient.id as number,
+          name: String(row.ingredient.name),
+          substitutions: (row.ingredient as { substitutions?: unknown }).substitutions as never,
+        })
+      } else if (row.item && String(row.item).trim()) {
+        // An unlinked row shouldn't occur once normalize:catalog has run, but if
+        // one slips through (a future ingest that skips the hook), count it as an
+        // unmatchable requirement — a negative id is never in the pantry — so a
+        // recipe we can't fully verify never falsely lands in "Cook now". Staple
+        // names are still dropped by scoreRecipe's name check.
+        required.push({ id: -(++synthetic), name: String(row.item), substitutions: null })
+      }
+    }
     return scoreRecipe(recipe, required, have)
   })
 

@@ -59,12 +59,22 @@ async function run() {
     if (targetId && targetId !== id) {
       // MERGE dirty → target.
       await repoint(payload, id, targetId)
-      // Move substitutions over only if the target has none of its own.
+      // Union the two substitution lists (dedupe by kind + sub) so neither the
+      // target's nor the dirty row's curated subs are lost in the merge.
       const target = await payload.findByID({ collection: 'ingredients', id: targetId, depth: 0 })
-      const dirtySubs = (doc as { substitutions?: unknown[] }).substitutions
-      const targetSubs = (target as { substitutions?: unknown[] }).substitutions
-      if (Array.isArray(dirtySubs) && dirtySubs.length && !(Array.isArray(targetSubs) && targetSubs.length)) {
-        await payload.update({ collection: 'ingredients', id: targetId, data: { substitutions: dirtySubs } as never })
+      const asArr = (v: unknown) => (Array.isArray(v) ? (v as Array<Record<string, unknown>>) : [])
+      const dirtySubs = asArr((doc as { substitutions?: unknown }).substitutions)
+      const targetSubs = asArr((target as { substitutions?: unknown }).substitutions)
+      if (dirtySubs.length) {
+        const key = (s: Record<string, unknown>) => {
+          const ref = s.subText ?? (typeof s.sub === 'object' && s.sub ? (s.sub as { id?: number }).id : s.sub)
+          return `${s.kind}|${ref ?? ''}`
+        }
+        const seen = new Set(targetSubs.map(key))
+        const merged = [...targetSubs, ...dirtySubs.filter((s) => !seen.has(key(s)))]
+        if (merged.length !== targetSubs.length) {
+          await payload.update({ collection: 'ingredients', id: targetId, data: { substitutions: merged } as never })
+        }
       }
       await payload.delete({ collection: 'ingredients', id })
       console.log(`merge "${doc.name}" (${id}) → "${clean}" (${targetId})`)

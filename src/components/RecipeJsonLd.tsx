@@ -8,15 +8,19 @@ import { lexicalToPlainText } from '@/lib/lexical'
  * Recipe structured data — design spec §8.
  *
  * "This is what earns the rich cards with star ratings + photo carousel at the
- * top of Google — invisible to users, fully legit." Note what is NOT here:
- * no aggregateRating, because we have no ratings. Inventing them is precisely
- * the structured-data spam that earns a manual action, and §8 rules out
- * anything in that family.
+ * top of Google — invisible to users, fully legit." aggregateRating is emitted
+ * ONLY from real community votes (never the editorial override, never a seeded
+ * value) — inventing ratings is the structured-data spam that earns a manual
+ * action, and §8 rules out anything in that family.
  */
 export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
   const hero = imageFrom(recipe.heroImage, 'hero')
   const author = typeof recipe.author === 'object' ? recipe.author : null
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
+
+  const ratingCount = recipe.ratingCount ?? 0
+  const ratingValue =
+    ratingCount > 0 ? Math.round(((recipe.ratingSum ?? 0) / ratingCount) * 100) / 100 : 0
 
   const nutrition = recipe.nutrition
   const hasNutrition =
@@ -33,6 +37,17 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
     ...(recipe.publishedAt ? { datePublished: recipe.publishedAt } : {}),
     ...(recipe.story ? { description: lexicalToPlainText(recipe.story as never) } : {}),
     ...(cuisine ? { recipeCuisine: cuisine.name } : {}),
+    ...(ratingCount > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue,
+            ratingCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     recipeYield: `${recipe.servings} servings`,
     ...(toIsoDuration(recipe.prepMinutes) ? { prepTime: toIsoDuration(recipe.prepMinutes) } : {}),
     ...(toIsoDuration(recipe.cookMinutes) ? { cookTime: toIsoDuration(recipe.cookMinutes) } : {}),

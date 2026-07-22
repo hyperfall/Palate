@@ -9,6 +9,7 @@ import {
   CALORIE_STEP,
   catalogHref,
   countActiveFilters,
+  RATING_CHOICES,
   type CatalogFilters,
   type SortKey,
   type TasteRange,
@@ -264,6 +265,7 @@ function CalorieBand({
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'newest', label: 'Newest' },
   { value: 'quickest', label: 'Quickest' },
+  { value: 'top', label: 'Top rated' },
   ...TASTE_AXES.map((axis) => ({
     value: axis,
     label: `Most ${TASTE_AXIS_LABELS[axis].title.toLowerCase()}`,
@@ -400,6 +402,31 @@ export function FilterPanel({
                   }
                 >
                   {bucket.label}
+                </Chip>
+              )
+            })}
+          </div>
+        </FacetGroup>
+
+        <FacetGroup label="Rating" activeCount={filters.minRating !== null ? 1 : 0}>
+          <div className="flex flex-wrap gap-2">
+            <Chip
+              active={filters.minRating === null}
+              onClick={() => commit((d) => void (d.minRating = null))}
+            >
+              Any
+            </Chip>
+            {RATING_CHOICES.map((threshold) => {
+              const active = filters.minRating === threshold
+              return (
+                <Chip
+                  key={threshold}
+                  active={active}
+                  onClick={() =>
+                    commit((d) => void (d.minRating = active ? null : threshold))
+                  }
+                >
+                  {threshold}★+
                 </Chip>
               )
             })}
@@ -544,6 +571,7 @@ export function FilterPanel({
                     d.taste = {}
                     d.maxMinutes = null
                     d.maxCalories = null
+                    d.minRating = null
                     d.q = ''
                   })
                 }}

@@ -23,6 +23,7 @@ describe('parseFilters', () => {
       taste: {},
       maxMinutes: null,
       maxCalories: null,
+      minRating: null,
       q: '',
       page: 1,
       sort: 'newest',
@@ -151,6 +152,45 @@ describe('sortExpression', () => {
 
   it('sorts a taste axis by most-of-it-first', () => {
     expect(sortExpression('spiciness')).toBe('-spiciness')
+  })
+
+  it('sorts top-rated by descending rating score', () => {
+    expect(sortExpression('top')).toBe('-ratingScore')
+  })
+})
+
+describe('minRating', () => {
+  it('parses an allowed threshold', () => {
+    expect(parseFilters({ rating: '4' }).minRating).toBe(4)
+    expect(parseFilters({ rating: '4.5' }).minRating).toBe(4.5)
+  })
+
+  it('rejects out-of-range or garbage thresholds', () => {
+    expect(parseFilters({ rating: '0' }).minRating).toBeNull()
+    expect(parseFilters({ rating: '6' }).minRating).toBeNull()
+    expect(parseFilters({ rating: 'nope' }).minRating).toBeNull()
+    expect(parseFilters({}).minRating).toBeNull()
+  })
+
+  it('adds a ratingScore floor to the where clause', () => {
+    const where = buildWhere(parseFilters({ rating: '4' })) as { and: Record<string, unknown>[] }
+    expect(where.and).toContainEqual({ ratingScore: { greater_than_equal: 4 } })
+  })
+
+  it('adds no rating clause when unconstrained', () => {
+    const where = buildWhere(parseFilters({})) as { and: Record<string, unknown>[] }
+    expect(where.and.some((c) => 'ratingScore' in c)).toBe(false)
+  })
+
+  it('survives a URL round-trip', () => {
+    const reparsed = parseFilters(
+      Object.fromEntries(toSearchParams(parseFilters({ rating: '4.5' })).entries()),
+    )
+    expect(reparsed.minRating).toBe(4.5)
+  })
+
+  it('counts as one active narrowing', () => {
+    expect(countActiveFilters(parseFilters({ rating: '4' }))).toBe(1)
   })
 })
 

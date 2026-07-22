@@ -28,6 +28,16 @@ export const Recipes: CollectionConfig = {
         if (data?.status === 'published' && !data?.publishedAt) {
           data.publishedAt = new Date().toISOString()
         }
+        // Denormalise the sortable/filterable rating into one column. Editorial
+        // rating (a curator override) wins; otherwise it's the community average,
+        // or 0 when nothing has been rated yet. The rate endpoint bumps sum/count
+        // and re-saves, which re-runs this — so the score is never stale.
+        const count = typeof data.ratingCount === 'number' ? data.ratingCount : 0
+        const sum = typeof data.ratingSum === 'number' ? data.ratingSum : 0
+        const editorial =
+          typeof data.editorialRating === 'number' ? data.editorialRating : null
+        data.ratingScore =
+          editorial ?? (count > 0 ? Math.round((sum / count) * 100) / 100 : 0)
         return data
       },
       async ({ data, req }) => {
@@ -88,7 +98,41 @@ export const Recipes: CollectionConfig = {
         {
           label: 'Taste & filters',
           description: 'These drive the faceted catalog — the differentiator (§7).',
-          fields: recipeFacetFields(),
+          fields: [
+            ...recipeFacetFields(),
+            {
+              name: 'editorialRating',
+              type: 'number',
+              min: 1,
+              max: 5,
+              admin: {
+                description:
+                  'Optional curator override (1–5). Leave blank to show the community average — we don’t seed ratings.',
+              },
+            },
+            {
+              name: 'ratingCount',
+              type: 'number',
+              defaultValue: 0,
+              admin: { readOnly: true, description: 'Number of community votes. Maintained by the rate endpoint.' },
+            },
+            {
+              name: 'ratingSum',
+              type: 'number',
+              defaultValue: 0,
+              admin: { readOnly: true, description: 'Sum of community stars (average = sum ÷ count).' },
+            },
+            {
+              name: 'ratingScore',
+              type: 'number',
+              defaultValue: 0,
+              index: true,
+              admin: {
+                readOnly: true,
+                description: 'Derived: editorial override, else community average, else 0. Drives sort & filter.',
+              },
+            },
+          ],
         },
         {
           label: 'Provenance & partnerships',

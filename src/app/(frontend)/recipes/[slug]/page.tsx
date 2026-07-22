@@ -8,8 +8,10 @@ import { CookModeLauncher } from '@/components/CookMode'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
+import { RateWidget } from '@/components/RateWidget'
 import { RecipeCard } from '@/components/RecipeCard'
 import { RecipeJsonLd } from '@/components/RecipeJsonLd'
+import { StarRating } from '@/components/StarRating'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { formatMinutes, formatTimer } from '@/lib/format'
@@ -72,6 +74,13 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
   const author = typeof recipe.author === 'object' ? recipe.author : null
   const story = recipe.story ? lexicalToPlainText(recipe.story as never) : ''
 
+  // The community tally shown to users is always the real average of real votes
+  // (sum ÷ count) — the editorial override drives sort/filter, never the number
+  // a reader sees. Zero votes shows nothing here; the widget invites the first.
+  const ratingCount = recipe.ratingCount ?? 0
+  const communityAverage =
+    ratingCount > 0 ? Math.round(((recipe.ratingSum ?? 0) / ratingCount) * 100) / 100 : 0
+
   return (
     <>
       <RecipeJsonLd recipe={recipe} />
@@ -122,6 +131,12 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   <span className="eyebrow mr-2 text-milk/80">Difficulty</span>
                   {recipe.difficulty}
                 </span>
+                {ratingCount > 0 && (
+                  <span className="datum text-milk">
+                    <span className="eyebrow mr-2 text-milk/80">Rated</span>
+                    <StarRating value={communityAverage} count={ratingCount} />
+                  </span>
+                )}
                 <CookModeLauncher
                   title={recipe.title}
                   steps={(recipe.steps ?? []).map((step) => ({
@@ -206,6 +221,14 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   ))}
                 </div>
               )}
+
+              <div className="mt-5 border-t border-rule pt-4">
+                <RateWidget
+                  recipeId={recipe.id}
+                  initialAverage={communityAverage}
+                  initialCount={ratingCount}
+                />
+              </div>
             </div>
           </div>
         </section>

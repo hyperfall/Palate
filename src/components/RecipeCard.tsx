@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Recipe } from '@/payload-types'
 import { imageFrom } from '@/lib/media'
 import { formatMinutes } from '@/lib/format'
+import { StarRating } from './StarRating'
 import { TasteTags } from './TasteGauge'
 
 /**
@@ -25,6 +26,9 @@ export function RecipeCard({
 }) {
   const image = imageFrom(recipe.heroImage, featured ? 'hero' : 'card')
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
+  // ratingScore is editorial-override-or-community-average; only shown once a
+  // recipe actually has a score, so unrated cards stay clean.
+  const ratingScore = recipe.ratingScore ?? 0
 
   return (
     <article className={`ticket-card group ${featured ? 'flex h-full flex-col' : ''}`}>
@@ -85,6 +89,15 @@ export function RecipeCard({
             >
               {recipe.title}
             </h3>
+
+            {ratingScore > 0 && (
+              <StarRating
+                value={ratingScore}
+                count={recipe.ratingCount ?? 0}
+                size="sm"
+                className="mt-2.5"
+              />
+            )}
 
             <TasteTags
               recipe={{

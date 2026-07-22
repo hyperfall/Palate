@@ -20,7 +20,7 @@ import {
  * URLs keep meaning what they meant.
  */
 
-export type SortKey = 'newest' | 'quickest' | TasteAxis
+export type SortKey = 'newest' | 'quickest' | 'top' | TasteAxis
 
 export type TasteRange = { min: number; max: number }
 
@@ -35,6 +35,8 @@ export type CatalogFilters = {
   maxMinutes: number | null
   /** Per-serving calorie ceiling. Absent = unconstrained. */
   maxCalories: number | null
+  /** Minimum rating (on the 0–5 scale). Absent = unconstrained. */
+  minRating: number | null
   /** Free-text search over recipe titles. */
   q: string
   page: number
@@ -51,7 +53,18 @@ const INGREDIENT_VALUES = new Set(MAIN_INGREDIENTS.map((i) => i.value))
 export const CALORIE_MIN = 100
 export const CALORIE_MAX = 1200
 export const CALORIE_STEP = 50
-const SORT_VALUES = new Set<string>(['newest', 'quickest', ...TASTE_AXES])
+const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', ...TASTE_AXES])
+
+/** The rating thresholds the catalog offers as filter chips. */
+export const RATING_CHOICES = [3, 4, 4.5] as const
+
+/** Parses a `rating` param into an allowed threshold, or null when unconstrained/invalid. */
+export function parseMinRating(raw: string | undefined): number | null {
+  if (!raw) return null
+  const n = Number.parseFloat(raw)
+  if (!Number.isFinite(n) || n <= 0 || n > 5) return null
+  return n
+}
 
 export const AXIS_MIN = 0
 export const AXIS_MAX = 5
@@ -132,6 +145,7 @@ export function parseFilters(params: RawSearchParams): CatalogFilters {
       Number.isNaN(parsedKcal) || parsedKcal >= CALORIE_MAX
         ? null
         : Math.max(CALORIE_MIN, parsedKcal),
+    minRating: parseMinRating(first(params.rating)),
     q: (first(params.q) ?? '').trim().slice(0, 80),
     page: Number.isNaN(parsedPage) ? 1 : Math.max(1, parsedPage),
     sort: sortParam && SORT_VALUES.has(sortParam) ? (sortParam as SortKey) : 'newest',
@@ -152,6 +166,7 @@ export function countActiveFilters(filters: CatalogFilters): number {
     filters.difficulties.length +
     (filters.maxMinutes !== null ? 1 : 0) +
     (filters.maxCalories !== null ? 1 : 0) +
+    (filters.minRating !== null ? 1 : 0) +
     (filters.q ? 1 : 0) +
     Object.keys(filters.taste).length
   )
@@ -161,6 +176,7 @@ export function countActiveFilters(filters: CatalogFilters): number {
 export function sortExpression(sort: SortKey): string {
   if (sort === 'quickest') return 'totalMinutes'
   if (sort === 'newest') return '-publishedAt'
+  if (sort === 'top') return '-ratingScore'
   // Sorting *by* an axis means "most of it first" — the interesting direction.
   return `-${sort}`
 }
@@ -206,6 +222,10 @@ export function buildWhere(filters: CatalogFilters): Record<string, unknown> {
     and.push({ 'nutrition.calories': { less_than_equal: filters.maxCalories } })
   }
 
+  if (filters.minRating !== null) {
+    and.push({ ratingScore: { greater_than_equal: filters.minRating } })
+  }
+
   for (const [axis, range] of Object.entries(filters.taste)) {
     if (range.min > AXIS_MIN) and.push({ [axis]: { greater_than_equal: range.min } })
     if (range.max < AXIS_MAX) and.push({ [axis]: { less_than_equal: range.max } })
@@ -230,6 +250,7 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
   for (const difficulty of filters.difficulties) params.append('difficulty', difficulty)
   if (filters.maxMinutes !== null) params.set('time', String(filters.maxMinutes))
   if (filters.maxCalories !== null) params.set('kcal', String(filters.maxCalories))
+  if (filters.minRating !== null) params.set('rating', String(filters.minRating))
   for (const [axis, range] of Object.entries(filters.taste)) {
     params.set(axis, encodeTasteRange(range))
   }

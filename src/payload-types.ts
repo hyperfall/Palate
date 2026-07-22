@@ -74,6 +74,7 @@ export interface Config {
     brandCards: BrandCard;
     media: Media;
     submissions: Submission;
+    ratings: Rating;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,6 +90,7 @@ export interface Config {
     brandCards: BrandCardsSelect<false> | BrandCardsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
+    ratings: RatingsSelect<false> | RatingsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -309,6 +311,22 @@ export interface Recipe {
      */
     fat?: number | null;
   };
+  /**
+   * Optional curator override (1–5). Leave blank to show the community average — we don’t seed ratings.
+   */
+  editorialRating?: number | null;
+  /**
+   * Number of community votes. Maintained by the rate endpoint.
+   */
+  ratingCount?: number | null;
+  /**
+   * Sum of community stars (average = sum ÷ count).
+   */
+  ratingSum?: number | null;
+  /**
+   * Derived: editorial override, else community average, else 0. Drives sort & filter.
+   */
+  ratingScore?: number | null;
   /**
    * Load-bearing (§3): drives trust badges, filtering, and Google transparency.
    */
@@ -778,7 +796,7 @@ export interface Submission {
   promotedRecipe?: (number | null) | Recipe;
   moderationStatus: 'pending' | 'approved' | 'rejected';
   /**
-   * Populated once community accounts exist.
+   * Legacy Payload-admin submitter link — unused for creator submissions. The real submitter is in Creator name / handle / email above (Supabase account).
    */
   submittedBy?: (number | null) | User;
   /**
@@ -816,6 +834,23 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * Community star ratings — one per user per recipe. Written by the rate endpoint; the recipe’s average is kept in sync there.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ratings".
+ */
+export interface Rating {
+  id: number;
+  recipe: number | Recipe;
+  /**
+   * Supabase user id of the rater.
+   */
+  userId: string;
+  stars: number;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -868,6 +903,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'submissions';
         value: number | Submission;
+      } | null)
+    | ({
+        relationTo: 'ratings';
+        value: number | Rating;
       } | null)
     | ({
         relationTo: 'users';
@@ -975,6 +1014,10 @@ export interface RecipesSelect<T extends boolean = true> {
         carbs?: T;
         fat?: T;
       };
+  editorialRating?: T;
+  ratingCount?: T;
+  ratingSum?: T;
+  ratingScore?: T;
   provenance?: T;
   author?: T;
   sourceAttribution?:
@@ -1209,6 +1252,17 @@ export interface SubmissionsSelect<T extends boolean = true> {
   submittedBy?: T;
   submitterEmail?: T;
   reviewNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ratings_select".
+ */
+export interface RatingsSelect<T extends boolean = true> {
+  recipe?: T;
+  userId?: T;
+  stars?: T;
   updatedAt?: T;
   createdAt?: T;
 }

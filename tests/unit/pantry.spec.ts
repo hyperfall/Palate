@@ -59,13 +59,21 @@ describe('bandRecipes', () => {
     expect(b.almost.map((r) => r.recipe)).toEqual(['one'])
     expect(b.gettingThere.map((r) => r.recipe)).toEqual(['three', 'bigger-shop'])
   })
-  it('ranks within the full result by missing asc then match ratio desc', () => {
-    // m2-high: required 8, covered 6 -> ratio .75 ; m2-low: required 4, covered 2 -> ratio .5
+  it('ranks by overlap (uses more of your ingredients) first, then fewest-missing', () => {
+    // usedCount: high 6, mid 3, low 2 — overlap dominates even though `mid` is
+    // missing fewer items than `high`.
     const b = bandRecipes([
-      scored('m2-high', ['a', 'b'], 6, 8),
-      scored('m1', ['a'], 3),
-      scored('m2-low', ['a', 'b'], 2, 4),
+      scored('high', ['a', 'b'], 6, 8),
+      scored('mid', ['a'], 3),
+      scored('low', ['a', 'b'], 2, 4),
     ])
-    expect(b.almost.map((r) => r.recipe)).toEqual(['m1', 'm2-high', 'm2-low'])
+    expect(b.almost.map((r) => r.recipe)).toEqual(['high', 'mid', 'low'])
+  })
+  it('breaks equal overlap by fewest-missing', () => {
+    const b = bandRecipes([
+      scored('far', ['a', 'b', 'c', 'd'], 3), // used 3, missing 4
+      scored('near', ['a', 'b', 'c'], 3), // used 3, missing 3
+    ])
+    expect(b.gettingThere.map((r) => r.recipe)).toEqual(['near', 'far'])
   })
 })

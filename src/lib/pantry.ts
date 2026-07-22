@@ -90,7 +90,15 @@ export function bandRecipes<R>(scored: Scored<R>[]): Bands<R> {
     // cap on how many it's missing, because real recipes carry 8–12 ingredients
     // and the ranking (fewest-missing first) already surfaces the closest ones.
     .filter((s) => s.missing.length === 0 || s.usedCount >= 2)
-    .sort((a, b) => a.missing.length - b.missing.length || ratio(b) - ratio(a))
+    // Overlap first: the more of the cook's own ingredients a recipe uses, the
+    // more relevant it is (their mental model — add an ingredient, the dishes
+    // that use it rise). Ties break toward fewest-missing, then best coverage.
+    .sort(
+      (a, b) =>
+        b.usedCount - a.usedCount ||
+        a.missing.length - b.missing.length ||
+        ratio(b) - ratio(a),
+    )
 
   return {
     cookNow: shown.filter((s) => s.missing.length === 0),

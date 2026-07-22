@@ -24,7 +24,7 @@ function parseTime(raw: string | string[] | undefined): number | null {
 }
 
 /** Band section — hidden entirely when empty, so an unused band leaves no gap. */
-function Band({ title, items }: { title: string; items: Scored<Recipe>[] }) {
+function Band({ title, items, haveCount }: { title: string; items: Scored<Recipe>[]; haveCount: number }) {
   if (items.length === 0) return null
   return (
     <section>
@@ -33,16 +33,17 @@ function Band({ title, items }: { title: string; items: Scored<Recipe>[] }) {
         {items.map((s) => (
           <div key={s.recipe.id}>
             <RecipeCard recipe={s.recipe} />
-            {(s.missing.length > 0 || s.viaSub.length > 0) && (
-              <div className="mt-2 grid gap-0.5 font-mono text-[0.75rem] text-slate">
-                {s.missing.length > 0 && <p className="m-0">You’d still need: {s.missing.join(', ')}</p>}
-                {s.viaSub.map((v) => (
-                  <p key={`${v.item}-${v.sub}`} className="m-0">
-                    use {v.sub} for {v.item}
-                  </p>
-                ))}
-              </div>
-            )}
+            <div className="mt-2 grid gap-0.5 font-mono text-[0.75rem] text-slate">
+              <p className="m-0 text-flame">
+                Uses {s.usedCount} of your {haveCount}
+              </p>
+              {s.missing.length > 0 && <p className="m-0">You’d still need: {s.missing.join(', ')}</p>}
+              {s.viaSub.map((v) => (
+                <p key={`${v.item}-${v.sub}`} className="m-0">
+                  use {v.sub} for {v.item}
+                </p>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -115,9 +116,9 @@ export default async function CookFromPage({
             </p>
           ) : (
             <div className="grid gap-10">
-              <Band title="Cook now" items={bands.cookNow} />
-              <Band title="One or two away" items={bands.almost} />
-              <Band title="Getting there" items={bands.gettingThere} />
+              <Band title="Cook now" items={bands.cookNow} haveCount={have.length} />
+              <Band title="One or two away" items={bands.almost} haveCount={have.length} />
+              <Band title="Getting there" items={bands.gettingThere} haveCount={have.length} />
             </div>
           )}
         </div>

@@ -17,17 +17,35 @@ type Props = {
   /** Listen for window-level paste while mounted. */
   acceptPaste?: boolean
   compact?: boolean
+  /**
+   * Opt-in quality gate: the recommended minimum usable width (in px) of the
+   * crop this image can yield. Below it we warn; well below it we block the
+   * crop and ask for a sharper photo. Omit to skip the check (e.g. avatars).
+   */
+  minResolution?: number
 }
 
 const OUT_WIDTH = 1600 // longest useful edge for the media pipeline
 
-export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = true, compact }: Props) {
+/** Quality read on a loaded source, given the crop aspect and the min target. */
+type Quality = { level: 'ok' | 'warn' | 'block'; w: number; h: number }
+
+export function ImagePicker({
+  aspect,
+  round,
+  onCropped,
+  onClear,
+  acceptPaste = true,
+  compact,
+  minResolution,
+}: Props) {
   const [rawUrl, setRawUrl] = useState<string | null>(null)
   const [doneUrl, setDoneUrl] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const [dragOver, setDragOver] = useState(false)
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null)
+  const [quality, setQuality] = useState<Quality | null>(null)
 
   const frameRef = useRef<HTMLDivElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -42,6 +60,7 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
     })
     setDoneUrl(null)
     setDims(null)
+    setQuality(null)
     setZoom(1)
     setOffset({ x: 0, y: 0 })
   }, [])
@@ -99,6 +118,7 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
   )
 
   const applyCrop = () => {
+    if (quality?.level === 'block') return
     const frame = frameRef.current
     const img = imgRef.current
     if (!frame || !img?.naturalWidth) return
@@ -135,6 +155,7 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
     if (rawUrl) URL.revokeObjectURL(rawUrl)
     setRawUrl(null)
     setDoneUrl(null)
+    setQuality(null)
     onClear?.()
   }
 
@@ -196,6 +217,15 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
                 frame.clientHeight / img.naturalHeight,
               )
               setDims({ w: img.naturalWidth * base, h: img.naturalHeight * base })
+
+              if (minResolution) {
+                // Best crop this source can yield at the target aspect (no
+                // zoom-in) — the honest ceiling on sharpness.
+                const effective = Math.min(img.naturalWidth, Math.round(img.naturalHeight * aspect))
+                const level: Quality['level'] =
+                  effective < minResolution * 0.6 ? 'block' : effective < minResolution ? 'warn' : 'ok'
+                setQuality({ level, w: img.naturalWidth, h: img.naturalHeight })
+              }
             }}
             className="absolute top-1/2 left-1/2 max-w-none"
             style={{
@@ -206,6 +236,20 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
             }}
           />
         </div>
+
+        {quality && quality.level !== 'ok' && (
+          <p
+            role={quality.level === 'block' ? 'alert' : 'status'}
+            className={`m-0 text-[0.8125rem] leading-snug ${
+              quality.level === 'block' ? 'text-heat' : 'text-slate'
+            }`}
+          >
+            {quality.level === 'block'
+              ? `This photo is only ${quality.w}×${quality.h}px — too small to stay sharp on the recipe page. Please choose one at least ${minResolution}px wide.`
+              : `Heads up: at ${quality.w}×${quality.h}px this may look a little soft. A photo ${minResolution}px+ wide looks best — or use it anyway if it's your best shot.`}
+          </p>
+        )}
+
         <div className="flex items-center gap-3">
           <input
             type="range"
@@ -221,7 +265,12 @@ export function ImagePicker({ aspect, round, onCropped, onClear, acceptPaste = t
             }}
             className="w-32 accent-(--color-flame)"
           />
-          <button type="button" onClick={applyCrop} className="btn-primary !px-4 !py-1.5">
+          <button
+            type="button"
+            onClick={applyCrop}
+            disabled={quality?.level === 'block'}
+            className="btn-primary !px-4 !py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             Use photo
           </button>
           <button

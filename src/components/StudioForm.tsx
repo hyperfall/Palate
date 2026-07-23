@@ -318,6 +318,7 @@ export function StudioForm({
             key={pickerKey}
             compact
             aspect={4 / 3}
+            minResolution={1200}
             onCropped={(file, url) => {
               setPhoto(file)
               setPhotoUrl((prev) => {

@@ -118,14 +118,19 @@ export function computeNutrition(rows: NutritionRow[], servings: number): Nutrit
   let carbs = 0
   let fat = 0
   let usable = 0
+  // Denominator is rows that STATE an amount — a no-quantity garnish ("spring
+  // onion, to serve") is inherently unpriceable and shouldn't count against
+  // coverage. So coverage = "of ingredients with an amount, how many we priced".
+  let quantified = 0
 
   for (const row of rows) {
+    const qty = parseQuantity(row.quantity)
+    if (qty == null || qty <= 0) continue
+    quantified++
+
     const ing = row.ingredient
     const n = ing?.nutrition
     if (!ing || !n || n.kcalPer100g == null) continue
-
-    const qty = parseQuantity(row.quantity)
-    if (qty == null || qty <= 0) continue
 
     const grams = toGrams(qty, row.unit, ing)
     if (grams == null || grams <= 0) continue
@@ -140,9 +145,9 @@ export function computeNutrition(rows: NutritionRow[], servings: number): Nutrit
 
   const s = Math.max(1, Math.round(servings) || 1)
   return {
-    total: rows.length,
+    total: quantified,
     usable,
-    coverage: rows.length ? usable / rows.length : 0,
+    coverage: quantified ? usable / quantified : 0,
     perServing: {
       calories: Math.round(kcal / s),
       protein: Math.round(protein / s),

@@ -82,11 +82,11 @@ export const INGREDIENT_NUTRITION: Record<string, IngNut> = {
   beansprout: { kcal: 30, protein: 3, carbs: 6, fat: 0.2 },
   'green papaya': { kcal: 43, protein: 0.5, carbs: 11, fat: 0.3 },
   'pomegranate seed': { kcal: 83, protein: 1.7, carbs: 19, fat: 1.2 },
-  shiitake: { kcal: 34, protein: 2.2, carbs: 7, fat: 0.5 },
-  'shiitake mushroom': { kcal: 34, protein: 2.2, carbs: 7, fat: 0.5 },
+  shiitake: { kcal: 296, protein: 10, carbs: 64, fat: 1, gramsPerPiece: 4 }, // dried, per cap
+  'shiitake mushroom': { kcal: 34, protein: 2.2, carbs: 7, fat: 0.5, gramsPerPiece: 19 }, // fresh
   kimchi: { kcal: 15, protein: 1.1, carbs: 2.4, fat: 0.5 },
   'green curry paste': { kcal: 120, protein: 3, carbs: 15, fat: 5 },
-  'chipotles in adobo': { kcal: 50, protein: 2, carbs: 10, fat: 1 },
+  'chipotles in adobo': { kcal: 50, protein: 2, carbs: 10, fat: 1, gramsPerPiece: 15 },
 
   // — condiments, sauces, sweeteners (sugars often measured by volume) —
   'soy sauce': { kcal: 53, protein: 8, carbs: 5, fat: 0.6, densityGPerMl: 1.15 },

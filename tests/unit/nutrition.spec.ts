@@ -66,9 +66,11 @@ describe('computeNutrition', () => {
       { quantity: '2', unit: 'g', ingredient: {} }, // no nutrition data
     ]
     const r = computeNutrition(partial, 2)
-    expect(r.total).toBe(6)
+    // "a pinch" has no amount, so it's excluded from the denominator entirely;
+    // the two other rows state amounts but can't be priced.
+    expect(r.total).toBe(5)
     expect(r.usable).toBe(3)
-    expect(r.coverage).toBeCloseTo(0.5, 5)
+    expect(r.coverage).toBeCloseTo(0.6, 5)
   })
 
   it('treats zero/blank servings as 1', () => {

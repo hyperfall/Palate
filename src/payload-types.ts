@@ -479,27 +479,6 @@ export interface Ingredient {
    * Discrete items (eggs, cloves).
    */
   countable?: boolean | null;
-  /**
-   * Optional — enables weight⇄volume for tsp/tbsp/ml/cup. Defaults to ~1 (water) when blank.
-   */
-  densityGPerMl?: number | null;
-  /**
-   * Average grams for one piece — 1 egg ≈ 50, 1 clove garlic ≈ 3, 1 onion ≈ 110. Enables count / “no unit” quantities in nutrition.
-   */
-  gramsPerPiece?: number | null;
-  /**
-   * Per 100g (USDA). Powers recipe calorie/macro estimates — leave blank and the recipe just skips this ingredient.
-   */
-  nutrition?: {
-    kcalPer100g?: number | null;
-    proteinPer100g?: number | null;
-    carbsPer100g?: number | null;
-    fatPer100g?: number | null;
-    /**
-     * USDA food matched at seed time.
-     */
-    source?: string | null;
-  };
   substitutions?:
     | {
         sub?: (number | null) | Ingredient;
@@ -516,6 +495,24 @@ export interface Ingredient {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Optional — enables weight⇄volume for tsp/tbsp/ml/cup. Defaults to ~1 (water) when blank.
+   */
+  densityGPerMl?: number | null;
+  /**
+   * Average grams for one piece — 1 egg ≈ 50, 1 clove garlic ≈ 3, 1 onion ≈ 110. Enables count / “no unit” quantities.
+   */
+  gramsPerPiece?: number | null;
+  nutrition?: {
+    kcalPer100g?: number | null;
+    proteinPer100g?: number | null;
+    carbsPer100g?: number | null;
+    fatPer100g?: number | null;
+    /**
+     * USDA food matched at seed time.
+     */
+    source?: string | null;
+  };
   needsReview?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -1193,6 +1190,16 @@ export interface IngredientsSelect<T extends boolean = true> {
   aliases?: T;
   category?: T;
   countable?: T;
+  substitutions?:
+    | T
+    | {
+        sub?: T;
+        subText?: T;
+        kind?: T;
+        ratio?: T;
+        note?: T;
+        id?: T;
+      };
   densityGPerMl?: T;
   gramsPerPiece?: T;
   nutrition?:
@@ -1203,16 +1210,6 @@ export interface IngredientsSelect<T extends boolean = true> {
         carbsPer100g?: T;
         fatPer100g?: T;
         source?: T;
-      };
-  substitutions?:
-    | T
-    | {
-        sub?: T;
-        subText?: T;
-        kind?: T;
-        ratio?: T;
-        note?: T;
-        id?: T;
       };
   needsReview?: T;
   updatedAt?: T;

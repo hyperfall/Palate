@@ -533,7 +533,9 @@ export function StudioForm({
             <img src={photoUrl} alt="" className="aspect-[4/3] w-full object-cover opacity-60" />
           ) : (
             <div className="grid aspect-[4/3] w-full place-items-center bg-pan-deep">
-              <span className="font-mono text-[0.8125rem] text-milk/50">your photo lands here</span>
+              <span className="rounded-sm border border-dashed border-milk/25 px-4 py-2 font-mono text-[0.75rem] tracking-[0.06em] text-milk/50 uppercase">
+                your photo lands here
+              </span>
             </div>
           )}
           <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-pan-deep/90 to-transparent p-5">

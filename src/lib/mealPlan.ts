@@ -92,32 +92,63 @@ export function weeklyCost(
 /** Monday-first day labels; a plan entry's `day` is 0 (Mon) … 6 (Sun). */
 export const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
+/** Meal slots within a day, in the order they're served. */
+export const MEAL_ORDER = ['breakfast', 'lunch', 'dinner'] as const
+export type MealType = (typeof MEAL_ORDER)[number]
+export const MEAL_LABELS: Record<MealType, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  dinner: 'Dinner',
+}
+/** An entry with no/unknown meal is treated as dinner (the default plan slot). */
+export const normalizeMeal = (m?: string | null): MealType =>
+  (MEAL_ORDER as readonly string[]).includes(m ?? '') ? (m as MealType) : 'dinner'
+
 export type WeekDish = { slug: string; title: string; image: string | null }
-export type WeekDaySlot = { day: number; dishes: WeekDish[] }
+export type WeekMeal = { meal: MealType; dishes: WeekDish[] }
+/** A day carries only the meals that actually have dishes, in MEAL_ORDER. */
+export type WeekDaySlot = { day: number; meals: WeekMeal[] }
 export type WeekSnapshot = {
   title: string | null
   weekOf: string | null
   days: WeekDaySlot[]
 }
 
-/** Group flat plan entries into a fixed 7-day snapshot (Mon…Sun), each day's
- *  dishes ordered by position. Out-of-range days are dropped. */
+/** Group flat plan entries into a fixed 7-day snapshot (Mon…Sun) → meals →
+ *  dishes, everything ordered (day, then MEAL_ORDER, then position). Out-of-range
+ *  days are dropped; a day with no dishes is an empty `meals: []`. */
 export function buildWeekSnapshot(
-  entries: Array<{ day: number; slug: string; title: string; image: string | null; position: number }>,
+  entries: Array<{
+    day: number
+    meal?: string | null
+    slug: string
+    title: string
+    image: string | null
+    position: number
+  }>,
   meta: { title?: string | null; weekOf?: string | null } = {},
 ): WeekSnapshot {
-  const byDay = new Map<number, WeekDish[]>()
+  const byDay = new Map<number, Map<MealType, WeekDish[]>>()
   for (const e of [...entries].sort((a, b) => a.day - b.day || a.position - b.position)) {
     if (e.day < 0 || e.day > 6) continue
-    if (!byDay.has(e.day)) byDay.set(e.day, [])
-    byDay.get(e.day)!.push({ slug: e.slug, title: e.title, image: e.image })
+    const meal = normalizeMeal(e.meal)
+    if (!byDay.has(e.day)) byDay.set(e.day, new Map())
+    const meals = byDay.get(e.day)!
+    if (!meals.has(meal)) meals.set(meal, [])
+    meals.get(meal)!.push({ slug: e.slug, title: e.title, image: e.image })
   }
   return {
     title: meta.title ?? null,
     weekOf: meta.weekOf ?? null,
-    days: Array.from({ length: 7 }, (_, day) => ({ day, dishes: byDay.get(day) ?? [] })),
+    days: Array.from({ length: 7 }, (_, day) => {
+      const meals = byDay.get(day)
+      return {
+        day,
+        meals: meals ? MEAL_ORDER.filter((m) => meals.has(m)).map((m) => ({ meal: m, dishes: meals.get(m)! })) : [],
+      }
+    }),
   }
 }
 
 export const weekDishCount = (w: WeekSnapshot): number =>
-  w.days.reduce((n, d) => n + d.dishes.length, 0)
+  w.days.reduce((n, d) => n + d.meals.reduce((k, m) => k + m.dishes.length, 0), 0)

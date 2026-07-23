@@ -1,5 +1,5 @@
 import { SITE } from '@/lib/site'
-import { WEEK_DAY_LABELS, weekDishCount, type WeekSnapshot } from '@/lib/mealPlan'
+import { MEAL_LABELS, WEEK_DAY_LABELS, weekDishCount, type WeekSnapshot } from '@/lib/mealPlan'
 
 /**
  * The shareable "week card" — a menu-style rendering of a planned week in the
@@ -36,7 +36,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
       {/* The seven days as menu lines */}
       <ol className="m-0 grid list-none gap-0 p-0">
         {week.days.map((slot) => {
-          const empty = slot.dishes.length === 0
+          const empty = slot.meals.length === 0
           return (
             <li
               key={slot.day}
@@ -55,31 +55,40 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
                   — open —
                 </span>
               ) : (
-                <div className="grid gap-3">
-                  {slot.dishes.map((dish, i) => (
-                    <div key={`${dish.slug}-${i}`} className="flex items-center gap-3.5">
-                      {dish.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element -- same-origin; export needs a plain <img>
-                        <img
-                          src={dish.image}
-                          alt=""
-                          width={52}
-                          height={52}
-                          className="h-[52px] w-[52px] shrink-0 rounded-md border border-rule object-cover"
-                          style={{ height: 52, width: 52 }}
-                        />
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-md border border-dashed border-rule bg-wash text-slate/40"
-                          style={{ height: 52, width: 52 }}
-                        >
-                          ◵
-                        </span>
-                      )}
-                      <span className="font-display text-[1.25rem] leading-tight text-ink">
-                        {dish.title}
-                      </span>
+                <div className="grid gap-3.5">
+                  {slot.meals.map((meal) => (
+                    <div key={meal.meal}>
+                      <p className="m-0 font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-slate uppercase">
+                        {MEAL_LABELS[meal.meal]}
+                      </p>
+                      <div className="mt-1.5 grid gap-2.5">
+                        {meal.dishes.map((dish, i) => (
+                          <div key={`${dish.slug}-${i}`} className="flex items-center gap-3">
+                            {dish.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- same-origin; export needs a plain <img>
+                              <img
+                                src={dish.image}
+                                alt=""
+                                width={44}
+                                height={44}
+                                className="h-[44px] w-[44px] shrink-0 rounded-md border border-rule object-cover"
+                                style={{ height: 44, width: 44 }}
+                              />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-md border border-dashed border-rule bg-wash text-slate/40"
+                                style={{ height: 44, width: 44 }}
+                              >
+                                ◵
+                              </span>
+                            )}
+                            <span className="font-display text-[1.1875rem] leading-tight text-ink">
+                              {dish.title}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -9,15 +9,17 @@ import { loadPlannedRecipes } from '@/lib/planData'
 import { findRecipeBySlug } from '@/lib/queries'
 import { supabaseServer } from '@/lib/supabase/server'
 
-/** Mon…Sun demo week (one day left open) for previewing the card look. */
-const SAMPLE_SLUGS = [
-  'weeknight-shakshuka',
-  'butter-chicken',
-  'smashed-cucumber-salad',
-  'oyakodon',
-  'bibimbap-with-gochujang-sauce',
-  '',
-  'som-tam',
+/** Demo week for previewing the card: meals split, a two-dish dinner, an open
+ *  day. (day 0=Mon…6=Sun) */
+const SAMPLE: Array<{ day: number; meal: string; slug: string }> = [
+  { day: 0, meal: 'breakfast', slug: 'weeknight-shakshuka' },
+  { day: 0, meal: 'dinner', slug: 'butter-chicken' },
+  { day: 1, meal: 'dinner', slug: 'smashed-cucumber-salad' },
+  { day: 2, meal: 'dinner', slug: 'oyakodon' },
+  { day: 2, meal: 'dinner', slug: 'mapo-tofu' },
+  { day: 3, meal: 'dinner', slug: 'bibimbap-with-gochujang-sauce' },
+  { day: 4, meal: 'lunch', slug: 'som-tam' },
+  { day: 6, meal: 'dinner', slug: 'chana-masala' },
 ]
 
 export const dynamic = 'force-dynamic'
@@ -35,17 +37,17 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
   // auth/cloud-gated). Builds a week from real catalog recipes.
   if (token === 'sample') {
     const entries = []
-    for (let day = 0; day < SAMPLE_SLUGS.length; day++) {
-      const slug = SAMPLE_SLUGS[day]
-      if (!slug) continue
-      const recipe = await findRecipeBySlug(slug)
+    for (let i = 0; i < SAMPLE.length; i++) {
+      const s = SAMPLE[i]
+      const recipe = await findRecipeBySlug(s.slug)
       if (!recipe) continue
       entries.push({
-        day,
-        slug,
+        day: s.day,
+        meal: s.meal,
+        slug: s.slug,
         title: recipe.title,
         image: imageFrom(recipe.heroImage, 'card')?.url ?? null,
-        position: 0,
+        position: i,
       })
     }
     const week = buildWeekSnapshot(entries, { title: 'A week on Palate', weekOf: 'Week of 21 July' })

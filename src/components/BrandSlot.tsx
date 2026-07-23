@@ -79,7 +79,7 @@ export function BrandSlot({ recipeSlug }: { recipeSlug: string }) {
             </div>
 
             <a
-              href={card.ctaUrl}
+              href={`/brand-slot/click?card=${encodeURIComponent(String(card.id))}&recipe=${encodeURIComponent(recipeSlug)}`}
               rel="sponsored nofollow noopener"
               target="_blank"
               className="mt-4 inline-block rounded border border-ink px-4 py-2 font-mono text-[0.8125rem] font-semibold tracking-[0.08em] text-ink uppercase no-underline transition-colors hover:bg-ink hover:text-paper"

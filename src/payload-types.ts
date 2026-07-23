@@ -75,6 +75,7 @@ export interface Config {
     media: Media;
     submissions: Submission;
     partnerRequests: PartnerRequest;
+    adEvents: AdEvent;
     ratings: Rating;
     users: User;
     'payload-kv': PayloadKv;
@@ -92,6 +93,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
     partnerRequests: PartnerRequestsSelect<false> | PartnerRequestsSelect<true>;
+    adEvents: AdEventsSelect<false> | AdEventsSelect<true>;
     ratings: RatingsSelect<false> | RatingsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -611,9 +613,13 @@ export interface BrandCard {
    */
   assignedRecipes?: (number | Recipe)[] | null;
   /**
-   * Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50). Accrual/payout needs impression tracking — not live yet.
+   * Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50).
    */
   revSharePercent?: number | null;
+  /**
+   * Revenue in cents per 1,000 impressions (CPM). Drives estimated creator earnings. 0 until a real rate is agreed with the partner.
+   */
+  cpmCents?: number | null;
   /**
    * Relative share of impressions in the rotation. 2 is shown twice as often as 1. 0 disables without deactivating.
    */
@@ -935,6 +941,20 @@ export interface PartnerRequest {
   createdAt: string;
 }
 /**
+ * Impression/click log behind creator earnings. Written automatically.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adEvents".
+ */
+export interface AdEvent {
+  id: number;
+  kind: 'impression' | 'click';
+  brandCard: number | BrandCard;
+  recipe: number | Recipe;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Community star ratings — one per user per recipe. Written by the rate endpoint; the recipe’s average is kept in sync there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1006,6 +1026,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'partnerRequests';
         value: number | PartnerRequest;
+      } | null)
+    | ({
+        relationTo: 'adEvents';
+        value: number | AdEvent;
       } | null)
     | ({
         relationTo: 'ratings';
@@ -1217,6 +1241,7 @@ export interface BrandCardsSelect<T extends boolean = true> {
   assignedCuisines?: T;
   assignedRecipes?: T;
   revSharePercent?: T;
+  cpmCents?: T;
   weight?: T;
   active?: T;
   startsAt?: T;
@@ -1386,6 +1411,17 @@ export interface PartnerRequestsSelect<T extends boolean = true> {
   status?: T;
   scaffoldedCard?: T;
   reviewNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adEvents_select".
+ */
+export interface AdEventsSelect<T extends boolean = true> {
+  kind?: T;
+  brandCard?: T;
+  recipe?: T;
   updatedAt?: T;
   createdAt?: T;
 }

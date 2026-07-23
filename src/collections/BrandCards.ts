@@ -103,7 +103,17 @@ export const BrandCards: CollectionConfig = {
               max: 100,
               admin: {
                 description:
-                  'Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50). Accrual/payout needs impression tracking — not live yet.',
+                  'Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50).',
+              },
+            },
+            {
+              name: 'cpmCents',
+              type: 'number',
+              defaultValue: 0,
+              min: 0,
+              admin: {
+                description:
+                  'Revenue in cents per 1,000 impressions (CPM). Drives estimated creator earnings. 0 until a real rate is agreed with the partner.',
               },
             },
           ],

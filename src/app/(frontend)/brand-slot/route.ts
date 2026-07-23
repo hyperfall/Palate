@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { logImpressions } from '@/lib/adEvents'
 import { resolveBrandCardsForRecipe } from '@/lib/brandCards/resolve'
 import { findRecipeBySlug } from '@/lib/queries'
 import { imageFrom } from '@/lib/media'
@@ -34,6 +35,14 @@ export async function GET(request: NextRequest) {
   }
 
   const cards = await resolveBrandCardsForRecipe(recipe)
+
+  // A served card is an impression. Best-effort — never blocks or breaks the slot.
+  if (cards.length > 0) {
+    await logImpressions(
+      recipe.id,
+      cards.map((c) => c.id),
+    )
+  }
 
   return NextResponse.json(
     {

@@ -6,6 +6,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { AdEvents } from './collections/AdEvents'
 import { Authors } from './collections/Authors'
 import { BrandCards } from './collections/BrandCards'
 import { Cuisines } from './collections/Cuisines'
@@ -46,7 +47,7 @@ export default buildConfig({
       titleSuffix: ' — Recipe platform',
     },
   },
-  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, Ratings, Users],
+  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, AdEvents, Ratings, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

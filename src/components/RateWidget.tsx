@@ -17,11 +17,19 @@ export function RateWidget({
   recipeId,
   initialAverage,
   initialCount,
+  tone = 'light',
 }: {
   recipeId: number
   initialAverage: number
   initialCount: number
+  /** 'dark' adapts the text/stars for the dark hero over the photo. */
+  tone?: 'light' | 'dark'
 }) {
+  const dark = tone === 'dark'
+  const labelCls = dark ? 'text-milk/85' : ''
+  const mutedCls = dark ? 'text-milk/70' : 'text-slate'
+  const emptyStarCls = dark ? 'text-milk/30 hover:text-flame/70' : 'text-rule hover:text-flame/60'
+  const communityCls = dark ? 'text-milk/60' : 'text-slate/80'
   const supabase = supabaseBrowser()
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
   const [average, setAverage] = useState(initialAverage)
@@ -90,7 +98,7 @@ export function RateWidget({
 
   return (
     <div className="grid gap-2">
-      <p className="eyebrow m-0">Rate this recipe</p>
+      <p className={`eyebrow m-0 ${labelCls}`}>Rate this recipe</p>
 
       {signedIn ? (
         <>
@@ -111,7 +119,7 @@ export function RateWidget({
                   onBlur={() => setHover(null)}
                   onClick={() => void submit(star)}
                   className={`cursor-pointer border-none bg-transparent p-0 text-[1.75rem] leading-none transition-colors disabled:cursor-default ${
-                    star <= shown ? 'text-flame' : 'text-rule hover:text-flame/60'
+                    star <= shown ? 'text-flame' : emptyStarCls
                   }`}
                 >
                   ★
@@ -119,14 +127,14 @@ export function RateWidget({
               )
             })}
           </div>
-          <p className="m-0 font-mono text-[0.75rem] text-slate">
+          <p className={`m-0 font-mono text-[0.75rem] ${mutedCls}`}>
             {yourStars
               ? `You rated this ${yourStars}★.`
               : hasRatings
                 ? 'Tap a star to add your rating.'
                 : 'Be the first to rate this.'}{' '}
             {hasRatings && (
-              <span className="text-slate/80">
+              <span className={communityCls}>
                 Community: {average.toFixed(1)}★ ({count})
               </span>
             )}
@@ -138,9 +146,9 @@ export function RateWidget({
           {hasRatings ? (
             <StarRating value={average} count={count} size="lg" />
           ) : (
-            <p className="m-0 font-mono text-[0.8125rem] text-slate">No ratings yet.</p>
+            <p className={`m-0 font-mono text-[0.8125rem] ${mutedCls}`}>No ratings yet.</p>
           )}
-          <p className="m-0 font-mono text-[0.75rem] text-slate">
+          <p className={`m-0 font-mono text-[0.75rem] ${mutedCls}`}>
             <Link href="/account" className="text-flame no-underline hover:underline">
               Sign in
             </Link>{' '}

@@ -13,7 +13,6 @@ import { ProvenanceBadge } from '@/components/ProvenanceBadge'
 import { RateWidget } from '@/components/RateWidget'
 import { RecipeCard } from '@/components/RecipeCard'
 import { RecipeJsonLd } from '@/components/RecipeJsonLd'
-import { StarRating } from '@/components/StarRating'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { formatMinutes, formatTimer } from '@/lib/format'
@@ -134,12 +133,6 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   <span className="eyebrow mr-2 text-milk/80">Difficulty</span>
                   {recipe.difficulty}
                 </span>
-                {ratingCount > 0 && (
-                  <span className="datum text-milk">
-                    <span className="eyebrow mr-2 text-milk/80">Rated</span>
-                    <StarRating value={communityAverage} count={ratingCount} />
-                  </span>
-                )}
                 <CookModeLauncher
                   title={recipe.title}
                   steps={buildCookSteps(
@@ -166,6 +159,15 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   slug={recipe.slug}
                   title={recipe.title}
                   image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
+                />
+              </div>
+
+              <div className="mt-5 max-w-[22rem]">
+                <RateWidget
+                  recipeId={recipe.id}
+                  initialAverage={communityAverage}
+                  initialCount={ratingCount}
+                  tone="dark"
                 />
               </div>
             </div>
@@ -239,13 +241,6 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              <div className="mt-5 border-t border-rule pt-4">
-                <RateWidget
-                  recipeId={recipe.id}
-                  initialAverage={communityAverage}
-                  initialCount={ratingCount}
-                />
-              </div>
             </div>
           </div>
         </section>

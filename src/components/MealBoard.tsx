@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { MEAL_LABELS, MEAL_ORDER, normalizeMeal } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
-type BoardEntry = { id: string; day: number; slug: string; title: string; image: string | null }
+type BoardEntry = { id: string; day: number; meal: string; slug: string; title: string; image: string | null }
 
 /** The weekly board: recipes per day, each removable. Deletes write to Supabase. */
 export function MealBoard({ entries }: { entries: BoardEntry[] }) {
@@ -32,31 +33,42 @@ export function MealBoard({ entries }: { entries: BoardEntry[] }) {
         return (
           <div key={label} className="grid grid-cols-[3.5rem_1fr] gap-3 border-t border-rule pt-3">
             <span className="eyebrow pt-1">{label}</span>
-            <div className="grid gap-2">
+            <div className="grid gap-3">
               {dayEntries.length === 0 ? (
                 <span className="text-[0.875rem] text-slate/60">—</span>
               ) : (
-                dayEntries.map((e) => (
-                  <div key={e.id} className="flex items-center gap-3 rounded border border-rule p-2">
-                    {e.image && (
-                      // eslint-disable-next-line @next/next/no-img-element -- snapshot thumbnail
-                      <img src={e.image} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
-                    )}
-                    <Link
-                      href={`/recipes/${e.slug}`}
-                      className="min-w-0 flex-1 truncate text-[0.9375rem] no-underline hover:text-flame"
-                    >
-                      {e.title}
-                    </Link>
-                    <button
-                      type="button"
-                      disabled={busy === e.id}
-                      onClick={() => void remove(e.id)}
-                      aria-label={`Remove ${e.title}`}
-                      className="grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-slate transition-colors hover:border-heat hover:text-heat disabled:opacity-50"
-                    >
-                      ✕
-                    </button>
+                MEAL_ORDER.filter((m) => dayEntries.some((e) => normalizeMeal(e.meal) === m)).map((m) => (
+                  <div key={m}>
+                    <p className="m-0 font-mono text-[0.6875rem] font-medium tracking-[0.12em] text-slate uppercase">
+                      {MEAL_LABELS[m]}
+                    </p>
+                    <div className="mt-1.5 grid gap-2">
+                      {dayEntries
+                        .filter((e) => normalizeMeal(e.meal) === m)
+                        .map((e) => (
+                          <div key={e.id} className="flex items-center gap-3 rounded border border-rule p-2">
+                            {e.image && (
+                              // eslint-disable-next-line @next/next/no-img-element -- snapshot thumbnail
+                              <img src={e.image} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+                            )}
+                            <Link
+                              href={`/recipes/${e.slug}`}
+                              className="min-w-0 flex-1 truncate text-[0.9375rem] no-underline hover:text-flame"
+                            >
+                              {e.title}
+                            </Link>
+                            <button
+                              type="button"
+                              disabled={busy === e.id}
+                              onClick={() => void remove(e.id)}
+                              aria-label={`Remove ${e.title}`}
+                              className="grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-slate transition-colors hover:border-heat hover:text-heat disabled:opacity-50"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 ))
               )}

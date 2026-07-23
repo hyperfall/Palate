@@ -126,6 +126,8 @@ create table if not exists public.meal_plan (
   created_at timestamptz not null default now()
 );
 create index if not exists meal_plan_user_idx on public.meal_plan (user_id, day, position);
+-- Meal slot within a day (breakfast/lunch/dinner). Existing rows become dinner.
+alter table public.meal_plan add column if not exists meal text not null default 'dinner';
 
 alter table public.pantry enable row level security;
 alter table public.taste_profile enable row level security;
@@ -150,6 +152,10 @@ create table if not exists public.plan_shares (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   recipe_slugs text[] not null default '{}',
+  -- Structured week snapshot {title, weekOf, days:[{day, dishes/meals…}]} so a
+  -- shared card renders faithfully (day + meal) and stays immutable. `recipe_slugs`
+  -- is kept for back-compat with older shares.
+  week jsonb,
   created_at timestamptz not null default now()
 );
 alter table public.plan_shares enable row level security;

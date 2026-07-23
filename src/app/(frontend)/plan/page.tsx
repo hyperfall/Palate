@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { MealBoard } from '@/components/MealBoard'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
-import { consolidateShoppingList, weeklyCost } from '@/lib/mealPlan'
+import { buildWeekSnapshot, consolidateShoppingList, weeklyCost } from '@/lib/mealPlan'
 import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/planData'
 import { serverUser } from '@/lib/supabase/server'
 
@@ -66,7 +66,7 @@ export default async function PlanPage() {
         </p>
         {entries.length > 0 && (
           <div className="mt-4">
-            <SharePlan slugs={[...new Set(entries.map((e) => e.slug))]} />
+            <SharePlan week={buildWeekSnapshot(entries)} />
           </div>
         )}
       </header>

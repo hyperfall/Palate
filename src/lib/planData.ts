@@ -10,6 +10,7 @@ import type { PlanIngredient, Pantry } from './mealPlan'
 export type PlanEntry = {
   id: string
   day: number
+  meal: string
   slug: string
   title: string
   image: string | null
@@ -36,12 +37,13 @@ export async function getPlanEntries(): Promise<PlanEntry[]> {
   if (!supabase) return []
   const { data } = await supabase
     .from('meal_plan')
-    .select('id,day,recipe_slug,recipe_title,recipe_image,position')
+    .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position')
     .order('day')
     .order('position')
   return (data ?? []).map((r) => ({
     id: r.id as string,
     day: r.day as number,
+    meal: (r.meal as string | null) ?? 'dinner',
     slug: r.recipe_slug as string,
     title: r.recipe_title as string,
     image: (r.recipe_image as string | null) ?? null,

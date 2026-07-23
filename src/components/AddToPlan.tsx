@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { MEAL_LABELS, MEAL_ORDER, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
 /**
@@ -17,7 +18,8 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
   const [open, setOpen] = useState(false)
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
-  const [added, setAdded] = useState<Set<number>>(new Set())
+  const [meal, setMeal] = useState<MealType>('dinner')
+  const [added, setAdded] = useState<Set<string>>(new Set())
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -42,8 +44,8 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
     try {
       const { error } = await supabase
         .from('meal_plan')
-        .insert({ day, recipe_slug: slug, recipe_title: title, recipe_image: image })
-      if (!error) setAdded((prev) => new Set(prev).add(day))
+        .insert({ day, meal, recipe_slug: slug, recipe_title: title, recipe_image: image })
+      if (!error) setAdded((prev) => new Set(prev).add(`${day}:${meal}`))
     } finally {
       setBusy(false)
     }
@@ -67,22 +69,40 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-[16rem] rounded-md border border-ink/30 bg-card p-3.5 text-ink shadow-(--shadow-block)">
-          <p className="eyebrow m-0">Add to which day?</p>
-          <div className="mt-2.5 grid grid-cols-4 gap-1.5">
-            {WEEKDAYS.map((label, day) => (
+        <div className="absolute top-full left-0 z-50 mt-2 w-[17rem] rounded-md border border-ink/30 bg-card p-3.5 text-ink shadow-(--shadow-block)">
+          <p className="eyebrow m-0">Which meal?</p>
+          <div className="mt-2 flex gap-1.5">
+            {MEAL_ORDER.map((m) => (
               <button
-                key={label}
+                key={m}
                 type="button"
-                disabled={busy}
-                onClick={() => void add(day)}
-                data-added={added.has(day)}
-                className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.75rem] font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:text-flame"
+                onClick={() => setMeal(m)}
+                aria-pressed={meal === m}
+                className="flex-1 cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.6875rem] font-medium text-ink transition-colors hover:border-flame aria-pressed:border-flame aria-pressed:bg-flame/10 aria-pressed:text-flame"
               >
-                {added.has(day) ? '✓ ' : ''}
-                {label}
+                {MEAL_LABELS[m]}
               </button>
             ))}
+          </div>
+
+          <p className="eyebrow m-0 mt-3">Which day?</p>
+          <div className="mt-2 grid grid-cols-4 gap-1.5">
+            {WEEKDAYS.map((label, day) => {
+              const key = `${day}:${meal}`
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void add(day)}
+                  data-added={added.has(key)}
+                  className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.75rem] font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:text-flame"
+                >
+                  {added.has(key) ? '✓ ' : ''}
+                  {label}
+                </button>
+              )
+            })}
           </div>
           <Link
             href="/plan"

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { WeekCard } from '@/components/WeekCard'
-import { buildWeekSnapshot, consolidateShoppingList } from '@/lib/mealPlan'
+import { buildWeekSnapshot, consolidateShoppingList, type WeekSnapshot } from '@/lib/mealPlan'
 import { imageFrom } from '@/lib/media'
 import { loadPlannedRecipes } from '@/lib/planData'
 import { findRecipeBySlug } from '@/lib/queries'
@@ -61,8 +61,24 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
   const supabase = await supabaseServer()
   if (!supabase) notFound()
 
-  const { data } = await supabase.from('plan_shares').select('recipe_slugs').eq('id', token).maybeSingle()
+  const { data } = await supabase.from('plan_shares').select('recipe_slugs, week').eq('id', token).maybeSingle()
   if (!data) notFound()
+
+  // New shares snapshot the structured week → render the card.
+  if (data.week) {
+    return (
+      <div className="shell py-10 lg:py-14">
+        <WeekCard week={data.week as WeekSnapshot} />
+        <p className="mt-6 text-[0.9375rem] text-slate">
+          Want your own?{' '}
+          <Link href="/plan" className="text-flame underline underline-offset-4">
+            Plan your week on Palate
+          </Link>
+          .
+        </p>
+      </div>
+    )
+  }
 
   const slugs = ((data.recipe_slugs as string[] | null) ?? []).filter(Boolean)
   const recipes = await loadPlannedRecipes(slugs)

@@ -2,21 +2,29 @@
 
 import { useState } from 'react'
 
+import { weekDishCount, type WeekSnapshot } from '@/lib/mealPlan'
 import { supabaseBrowser } from '@/lib/supabase/client'
 
-/** Creates a public, read-only share link for the current week's plan/list. */
-export function SharePlan({ slugs }: { slugs: string[] }) {
+/**
+ * Creates a public, read-only share link for the week — snapshotting the full
+ * structure (day + meal + dish) so the shared card renders faithfully and stays
+ * immutable if the planner later changes their week. A flat slug list rides
+ * along for back-compat with the old reader.
+ */
+export function SharePlan({ week }: { week: WeekSnapshot }) {
   const supabase = supabaseBrowser()
   const [url, setUrl] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const empty = weekDishCount(week) === 0
 
   const share = async () => {
-    if (!supabase || busy || slugs.length === 0) return
+    if (!supabase || busy || empty) return
     setBusy(true)
     try {
+      const slugs = week.days.flatMap((d) => d.meals.flatMap((m) => m.dishes.map((dish) => dish.slug)))
       const { data, error } = await supabase
         .from('plan_shares')
-        .insert({ recipe_slugs: slugs })
+        .insert({ week, recipe_slugs: slugs })
         .select('id')
         .single()
       if (!error && data) setUrl(`${window.location.origin}/plan/shared/${data.id}`)
@@ -36,11 +44,7 @@ export function SharePlan({ slugs }: { slugs: string[] }) {
             onFocus={(e) => e.currentTarget.select()}
             className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink"
           />
-          <button
-            type="button"
-            onClick={() => void navigator.clipboard?.writeText(url)}
-            className="chip"
-          >
+          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="chip">
             Copy
           </button>
         </div>
@@ -49,12 +53,7 @@ export function SharePlan({ slugs }: { slugs: string[] }) {
   }
 
   return (
-    <button
-      type="button"
-      disabled={busy || slugs.length === 0}
-      onClick={() => void share()}
-      className="chip disabled:opacity-50"
-    >
+    <button type="button" disabled={busy || empty} onClick={() => void share()} className="chip disabled:opacity-50">
       Share this week
     </button>
   )

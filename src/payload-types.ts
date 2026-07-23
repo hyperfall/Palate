@@ -480,9 +480,26 @@ export interface Ingredient {
    */
   countable?: boolean | null;
   /**
-   * Optional — enables weight⇄volume when known.
+   * Optional — enables weight⇄volume for tsp/tbsp/ml/cup. Defaults to ~1 (water) when blank.
    */
   densityGPerMl?: number | null;
+  /**
+   * Average grams for one piece — 1 egg ≈ 50, 1 clove garlic ≈ 3, 1 onion ≈ 110. Enables count / “no unit” quantities in nutrition.
+   */
+  gramsPerPiece?: number | null;
+  /**
+   * Per 100g (USDA). Powers recipe calorie/macro estimates — leave blank and the recipe just skips this ingredient.
+   */
+  nutrition?: {
+    kcalPer100g?: number | null;
+    proteinPer100g?: number | null;
+    carbsPer100g?: number | null;
+    fatPer100g?: number | null;
+    /**
+     * USDA food matched at seed time.
+     */
+    source?: string | null;
+  };
   substitutions?:
     | {
         sub?: (number | null) | Ingredient;
@@ -1177,6 +1194,16 @@ export interface IngredientsSelect<T extends boolean = true> {
   category?: T;
   countable?: T;
   densityGPerMl?: T;
+  gramsPerPiece?: T;
+  nutrition?:
+    | T
+    | {
+        kcalPer100g?: T;
+        proteinPer100g?: T;
+        carbsPer100g?: T;
+        fatPer100g?: T;
+        source?: T;
+      };
   substitutions?:
     | T
     | {

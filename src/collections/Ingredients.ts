@@ -20,7 +20,24 @@ export const Ingredients: CollectionConfig = {
       defaultValue: 'other',
     },
     { name: 'countable', type: 'checkbox', defaultValue: false, admin: { description: 'Discrete items (eggs, cloves).' } },
-    { name: 'densityGPerMl', type: 'number', admin: { description: 'Optional — enables weight⇄volume when known.' } },
+    { name: 'densityGPerMl', type: 'number', admin: { description: 'Optional — enables weight⇄volume for tsp/tbsp/ml/cup. Defaults to ~1 (water) when blank.' } },
+    {
+      name: 'gramsPerPiece',
+      type: 'number',
+      admin: { description: 'Average grams for one piece — 1 egg ≈ 50, 1 clove garlic ≈ 3, 1 onion ≈ 110. Enables count / “no unit” quantities in nutrition.' },
+    },
+    {
+      name: 'nutrition',
+      type: 'group',
+      admin: { description: 'Per 100g (USDA). Powers recipe calorie/macro estimates — leave blank and the recipe just skips this ingredient.' },
+      fields: [
+        { name: 'kcalPer100g', type: 'number', min: 0 },
+        { name: 'proteinPer100g', type: 'number', min: 0 },
+        { name: 'carbsPer100g', type: 'number', min: 0 },
+        { name: 'fatPer100g', type: 'number', min: 0 },
+        { name: 'source', type: 'text', admin: { readOnly: true, description: 'USDA food matched at seed time.' } },
+      ],
+    },
     {
       name: 'substitutions',
       type: 'array',

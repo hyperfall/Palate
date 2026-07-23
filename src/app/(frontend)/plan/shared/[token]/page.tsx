@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { WeekCard } from '@/components/WeekCard'
+import { WeekCardActions } from '@/components/WeekCardActions'
 import { buildWeekSnapshot, consolidateShoppingList, type WeekSnapshot } from '@/lib/mealPlan'
 import { imageFrom } from '@/lib/media'
 import { loadPlannedRecipes } from '@/lib/planData'
@@ -54,6 +55,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
     return (
       <div className="shell py-10 lg:py-14">
         <WeekCard week={week} />
+        <WeekCardActions />
       </div>
     )
   }
@@ -69,7 +71,8 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
     return (
       <div className="shell py-10 lg:py-14">
         <WeekCard week={data.week as WeekSnapshot} />
-        <p className="mt-6 text-[0.9375rem] text-slate">
+        <WeekCardActions />
+        <p className="no-print mt-6 text-center text-[0.9375rem] text-slate">
           Want your own?{' '}
           <Link href="/plan" className="text-flame underline underline-offset-4">
             Plan your week on Palate

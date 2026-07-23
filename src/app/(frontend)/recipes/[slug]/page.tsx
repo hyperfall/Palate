@@ -257,7 +257,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         */}
         <div
           id="method"
-          className="shell grid scroll-mt-20 gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] lg:justify-center 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,52rem)] 2xl:gap-x-20"
+          className="shell grid scroll-mt-20 gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,52rem)] 2xl:gap-x-20"
         >
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <IngredientsPanel

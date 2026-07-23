@@ -2,9 +2,23 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { consolidateShoppingList } from '@/lib/mealPlan'
+import { WeekCard } from '@/components/WeekCard'
+import { buildWeekSnapshot, consolidateShoppingList } from '@/lib/mealPlan'
+import { imageFrom } from '@/lib/media'
 import { loadPlannedRecipes } from '@/lib/planData'
+import { findRecipeBySlug } from '@/lib/queries'
 import { supabaseServer } from '@/lib/supabase/server'
+
+/** Mon…Sun demo week (one day left open) for previewing the card look. */
+const SAMPLE_SLUGS = [
+  'weeknight-shakshuka',
+  'butter-chicken',
+  'smashed-cucumber-salad',
+  'oyakodon',
+  'bibimbap-with-gochujang-sauce',
+  '',
+  'som-tam',
+]
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +30,32 @@ export const metadata: Metadata = {
 /** Public, read-only view of a shared week — anyone with the link can see it. */
 export default async function SharedPlanPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
+
+  // Preview the card look without a real share (both /plan and real shares are
+  // auth/cloud-gated). Builds a week from real catalog recipes.
+  if (token === 'sample') {
+    const entries = []
+    for (let day = 0; day < SAMPLE_SLUGS.length; day++) {
+      const slug = SAMPLE_SLUGS[day]
+      if (!slug) continue
+      const recipe = await findRecipeBySlug(slug)
+      if (!recipe) continue
+      entries.push({
+        day,
+        slug,
+        title: recipe.title,
+        image: imageFrom(recipe.heroImage, 'card')?.url ?? null,
+        position: 0,
+      })
+    }
+    const week = buildWeekSnapshot(entries, { title: 'A week on Palate', weekOf: 'Week of 21 July' })
+    return (
+      <div className="shell py-10 lg:py-14">
+        <WeekCard week={week} />
+      </div>
+    )
+  }
+
   const supabase = await supabaseServer()
   if (!supabase) notFound()
 

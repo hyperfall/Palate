@@ -82,3 +82,42 @@ export function weeklyCost(
   }
   return { totalCents, covered, total: recipes.length }
 }
+
+// --- The shareable week snapshot -------------------------------------------
+//
+// A share must capture the week's *structure* (which dish on which day), not a
+// flat slug list, so the card renders faithfully and stays immutable even if
+// the planner later changes their week.
+
+/** Monday-first day labels; a plan entry's `day` is 0 (Mon) … 6 (Sun). */
+export const WEEK_DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+
+export type WeekDish = { slug: string; title: string; image: string | null }
+export type WeekDaySlot = { day: number; dishes: WeekDish[] }
+export type WeekSnapshot = {
+  title: string | null
+  weekOf: string | null
+  days: WeekDaySlot[]
+}
+
+/** Group flat plan entries into a fixed 7-day snapshot (Mon…Sun), each day's
+ *  dishes ordered by position. Out-of-range days are dropped. */
+export function buildWeekSnapshot(
+  entries: Array<{ day: number; slug: string; title: string; image: string | null; position: number }>,
+  meta: { title?: string | null; weekOf?: string | null } = {},
+): WeekSnapshot {
+  const byDay = new Map<number, WeekDish[]>()
+  for (const e of [...entries].sort((a, b) => a.day - b.day || a.position - b.position)) {
+    if (e.day < 0 || e.day > 6) continue
+    if (!byDay.has(e.day)) byDay.set(e.day, [])
+    byDay.get(e.day)!.push({ slug: e.slug, title: e.title, image: e.image })
+  }
+  return {
+    title: meta.title ?? null,
+    weekOf: meta.weekOf ?? null,
+    days: Array.from({ length: 7 }, (_, day) => ({ day, dishes: byDay.get(day) ?? [] })),
+  }
+}
+
+export const weekDishCount = (w: WeekSnapshot): number =>
+  w.days.reduce((n, d) => n + d.dishes.length, 0)

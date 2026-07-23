@@ -32,7 +32,7 @@ export default function PartnersPage() {
     <div className="shell py-8 lg:py-14">
       <header className="max-w-[52ch]">
         <p className="eyebrow m-0 text-flame">Advertise with us</p>
-        <h1 className="mt-1 text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.1]">
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.1]">
           Reach cooks the moment they decide.
         </h1>
         <p className="mt-3 text-[1.0625rem] leading-relaxed text-slate">

@@ -12,7 +12,7 @@ export default function AboutPage() {
     <div className="shell max-w-[68ch] py-8 lg:py-14">
       <header>
         <p className="eyebrow m-0 text-flame">About</p>
-        <h1 className="mt-1 text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.1]">
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.1]">
           Cook first. Read later, if you feel like it.
         </h1>
       </header>

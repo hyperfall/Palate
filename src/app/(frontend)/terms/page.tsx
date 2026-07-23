@@ -15,7 +15,7 @@ export default function TermsPage() {
     <div className="shell max-w-[68ch] py-8 lg:py-14">
       <header>
         <p className="eyebrow m-0 text-flame">Legal</p>
-        <h1 className="mt-1 text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.1]">Terms of Use</h1>
+        <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.1]">Terms of Use</h1>
         <p className="datum mt-2">Last updated {UPDATED}</p>
       </header>
 

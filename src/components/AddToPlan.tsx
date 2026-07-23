@@ -4,13 +4,16 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-import { MEAL_LABELS, MEAL_ORDER, type MealType } from '@/lib/mealPlan'
+import { MEAL_LABELS, MEAL_ORDER, normalizeMeal, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
+type Planned = { id: string; day: number; meal: MealType }
+
 /**
- * Add-to-week, on a recipe. Signed out (or unconfigured), routes to /account.
- * Signed in, opens a day picker; tapping a weekday inserts a meal_plan row
- * (user_id defaults to auth.uid() in the schema). Mirrors SaveRecipe.
+ * Week-aware add-to-plan on a recipe. Signed out (or unconfigured), routes to
+ * /account. Signed in, it loads where this recipe already sits in the week and
+ * lets you toggle it on/off per day + meal — so the recipe page reflects the
+ * plan rather than firing blind inserts.
  */
 export function AddToPlan({ slug, title, image }: { slug: string; title: string; image: string | null }) {
   const supabase = supabaseBrowser()
@@ -19,16 +22,23 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
   const [busy, setBusy] = useState(false)
   const [meal, setMeal] = useState<MealType>('dinner')
-  const [added, setAdded] = useState<Set<string>>(new Set())
+  const [planned, setPlanned] = useState<Planned[]>([])
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!supabase) return
     supabase.auth
       .getUser()
-      .then(({ data }) => setSignedIn(Boolean(data.user)))
+      .then(async ({ data }) => {
+        setSignedIn(Boolean(data.user))
+        if (!data.user) return
+        const { data: rows } = await supabase.from('meal_plan').select('id,day,meal').eq('recipe_slug', slug)
+        setPlanned(
+          (rows ?? []).map((r) => ({ id: r.id as string, day: r.day as number, meal: normalizeMeal(r.meal as string) })),
+        )
+      })
       .catch(() => setSignedIn(false))
-  }, [supabase])
+  }, [supabase, slug])
 
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
@@ -38,18 +48,29 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
     return () => document.removeEventListener('pointerdown', onDown)
   }, [])
 
-  const add = async (day: number) => {
+  /** Tap a day: add this recipe to (day, current meal), or remove it if already there. */
+  const toggle = async (day: number) => {
     if (!supabase || busy) return
     setBusy(true)
     try {
-      const { error } = await supabase
-        .from('meal_plan')
-        .insert({ day, meal, recipe_slug: slug, recipe_title: title, recipe_image: image })
-      if (!error) setAdded((prev) => new Set(prev).add(`${day}:${meal}`))
+      const existing = planned.find((p) => p.day === day && p.meal === meal)
+      if (existing) {
+        const { error } = await supabase.from('meal_plan').delete().eq('id', existing.id)
+        if (!error) setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
+      } else {
+        const { data, error } = await supabase
+          .from('meal_plan')
+          .insert({ day, meal, recipe_slug: slug, recipe_title: title, recipe_image: image })
+          .select('id')
+          .single()
+        if (!error && data) setPlanned((prev) => [...prev, { id: data.id as string, day, meal }])
+      }
     } finally {
       setBusy(false)
     }
   }
+
+  const inWeek = planned.length > 0
 
   return (
     <div ref={rootRef} className="relative">
@@ -62,10 +83,11 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
           }
           setOpen((v) => !v)
         }}
-        className="chip !border-milk/40 !text-milk hover:!border-flame"
+        className="chip !border-milk/40 !text-milk hover:!border-flame data-[in=true]:!border-flame data-[in=true]:!text-flame"
+        data-in={inWeek}
         aria-expanded={open}
       >
-        + Plan
+        {inWeek ? `✓ In week (${planned.length})` : '+ Plan'}
       </button>
 
       {open && (
@@ -85,25 +107,26 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
             ))}
           </div>
 
-          <p className="eyebrow m-0 mt-3">Which day?</p>
+          <p className="eyebrow m-0 mt-3">Tap a day to add or remove</p>
           <div className="mt-2 grid grid-cols-4 gap-1.5">
             {WEEKDAYS.map((label, day) => {
-              const key = `${day}:${meal}`
+              const on = planned.some((p) => p.day === day && p.meal === meal)
               return (
                 <button
                   key={label}
                   type="button"
                   disabled={busy}
-                  onClick={() => void add(day)}
-                  data-added={added.has(key)}
-                  className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.75rem] font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:text-flame"
+                  onClick={() => void toggle(day)}
+                  data-added={on}
+                  className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.75rem] font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:bg-flame/10 data-[added=true]:text-flame"
                 >
-                  {added.has(key) ? '✓ ' : ''}
+                  {on ? '✓ ' : ''}
                   {label}
                 </button>
               )
             })}
           </div>
+
           <Link
             href="/plan"
             className="mt-3 block font-mono text-[0.75rem] tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"

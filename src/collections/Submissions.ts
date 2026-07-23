@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { deriveTotalMinutes, recipeBodyFields, recipeFacetFields } from '../fields/recipeContent'
 import { slugify } from '../fields/slug'
+import { computeRecipeNutrition } from '../lib/recipeNutrition'
 
 /**
  * Design spec §5 `submissions` — DESIGNED, NOT BUILT in Phase 1.
@@ -135,6 +136,13 @@ export const Submissions: CollectionConfig = {
             status: 'published',
           } as never,
         })
+        // Estimate nutrition from the recipe's ingredients (best-effort; a
+        // low-coverage recipe just goes without rather than showing a wrong number).
+        const nutrition = await computeRecipeNutrition(payload, recipe as never).catch(() => null)
+        if (nutrition) {
+          await payload.update({ collection: 'recipes', id: recipe.id, data: { nutrition } as never, req })
+        }
+
         await payload.update({
           collection: 'submissions',
           id: doc.id,

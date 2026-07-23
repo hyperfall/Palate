@@ -15,6 +15,8 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "seed": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/run.ts",
     "import:recipes": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/run.ts",
+    "seed:nutrition": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/seedNutrition.ts",
+    "compute:nutrition": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/computeNutrition.ts",
     "images:refresh": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/refreshImages.ts",
     "images:upscale": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/upscaleImages.ts",
     "test": "npm run test:int && npm run test:e2e",

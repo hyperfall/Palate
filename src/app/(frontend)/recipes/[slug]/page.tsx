@@ -203,6 +203,26 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               ))}
             </dl>
 
+            {recipe.nutrition?.calories != null && (
+              <dl className="m-0 grid min-w-[11rem] content-start gap-2.5">
+                {[
+                  ['Calories', `${recipe.nutrition.calories} kcal`],
+                  ['Protein', `${recipe.nutrition.protein ?? 0} g`],
+                  ['Carbs', `${recipe.nutrition.carbs ?? 0} g`],
+                  ['Fat', `${recipe.nutrition.fat ?? 0} g`],
+                ].map(([label, value]) => (
+                  <div key={label} className="leader">
+                    <dt className="eyebrow">{label}</dt>
+                    <span className="leader__dots" aria-hidden="true" />
+                    <dd className="datum m-0">{value}</dd>
+                  </div>
+                ))}
+                <p className="m-0 pt-0.5 font-mono text-[0.6875rem] tracking-[0.08em] text-slate/70 uppercase">
+                  Estimated · per serving
+                </p>
+              </dl>
+            )}
+
             <div className="content-start">
               <ProvenanceBadge
                 provenance={recipe.provenance as Provenance}

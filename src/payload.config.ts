@@ -11,6 +11,7 @@ import { BrandCards } from './collections/BrandCards'
 import { Cuisines } from './collections/Cuisines'
 import { Ingredients } from './collections/Ingredients'
 import { Media } from './collections/Media'
+import { PartnerRequests } from './collections/PartnerRequests'
 import { Ratings } from './collections/Ratings'
 import { Recipes } from './collections/Recipes'
 import { Submissions } from './collections/Submissions'
@@ -45,7 +46,7 @@ export default buildConfig({
       titleSuffix: ' — Recipe platform',
     },
   },
-  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, Ratings, Users],
+  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, Ratings, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

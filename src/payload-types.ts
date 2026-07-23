@@ -74,6 +74,7 @@ export interface Config {
     brandCards: BrandCard;
     media: Media;
     submissions: Submission;
+    partnerRequests: PartnerRequest;
     ratings: Rating;
     users: User;
     'payload-kv': PayloadKv;
@@ -90,6 +91,7 @@ export interface Config {
     brandCards: BrandCardsSelect<false> | BrandCardsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
+    partnerRequests: PartnerRequestsSelect<false> | PartnerRequestsSelect<true>;
     ratings: RatingsSelect<false> | RatingsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -609,6 +611,10 @@ export interface BrandCard {
    */
   assignedRecipes?: (number | Recipe)[] | null;
   /**
+   * Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50). Accrual/payout needs impression tracking — not live yet.
+   */
+  revSharePercent?: number | null;
+  /**
    * Relative share of impressions in the rotation. 2 is shown twice as often as 1. 0 disables without deactivating.
    */
   weight: number;
@@ -887,6 +893,48 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Advertising requests from /partners. Approve to scaffold an inactive draft brand card, then add creative and activate it.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partnerRequests".
+ */
+export interface PartnerRequest {
+  id: number;
+  company: string;
+  /**
+   * Becomes the brand card’s destination (rel="sponsored nofollow").
+   */
+  website: string;
+  contactName: string;
+  contactEmail: string;
+  /**
+   * What they want to advertise — seeds the card tagline.
+   */
+  promoting: string;
+  /**
+   * ISO country codes (US, GB, KR…) they want to reach. Empty = global.
+   */
+  targetRegions?:
+    | {
+        code: string;
+        id?: string | null;
+      }[]
+    | null;
+  budgetRange?: ('under-500' | '500-2k' | '2k-10k' | '10k-plus' | 'not-sure') | null;
+  message?: string | null;
+  status: 'pending' | 'approved' | 'declined';
+  /**
+   * Draft card created on approval.
+   */
+  scaffoldedCard?: (number | null) | BrandCard;
+  /**
+   * Internal. Why this was approved or declined.
+   */
+  reviewNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Community star ratings — one per user per recipe. Written by the rate endpoint; the recipe’s average is kept in sync there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -954,6 +1002,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'submissions';
         value: number | Submission;
+      } | null)
+    | ({
+        relationTo: 'partnerRequests';
+        value: number | PartnerRequest;
       } | null)
     | ({
         relationTo: 'ratings';
@@ -1164,6 +1216,7 @@ export interface BrandCardsSelect<T extends boolean = true> {
       };
   assignedCuisines?: T;
   assignedRecipes?: T;
+  revSharePercent?: T;
   weight?: T;
   active?: T;
   startsAt?: T;
@@ -1308,6 +1361,30 @@ export interface SubmissionsSelect<T extends boolean = true> {
   moderationStatus?: T;
   submittedBy?: T;
   submitterEmail?: T;
+  reviewNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partnerRequests_select".
+ */
+export interface PartnerRequestsSelect<T extends boolean = true> {
+  company?: T;
+  website?: T;
+  contactName?: T;
+  contactEmail?: T;
+  promoting?: T;
+  targetRegions?:
+    | T
+    | {
+        code?: T;
+        id?: T;
+      };
+  budgetRange?: T;
+  message?: T;
+  status?: T;
+  scaffoldedCard?: T;
   reviewNotes?: T;
   updatedAt?: T;
   createdAt?: T;

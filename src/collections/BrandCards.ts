@@ -93,6 +93,22 @@ export const BrandCards: CollectionConfig = {
           ],
         },
         {
+          label: 'Commercials',
+          fields: [
+            {
+              name: 'revSharePercent',
+              type: 'number',
+              defaultValue: 50,
+              min: 0,
+              max: 100,
+              admin: {
+                description:
+                  'Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50). Accrual/payout needs impression tracking — not live yet.',
+              },
+            },
+          ],
+        },
+        {
           label: 'Flight',
           fields: [
             {

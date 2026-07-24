@@ -125,9 +125,12 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
           type="button"
           onClick={onClose}
           aria-label="Close shopping mode"
-          className="shrink-0 rounded-full border border-rule px-3 py-1.5 font-mono text-[0.75rem] tracking-[0.1em] text-ink uppercase hover:border-flame hover:text-flame"
+          className="flex shrink-0 items-center gap-2 rounded-full border border-rule py-1.5 pr-3 pl-2.5 text-ink transition-colors hover:border-flame hover:text-flame"
         >
-          Done
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+          <span className="font-mono text-[0.75rem] tracking-[0.1em] uppercase">Close</span>
         </button>
       </header>
 

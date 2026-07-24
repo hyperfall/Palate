@@ -24,13 +24,22 @@ import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
 type BoardEntry = { id: string; day: number; meal: string; slug: string; title: string; image: string | null }
 
-const mealIndex = (m: string) => MEAL_ORDER.indexOf(normalizeMeal(m))
+const slotId = (day: number, meal: MealType) => `slot-${day}-${meal}`
+/** Parse `slot-<day>-<meal>` (meal may itself be a single token). */
+function parseSlot(id: string): { day: number; meal: MealType } | null {
+  if (!id.startsWith('slot-')) return null
+  const rest = id.slice(5)
+  const dash = rest.indexOf('-')
+  if (dash < 0) return null
+  return { day: Number(rest.slice(0, dash)), meal: normalizeMeal(rest.slice(dash + 1)) }
+}
 
 /**
  * The weekly board: a responsive 7-column week grid (stacked list on narrow
- * screens) with drag-to-reorder. Drag a dish by its handle to reorder within a
- * day or move it to another day; the meal slot is inferred from where it lands.
- * Changes persist to Supabase optimistically. Deletes remove the row.
+ * screens) laid out as a Breakfast/Lunch/Dinner timetable. Drag a dish by its
+ * handle into any meal slot of any day — the slot you drop into sets its day and
+ * meal; order within a slot is preserved. Changes persist to Supabase
+ * optimistically. Deletes remove the row.
  */
 export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
   const supabase = supabaseBrowser()
@@ -39,7 +48,6 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
-  // Re-sync when the server sends fresh data (e.g. after add/remove elsewhere).
   useEffect(() => setEntries(initial), [initial])
 
   const sensors = useSensors(
@@ -48,14 +56,19 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  // Per-day, display-ordered dishes (meals in canonical order; position within).
-  const byDay = useMemo(() => {
-    const map = new Map<number, BoardEntry[]>()
-    for (let d = 0; d < 7; d++) map.set(d, [])
-    for (const e of entries) if (e.day >= 0 && e.day < 7) map.get(e.day)!.push(e)
-    for (const list of map.values()) list.sort((a, b) => mealIndex(a.meal) - mealIndex(b.meal))
+  // Dishes per (day, meal) slot, ordered by position.
+  const slots = useMemo(() => {
+    const map = new Map<string, BoardEntry[]>()
+    for (const e of entries) {
+      if (e.day < 0 || e.day > 6) continue
+      const key = `${e.day}:${normalizeMeal(e.meal)}`
+      ;(map.get(key) ?? map.set(key, []).get(key)!).push(e)
+    }
     return map
   }, [entries])
+
+  const slotList = (day: number, meal: MealType) => slots.get(`${day}:${meal}`) ?? []
+  const dayCount = (day: number) => MEAL_ORDER.reduce((n, m) => n + slotList(day, m).length, 0)
 
   const remove = async (id: string) => {
     if (!supabase) return
@@ -78,37 +91,40 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     const moved = entries.find((x) => x.id === movedId)
     if (!moved) return
 
+    // Resolve the target slot + insertion index (dropped on a slot or a dish).
     const overId = String(over.id)
-
-    // Resolve the target day + insertion index.
     let targetDay: number
-    let list: BoardEntry[]
+    let targetMeal: MealType
     let index: number
-    if (overId.startsWith('day-')) {
-      targetDay = Number(overId.slice(4))
-      list = (byDay.get(targetDay) ?? []).filter((x) => x.id !== movedId)
-      index = list.length
+    const asSlot = parseSlot(overId)
+    if (asSlot) {
+      targetDay = asSlot.day
+      targetMeal = asSlot.meal
+      index = slotList(targetDay, targetMeal).filter((x) => x.id !== movedId).length
     } else {
       const overEntry = entries.find((x) => x.id === overId)
       if (!overEntry) return
       targetDay = overEntry.day
-      list = (byDay.get(targetDay) ?? []).filter((x) => x.id !== movedId)
+      targetMeal = normalizeMeal(overEntry.meal)
+      const list = slotList(targetDay, targetMeal).filter((x) => x.id !== movedId)
       index = list.findIndex((x) => x.id === overId)
       if (index < 0) index = list.length
     }
 
-    list.splice(index, 0, moved)
-    const above = list[index - 1]
-    const below = list[index + 1]
-    const newMeal: MealType = above ? normalizeMeal(above.meal) : below ? normalizeMeal(below.meal) : normalizeMeal(moved.meal)
+    const fromMeal = normalizeMeal(moved.meal)
+    const sameSlot = moved.day === targetDay && fromMeal === targetMeal
 
-    // Compute new day/meal/position for every affected row.
+    const targetOrder = slotList(targetDay, targetMeal).filter((x) => x.id !== movedId)
+    targetOrder.splice(index, 0, moved)
+
     const updates = new Map<string, { day: number; meal: MealType; position: number }>()
-    list.forEach((x, i) => updates.set(x.id, { day: targetDay, meal: x.id === movedId ? newMeal : normalizeMeal(x.meal), position: i }))
-    if (moved.day !== targetDay) {
-      ;(byDay.get(moved.day) ?? [])
+    targetOrder.forEach((x, i) =>
+      updates.set(x.id, { day: targetDay, meal: x.id === movedId ? targetMeal : normalizeMeal(x.meal), position: i }),
+    )
+    if (!sameSlot) {
+      slotList(moved.day, fromMeal)
         .filter((x) => x.id !== movedId)
-        .forEach((x, i) => updates.set(x.id, { day: moved.day, meal: normalizeMeal(x.meal), position: i }))
+        .forEach((x, i) => updates.set(x.id, { day: moved.day, meal: fromMeal, position: i }))
     }
 
     setEntries((prev) => prev.map((x) => (updates.has(x.id) ? { ...x, ...updates.get(x.id)! } : x)))
@@ -119,7 +135,6 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
       const results = await Promise.all(
         [...updates.entries()].map(([id, u]) => supabase.from('meal_plan').update(u).eq('id', id)),
       )
-      // If anything failed, fall back to server truth rather than a wrong order.
       if (results.some((r) => r.error)) router.refresh()
     } finally {
       setBusy(null)
@@ -132,7 +147,36 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="grid gap-x-4 gap-y-0 xl:grid-cols-7">
         {WEEKDAYS.map((label, day) => (
-          <DayColumn key={label} day={day} label={label} dishes={byDay.get(day) ?? []} busy={busy} onRemove={remove} />
+          <section
+            key={label}
+            className="border-t border-rule py-3 first:border-t-2 first:border-ink xl:border-t-0 xl:py-0 xl:first:border-t-0"
+          >
+            <div className="flex items-baseline justify-between gap-2 xl:border-b-2 xl:border-ink xl:pb-1.5">
+              <span
+                className={`font-mono text-[0.8125rem] font-semibold tracking-[0.12em] uppercase ${
+                  dayCount(day) === 0 ? 'text-slate/50' : 'text-flame'
+                }`}
+              >
+                {label}
+              </span>
+              {dayCount(day) > 0 && (
+                <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">{dayCount(day)}</span>
+              )}
+            </div>
+
+            <div className="mt-2 grid gap-2.5">
+              {MEAL_ORDER.map((meal) => (
+                <MealSlot
+                  key={meal}
+                  day={day}
+                  meal={meal}
+                  dishes={slotList(day, meal)}
+                  busy={busy}
+                  onRemove={remove}
+                />
+              ))}
+            </div>
+          </section>
         ))}
       </div>
       <DragOverlay>{activeEntry ? <DishCard entry={activeEntry} dragging /> : null}</DragOverlay>
@@ -140,67 +184,48 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
   )
 }
 
-function DayColumn({
+function MealSlot({
   day,
-  label,
+  meal,
   dishes,
   busy,
   onRemove,
 }: {
   day: number
-  label: string
+  meal: MealType
   dishes: BoardEntry[]
   busy: string | null
   onRemove: (id: string) => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `day-${day}` })
+  const { setNodeRef, isOver } = useDroppable({ id: slotId(day, meal) })
   const empty = dishes.length === 0
 
   return (
-    <section
-      className={`border-t border-rule py-3 xl:border-t-0 xl:py-0 ${empty ? '' : ''} first:border-t-2 first:border-ink xl:first:border-t-0`}
-    >
-      <div className="flex items-baseline justify-between gap-2 xl:border-b-2 xl:border-ink xl:pb-1.5">
-        <span
-          className={`font-mono text-[0.8125rem] font-semibold tracking-[0.12em] uppercase ${empty ? 'text-slate/50' : 'text-flame'}`}
-        >
-          {label}
-        </span>
-        {empty ? (
-          <span className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate/40 uppercase">Open</span>
-        ) : (
-          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">{dishes.length}</span>
-        )}
-      </div>
-
+    <div>
+      <p className="m-0 font-mono text-[0.625rem] font-medium tracking-[0.14em] text-slate/70 uppercase">
+        {MEAL_LABELS[meal]}
+      </p>
       <SortableContext items={dishes.map((d) => d.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          className={`mt-2 grid gap-2 rounded-md transition-colors xl:min-h-[6rem] ${
-            isOver ? 'bg-flame/5 outline-2 outline-dashed outline-flame/40' : ''
-          } ${empty ? 'min-h-[2.5rem]' : ''}`}
+          className={`mt-1 grid gap-2 rounded-md transition-colors ${
+            isOver ? 'bg-flame/5 outline-2 outline-dashed outline-flame/50' : ''
+          } ${empty ? 'min-h-[2.25rem] place-content-center' : ''}`}
         >
-          {dishes.map((d, i) => {
-            const showMeal = i === 0 || mealIndex(d.meal) !== mealIndex(dishes[i - 1].meal)
-            return (
-              <div key={d.id}>
-                {showMeal && (
-                  <p className="mt-1 mb-1 font-mono text-[0.625rem] font-medium tracking-[0.14em] text-slate uppercase">
-                    {MEAL_LABELS[normalizeMeal(d.meal)]}
-                  </p>
-                )}
-                <DishItem entry={d} busy={busy === d.id} onRemove={onRemove} />
-              </div>
-            )
-          })}
-          {empty && (
-            <p className="grid place-items-center py-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate/30 uppercase">
-              Drop here
-            </p>
+          {empty ? (
+            <span
+              className={`text-center font-mono text-[0.625rem] tracking-[0.1em] uppercase ${
+                isOver ? 'text-flame' : 'text-slate/25'
+              }`}
+            >
+              {isOver ? 'Drop' : '·'}
+            </span>
+          ) : (
+            dishes.map((d) => <DishItem key={d.id} entry={d} busy={busy === d.id} onRemove={onRemove} />)
           )}
         </div>
       </SortableContext>
-    </section>
+    </div>
   )
 }
 
@@ -209,7 +234,11 @@ function DishItem({ entry, busy, onRemove }: { entry: BoardEntry; busy: boolean;
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
 
   return (
-    <div ref={setNodeRef} style={style} className="group flex items-center gap-2 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group flex items-center gap-2 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40"
+    >
       <button
         type="button"
         aria-label="Drag to reorder"

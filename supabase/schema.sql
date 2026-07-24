@@ -291,12 +291,14 @@ create trigger pantry_household before insert or update on public.pantry
 -- honest; the trigger owns household_id. (A member may delete a shared row —
 -- intentional for a shared week; only the row owner may update their own.)
 drop policy if exists "own plan" on public.meal_plan;
+drop policy if exists "plan access" on public.meal_plan;
 create policy "plan access" on public.meal_plan
   for all
   using (user_id = auth.uid() or household_id = public.my_household_id())
   with check (user_id = auth.uid());
 
 drop policy if exists "own pantry" on public.pantry;
+drop policy if exists "pantry access" on public.pantry;
 create policy "pantry access" on public.pantry
   for all
   using (user_id = auth.uid() or household_id = public.my_household_id())

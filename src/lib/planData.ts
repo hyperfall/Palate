@@ -4,14 +4,17 @@ import { supabaseServer } from './supabase/server'
 import type { PlanIngredient, Pantry } from './mealPlan'
 
 /**
- * Scope a meal_plan/pantry query to the active context: the household's rows
- * when a member, otherwise the user's personal (household_id null) rows. RLS
- * grants access to both; this keeps the two views cleanly separate so leaving a
- * household restores the personal week.
+ * Scope a meal_plan/pantry query to the active context. When in a household,
+ * filter to that household's shared rows. When NOT in one, apply no filter —
+ * RLS already limits a non-member to their own rows, so filtering is redundant,
+ * and (importantly) it keeps this path from touching the `household_id` column,
+ * which only exists once the household schema block has been run. That makes the
+ * personal plan work whether or not that migration has happened yet.
  */
 function scopeToContext<T>(query: T, householdId: string | null): T {
-  const q = query as { eq: (c: string, v: string) => T; is: (c: string, v: null) => T }
-  return householdId ? q.eq('household_id', householdId) : q.is('household_id', null)
+  if (!householdId) return query
+  const q = query as { eq: (c: string, v: string) => T }
+  return q.eq('household_id', householdId)
 }
 
 /**

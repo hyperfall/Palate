@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react'
 import { ImagePicker } from '@/components/ImagePicker'
 import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
 import { LineListInput } from '@/components/LineListInput'
-import { MyEarnings } from '@/components/MyEarnings'
-import { MySubmissions } from '@/components/MySubmissions'
 import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
@@ -307,8 +305,13 @@ export function StudioForm({
 
   return (
     <>
-    <MySubmissions />
-    <MyEarnings />
+    <p className="mb-8 text-[0.9375rem] text-slate">
+      Tracking what you’ve already sent?{' '}
+      <Link href="/dashboard" className="text-flame underline underline-offset-4">
+        See your recipes on the dashboard
+      </Link>
+      .
+    </p>
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
     <form onSubmit={submit} className="grid min-w-0 grid-cols-1 gap-6">
       <label className={labelCls}>

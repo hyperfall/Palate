@@ -120,19 +120,21 @@ export function MobileNav() {
   const [session, setSession] = useState<{
     signedIn: boolean
     label: string | null
+    email: string | null
     avatarUrl: string | null
     creator: boolean
-  }>({ signedIn: false, label: null, avatarUrl: null, creator: false })
+  }>({ signedIn: false, label: null, email: null, avatarUrl: null, creator: false })
 
   useEffect(() => {
     if (!supabase) return
-    const read = (user: { user_metadata?: Record<string, unknown> } | null) =>
+    const read = (user: { email?: string | null; user_metadata?: Record<string, unknown> } | null) =>
       setSession({
         signedIn: Boolean(user),
         label:
           (user?.user_metadata?.username as string | undefined) ??
           (user?.user_metadata?.display_name as string | undefined) ??
           null,
+        email: user?.email ?? null,
         avatarUrl: (user?.user_metadata?.avatar_url as string | undefined) ?? null,
         creator: user?.user_metadata?.account_type === 'creator',
       })
@@ -236,54 +238,65 @@ export function MobileNav() {
                     </li>
                   )
                 })}
-                {session.creator && (
-                  <li>
-                    <Link
-                      href="/studio"
-                      className={`flex items-center gap-3.5 rounded-lg border-l-2 px-4 py-3 no-underline transition-colors ${
-                        isActive('/studio')
-                          ? 'border-flame bg-flame/10 text-flame'
-                          : 'border-transparent text-ink hover:bg-wash'
-                      }`}
-                    >
-                      <span className={isActive('/studio') ? 'text-flame' : 'text-slate'}>
-                        <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
-                          <path d="M4 7h16v13H4z" />
-                          <path d="M9 7V4h6v3" />
-                        </svg>
-                      </span>
-                      <span className="text-[1.0625rem] font-medium">Studio</span>
-                    </Link>
-                  </li>
-                )}
               </ul>
             </nav>
 
-            {/* Auth — a profile row when signed in, CTAs when not. */}
+            {/* Account — mirrors the desktop dropdown: profile + menu. */}
             <div className="border-t border-rule px-5 py-4">
               {session.signedIn ? (
-                <Link
-                  href="/account"
-                  className="flex items-center gap-3 no-underline"
-                >
-                  <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-rule bg-wash text-slate">
-                    {session.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- small avatar
-                      <img src={session.avatarUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <svg viewBox="0 0 24 24" width="20" height="20" {...stroke}>
-                        <circle cx="12" cy="8.5" r="3.5" />
-                        <path d="M5.5 19.5c0-3.4 2.9-5.5 6.5-5.5s6.5 2.1 6.5 5.5" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-body text-[1rem] font-semibold text-ink">
-                      {session.label ? `@${session.label}` : 'Your account'}
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-rule bg-wash text-slate">
+                      {session.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- small avatar
+                        <img src={session.avatarUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <svg viewBox="0 0 24 24" width="20" height="20" {...stroke}>
+                          <circle cx="12" cy="8.5" r="3.5" />
+                          <path d="M5.5 19.5c0-3.4 2.9-5.5 6.5-5.5s6.5 2.1 6.5 5.5" />
+                        </svg>
+                      )}
                     </span>
-                    <span className="block font-mono text-[0.75rem] text-slate">View account →</span>
-                  </span>
-                </Link>
+                    <span className="min-w-0">
+                      <span className="block truncate font-body text-[1rem] font-semibold text-ink">
+                        {session.label ? `@${session.label}` : 'Your account'}
+                      </span>
+                      {session.email && (
+                        <span className="block truncate font-mono text-[0.75rem] text-slate">{session.email}</span>
+                      )}
+                    </span>
+                  </div>
+                  <nav aria-label="Account" className="mt-3 grid">
+                    <Link href="/dashboard" className="py-2 font-body text-[1rem] text-ink no-underline hover:text-flame">
+                      Dashboard
+                    </Link>
+                    <Link href="/account" className="py-2 font-body text-[1rem] text-ink no-underline hover:text-flame">
+                      Settings
+                    </Link>
+                    {session.creator && (
+                      <Link href="/studio" className="py-2 font-body text-[1rem] text-ink no-underline hover:text-flame">
+                        Studio
+                      </Link>
+                    )}
+                    <Link href="/feed" className="py-2 font-body text-[1rem] text-ink no-underline hover:text-flame">
+                      Feed
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await supabase?.auth.signOut()
+                        } catch {
+                          /* local state clears regardless */
+                        }
+                        setOpen(false)
+                      }}
+                      className="mt-1 border-t border-rule py-2.5 text-left font-body text-[1rem] text-heat"
+                    >
+                      Sign out
+                    </button>
+                  </nav>
+                </>
               ) : (
                 <div className="grid gap-2">
                   <Link href="/account" className="btn-primary justify-center text-center">

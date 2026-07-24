@@ -9,7 +9,12 @@ import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
 type BoardEntry = { id: string; day: number; meal: string; slug: string; title: string; image: string | null }
 
-/** The weekly board: recipes per day, each removable. Deletes write to Supabase. */
+/**
+ * The weekly board. Reorganised so the week reads at a glance: planned days
+ * carry a flame weekday + dish count, empty days recede into a compact muted
+ * row, meals are clearly labelled, and dishes share a consistent thumbnail card.
+ * Deletes write to Supabase.
+ */
 export function MealBoard({ entries }: { entries: BoardEntry[] }) {
   const supabase = supabaseBrowser()
   const router = useRouter()
@@ -27,33 +32,60 @@ export function MealBoard({ entries }: { entries: BoardEntry[] }) {
   }
 
   return (
-    <div className="grid gap-3">
+    <ol className="m-0 grid list-none gap-0 p-0">
       {WEEKDAYS.map((label, day) => {
         const dayEntries = entries.filter((e) => e.day === day)
+        const meals = MEAL_ORDER.filter((m) => dayEntries.some((e) => normalizeMeal(e.meal) === m))
+        const empty = dayEntries.length === 0
+
         return (
-          <div key={label} className="grid grid-cols-[3.5rem_1fr] gap-3 border-t border-rule pt-3">
-            <span className="eyebrow pt-1">{label}</span>
-            <div className="grid gap-3">
-              {dayEntries.length === 0 ? (
-                <span className="text-[0.875rem] text-slate/60">—</span>
+          <li key={label} className={`border-t border-rule ${empty ? 'py-2.5' : 'py-4'} first:border-t-2 first:border-ink`}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span
+                className={`font-mono text-[0.8125rem] font-semibold tracking-[0.12em] uppercase ${
+                  empty ? 'text-slate/50' : 'text-flame'
+                }`}
+              >
+                {label}
+              </span>
+              {empty ? (
+                <span className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate/40 uppercase">Open</span>
               ) : (
-                MEAL_ORDER.filter((m) => dayEntries.some((e) => normalizeMeal(e.meal) === m)).map((m) => (
+                <span className="datum">
+                  {dayEntries.length} {dayEntries.length === 1 ? 'dish' : 'dishes'}
+                </span>
+              )}
+            </div>
+
+            {!empty && (
+              <div className="mt-3 grid gap-4">
+                {meals.map((m) => (
                   <div key={m}>
-                    <p className="m-0 font-mono text-[0.6875rem] font-medium tracking-[0.12em] text-slate uppercase">
+                    <p className="m-0 font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-slate uppercase">
                       {MEAL_LABELS[m]}
                     </p>
-                    <div className="mt-1.5 grid gap-2">
+                    <div className="mt-2 grid gap-2">
                       {dayEntries
                         .filter((e) => normalizeMeal(e.meal) === m)
                         .map((e) => (
-                          <div key={e.id} className="flex items-center gap-3 rounded border border-rule p-2">
-                            {e.image && (
+                          <div
+                            key={e.id}
+                            className="group flex items-center gap-3 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40"
+                          >
+                            {e.image ? (
                               // eslint-disable-next-line @next/next/no-img-element -- snapshot thumbnail
-                              <img src={e.image} alt="" className="h-10 w-10 shrink-0 rounded object-cover" />
+                              <img src={e.image} alt="" className="h-11 w-11 shrink-0 rounded object-cover" />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="grid h-11 w-11 shrink-0 place-items-center rounded border border-dashed border-rule bg-wash text-slate/40"
+                              >
+                                ◵
+                              </span>
                             )}
                             <Link
                               href={`/recipes/${e.slug}`}
-                              className="min-w-0 flex-1 truncate text-[0.9375rem] no-underline hover:text-flame"
+                              className="min-w-0 flex-1 truncate font-display text-[1.0625rem] leading-tight text-ink no-underline group-hover:text-flame"
                             >
                               {e.title}
                             </Link>
@@ -70,12 +102,12 @@ export function MealBoard({ entries }: { entries: BoardEntry[] }) {
                         ))}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
+            )}
+          </li>
         )
       })}
-    </div>
+    </ol>
   )
 }

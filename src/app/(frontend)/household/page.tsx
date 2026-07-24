@@ -109,9 +109,9 @@ export default async function HouseholdPage({
                 name="name"
                 placeholder="Our kitchen"
                 maxLength={60}
-                className="rounded border border-rule bg-transparent px-2 py-1.5 text-[0.9375rem] text-ink"
+                className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 text-[0.9375rem] text-ink"
               />
-              <button type="submit" className="btn-primary">
+              <button type="submit" className="btn-primary w-full justify-center">
                 Create household
               </button>
             </form>
@@ -133,9 +133,9 @@ export default async function HouseholdPage({
               name="code"
               placeholder="Invite code"
               required
-              className="rounded border border-rule bg-transparent px-2 py-1.5 font-mono tracking-[0.1em] text-ink uppercase"
+              className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 font-mono tracking-[0.1em] text-ink uppercase"
             />
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn-primary w-full justify-center">
               Join household
             </button>
           </form>

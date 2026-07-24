@@ -30,7 +30,7 @@ export function WeekCardActions({ week, shopping }: { week: WeekSnapshot; shoppi
     setBusy('png')
     setFailed(false)
     try {
-      const canvas = await renderWeekCanvas({ week, shopping })
+      const canvas = await renderWeekCanvas({ week })
       const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'))
       if (!blob) throw new Error('toBlob returned null')
       save(blob, 'my-week.png')

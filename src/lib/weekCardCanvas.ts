@@ -1,15 +1,16 @@
-import { MEAL_LABELS, WEEK_DAY_LABELS, weekDishCount, type WeekShoppingList, type WeekSnapshot } from './mealPlan'
+import { MEAL_LABELS, WEEK_DAY_LABELS, weekDishCount, type WeekSnapshot } from './mealPlan'
 import { SITE } from './site'
 import { loadImages, resolveColors, resolveFonts, weekImageUrls, type ThemeColors, type ThemeFonts } from './weekExport'
 
 /**
- * Paints a planned week (card + shopping list) onto a <canvas>, at 2× for a crisp
- * PNG. Theme-aware by construction: every colour is resolved from the live CSS
- * custom properties (so `light-dark()` + `data-theme` pick the active theme), and
- * fonts come from the same next/font variables the DOM uses. No html-to-image, no
- * SVG foreignObject — deterministic, and identical in every browser. Must run in
- * the browser (needs document + canvas). The PDF export is a separate vector
- * renderer (weekCardPdf).
+ * Paints a planned week's menu CARD (masthead + days + footer) onto a <canvas>, at
+ * 2× for a crisp, shareable PNG. The shopping list is deliberately NOT drawn here —
+ * a shareable image is the pretty week card; the full shopping list lives in the
+ * PDF export and on the web page. Theme-aware by construction: every colour is
+ * resolved from the live CSS custom properties (so `light-dark()` + `data-theme`
+ * pick the active theme), and fonts come from the same next/font variables the DOM
+ * uses. No html-to-image, no SVG foreignObject — deterministic, identical in every
+ * browser. Must run in the browser (needs document + canvas).
  */
 
 const CARD_W = 640
@@ -63,7 +64,6 @@ function thumb(
 type PaintCtx = {
   ctx: CanvasRenderingContext2D
   week: WeekSnapshot
-  shopping: WeekShoppingList
   colors: Colors
   fonts: Fonts
   images: Map<string, HTMLImageElement>
@@ -77,7 +77,7 @@ type PaintCtx = {
  * caller scales the canvas for retina output.
  */
 function paint(p: PaintCtx): number {
-  const { ctx, week, shopping, colors, fonts, images } = p
+  const { ctx, week, colors, fonts, images } = p
   const innerW = CARD_W - PAD * 2
   let y = 0
 
@@ -205,61 +205,6 @@ function paint(p: PaintCtx): number {
     rule(y, 0, CARD_W)
   }
 
-  // ── Shopping list ─────────────────────────────────────────────────────────
-  y += 24
-  rule(y, 0, CARD_W, 2, colors.ink)
-  y += 14
-  put('Shopping list', PAD, 24, { family: fonts.display, color: colors.ink })
-  y += 38
-
-  const listLine = (name: string, amounts: string[], indent = 0) => {
-    const x = PAD + indent
-    if (p.draw) {
-      setFont(400, 16, fonts.body)
-      ctx.fillStyle = colors.ink
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'top'
-      ctx.letterSpacing = '0px'
-      const nameW = ctx.measureText(name).width
-      ctx.fillText(name, x, y)
-      if (amounts.length) {
-        ctx.fillStyle = colors.slate
-        ctx.fillText(` — ${amounts.join(' + ')}`, x + nameW, y)
-      }
-    }
-    y += 24
-    rule(y - 6, PAD + indent, CARD_W - PAD)
-  }
-
-  // Everything to buy
-  put('Everything to buy', PAD, 17, { family: fonts.display, color: colors.ink })
-  y += 26
-  if (shopping.netted.length === 0) {
-    put('All set — every ingredient is a pantry staple.', PAD, 15, { family: fonts.body, color: colors.slate })
-    y += 22
-  } else {
-    for (const l of shopping.netted) listLine(l.name, l.amounts)
-  }
-
-  // Per dish
-  for (const dish of shopping.dishes) {
-    y += 16
-    put(dish.title, PAD, 17, { family: fonts.display, color: colors.ink })
-    put(`${dish.lines.length} ${dish.lines.length === 1 ? 'item' : 'items'}`, CARD_W - PAD, 12, {
-      family: fonts.mono,
-      color: colors.slate,
-      align: 'right',
-      tracking: 1,
-    })
-    y += 26
-    if (dish.lines.length === 0) {
-      put('No ingredients recorded.', PAD + 12, 15, { family: fonts.body, color: colors.slate })
-      y += 22
-    } else {
-      for (const l of dish.lines) listLine(l.name, l.amounts, 12)
-    }
-  }
-
   // ── Footer ──────────────────────────────────────────────────────────────
   y += 24
   const fh = 56
@@ -284,13 +229,12 @@ function paint(p: PaintCtx): number {
   return y
 }
 
-/** Render the week (card + shopping list) to a retina canvas. */
+/** Render the week's menu card to a retina canvas (no shopping list — see docs above). */
 export async function renderWeekCanvas(opts: {
   week: WeekSnapshot
-  shopping: WeekShoppingList
   scale?: number
 }): Promise<HTMLCanvasElement> {
-  const { week, shopping, scale = 2 } = opts
+  const { week, scale = 2 } = opts
   const colors = resolveColors()
   const fonts = resolveFonts()
 
@@ -302,7 +246,7 @@ export async function renderWeekCanvas(opts: {
   if (!ctx) throw new Error('canvas 2d context unavailable')
 
   // Pass 1 — measure (uses ctx.measureText; canvas size irrelevant yet).
-  const height = paint({ ctx, week, shopping, colors, fonts, images, draw: false })
+  const height = paint({ ctx, week, colors, fonts, images, draw: false })
 
   // Size for retina, then Pass 2 — draw.
   canvas.width = Math.round(CARD_W * scale)
@@ -310,7 +254,7 @@ export async function renderWeekCanvas(opts: {
   ctx.scale(scale, scale)
   ctx.fillStyle = colors.card
   ctx.fillRect(0, 0, CARD_W, height)
-  paint({ ctx, week, shopping, colors, fonts, images, draw: true })
+  paint({ ctx, week, colors, fonts, images, draw: true })
 
   return canvas
 }

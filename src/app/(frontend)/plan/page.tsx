@@ -83,43 +83,43 @@ export default async function PlanPage() {
         )}
       </header>
 
-      <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)]">
+      <div className="mt-8">
         <MealBoard entries={entries} />
+      </div>
 
-        <aside className="lg:sticky lg:top-20 lg:self-start">
-          <div className="border-t-2 border-ink pt-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="text-[1.5rem]">Shopping list</h2>
-              {cost.covered > 0 && (
-                <span className="datum">
-                  ≈ £{(cost.totalCents / 100).toFixed(2)}
-                  {cost.covered < cost.total && (
-                    <span className="ml-1 font-mono text-[0.6875rem] text-slate">
-                      (from {cost.covered}/{cost.total})
-                    </span>
-                  )}
-                </span>
-              )}
-            </div>
-            <ShoppingModeLauncher list={shopping} />
-            <ShoppingList list={shopping} />
-            <GroceryPanel lines={shopping.netted} />
+      <div className="mt-14 grid gap-10 border-t-2 border-ink pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)]">
+        <div>
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="text-[1.5rem]">Shopping list</h2>
+            {cost.covered > 0 && (
+              <span className="datum">
+                ≈ £{(cost.totalCents / 100).toFixed(2)}
+                {cost.covered < cost.total && (
+                  <span className="ml-1 font-mono text-[0.6875rem] text-slate">
+                    (from {cost.covered}/{cost.total})
+                  </span>
+                )}
+              </span>
+            )}
           </div>
+          <ShoppingModeLauncher list={shopping} />
+          <ShoppingList list={shopping} />
+          <GroceryPanel lines={shopping.netted} />
+        </div>
 
-          {leftovers.length > 0 && (
-            <div className="mt-8 border-t border-rule pt-4">
-              <p className="eyebrow m-0">Leftover chains</p>
-              <ul className="mt-3 grid list-none gap-2.5 p-0">
-                {leftovers.map((l) => (
-                  <li key={l.title} className="text-[0.9375rem] leading-snug">
-                    <span className="font-semibold">{l.title}</span> →{' '}
-                    <span className="text-slate">{l.idea}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </aside>
+        {leftovers.length > 0 && (
+          <aside className="lg:border-l lg:border-rule lg:pl-8">
+            <p className="eyebrow m-0">Leftover chains</p>
+            <ul className="mt-3 grid list-none gap-2.5 p-0">
+              {leftovers.map((l) => (
+                <li key={l.title} className="text-[0.9375rem] leading-snug">
+                  <span className="font-semibold">{l.title}</span> →{' '}
+                  <span className="text-slate">{l.idea}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
       </div>
     </div>
   )

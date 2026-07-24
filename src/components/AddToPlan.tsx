@@ -23,6 +23,7 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
   const [busy, setBusy] = useState(false)
   const [meal, setMeal] = useState<MealType>('dinner')
   const [planned, setPlanned] = useState<Planned[]>([])
+  const [error, setError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -61,18 +62,21 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
   const toggle = async (day: number) => {
     if (!supabase || busy) return
     setBusy(true)
+    setError(null)
     try {
       const existing = planned.find((p) => p.day === day && p.meal === meal)
       if (existing) {
         const { error } = await supabase.from('meal_plan').delete().eq('id', existing.id)
-        if (!error) setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
+        if (error) setError(error.message)
+        else setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
       } else {
         const { data, error } = await supabase
           .from('meal_plan')
           .insert({ day, meal, recipe_slug: slug, recipe_title: title, recipe_image: image })
           .select('id')
           .single()
-        if (!error && data) setPlanned((prev) => [...prev, { id: data.id as string, day, meal }])
+        if (error) setError(error.message)
+        else if (data) setPlanned((prev) => [...prev, { id: data.id as string, day, meal }])
       }
     } finally {
       setBusy(false)
@@ -135,6 +139,12 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
               )
             })}
           </div>
+
+          {error && (
+            <p className="mt-2 mb-0 font-mono text-[0.6875rem] leading-snug text-heat" role="alert">
+              Couldn’t update your plan: {error}
+            </p>
+          )}
 
           <Link
             href="/plan"

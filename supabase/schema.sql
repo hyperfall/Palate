@@ -226,20 +226,34 @@ create index if not exists household_members_user_idx on public.household_member
 alter table public.households enable row level security;
 alter table public.household_members enable row level security;
 
+-- The caller's household id, resolved WITHOUT touching RLS. This is the seam
+-- that breaks recursion: a policy on household_members that queried
+-- household_members would recurse ("infinite recursion detected in policy"),
+-- which also poisons every meal_plan/pantry policy that references it. A
+-- security-definer function bypasses RLS, so policies can call it freely.
+create or replace function public.my_household_id()
+returns uuid
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select household_id from public.household_members where user_id = auth.uid()
+$$;
+revoke all on function public.my_household_id() from public;
+grant execute on function public.my_household_id() to authenticated;
+
 -- Members read their household; nobody writes households directly (service role
 -- / RPC only), so no insert/update/delete policies for regular users.
 drop policy if exists "read own household" on public.households;
 create policy "read own household" on public.households
-  for select using (
-    id in (select household_id from public.household_members where user_id = auth.uid())
-  );
+  for select using (id = public.my_household_id());
 
 -- Members read their household's membership list; anyone may leave (delete own).
+-- Uses the helper (not a self-select) to avoid recursive policy evaluation.
 drop policy if exists "read household members" on public.household_members;
 create policy "read household members" on public.household_members
-  for select using (
-    household_id in (select household_id from public.household_members m where m.user_id = auth.uid())
-  );
+  for select using (household_id = public.my_household_id());
 drop policy if exists "leave household" on public.household_members;
 create policy "leave household" on public.household_members
   for delete using (user_id = auth.uid());
@@ -261,7 +275,7 @@ security definer
 set search_path = public
 as $$
 begin
-  new.household_id := (select household_id from public.household_members where user_id = auth.uid());
+  new.household_id := public.my_household_id();
   return new;
 end;
 $$;
@@ -279,19 +293,13 @@ create trigger pantry_household before insert or update on public.pantry
 drop policy if exists "own plan" on public.meal_plan;
 create policy "plan access" on public.meal_plan
   for all
-  using (
-    user_id = auth.uid()
-    or household_id in (select household_id from public.household_members where user_id = auth.uid())
-  )
+  using (user_id = auth.uid() or household_id = public.my_household_id())
   with check (user_id = auth.uid());
 
 drop policy if exists "own pantry" on public.pantry;
 create policy "pantry access" on public.pantry
   for all
-  using (
-    user_id = auth.uid()
-    or household_id in (select household_id from public.household_members where user_id = auth.uid())
-  )
+  using (user_id = auth.uid() or household_id = public.my_household_id())
   with check (user_id = auth.uid());
 
 -- Join by invite code: security-definer so it can see households despite RLS.

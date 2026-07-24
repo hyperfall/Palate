@@ -181,3 +181,21 @@ alter table public.follows enable row level security;
 drop policy if exists "own follows" on public.follows;
 create policy "own follows" on public.follows
   for all using (follower_id = auth.uid()) with check (follower_id = auth.uid());
+
+-- ── Supporter tier (Stripe subscriptions) ───────────────────────────────────
+-- One row per user, written ONLY by the Stripe webhook via the service-role
+-- key (no client insert/update policies on purpose). The client may read its
+-- own row; entitlements are derived server-side in src/lib/entitlements.ts.
+create table if not exists public.subscriptions (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  stripe_customer_id text,
+  stripe_subscription_id text,
+  status text not null default 'inactive',
+  price_id text,
+  current_period_end timestamptz,
+  updated_at timestamptz not null default now()
+);
+alter table public.subscriptions enable row level security;
+drop policy if exists "read own subscription" on public.subscriptions;
+create policy "read own subscription" on public.subscriptions
+  for select using (user_id = auth.uid());

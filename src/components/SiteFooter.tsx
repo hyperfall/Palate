@@ -26,6 +26,7 @@ const BROWSE_LINKS = [
 
 const COMPANY_LINKS = [
   { href: '/about', label: 'About' },
+  { href: '/support', label: 'Support us' },
   { href: '/partners', label: 'Advertise' },
   { href: '/terms', label: 'Terms' },
   { href: '/privacy', label: 'Privacy' },

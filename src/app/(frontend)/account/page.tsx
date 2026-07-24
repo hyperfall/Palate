@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { AccountPanel } from '@/components/AccountPanel'
+import { SupporterStatus } from '@/components/SupporterStatus'
 
 export const metadata: Metadata = {
   title: 'Account',
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
   // A private, functional page — keep it out of the index.
   robots: { index: false, follow: false },
 }
+
+export const dynamic = 'force-dynamic'
 
 export default function AccountPage() {
   return (
@@ -23,6 +26,7 @@ export default function AccountPage() {
 
       <div className="mt-10">
         <AccountPanel />
+        <SupporterStatus />
       </div>
     </div>
   )

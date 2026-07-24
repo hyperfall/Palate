@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import type { ShoppingLine, WeekShoppingList } from '@/lib/mealPlan'
 import { useShoppingChecks } from '@/lib/useShoppingChecks'
@@ -104,7 +105,7 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
   const toBuy = list.netted.filter((l) => !checked.has(l.key))
   const inBasket = list.netted.filter((l) => checked.has(l.key))
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink">
       {/* Progress rail */}
       <div className="h-1 w-full bg-rule">
@@ -142,7 +143,7 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
             type="button"
             aria-pressed={view === v}
             onClick={() => setView(v)}
-            className={`chip ${view === v ? 'border-ink bg-ink text-milk' : ''}`}
+            className={`chip ${view === v ? 'border-ink bg-ink text-paper' : ''}`}
           >
             {v === 'all' ? 'Everything' : 'By dish'}
           </button>
@@ -222,6 +223,7 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
           </button>
         )}
       </footer>
-    </div>
+    </div>,
+    document.body,
   )
 }

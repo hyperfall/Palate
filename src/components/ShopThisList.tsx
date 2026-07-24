@@ -45,7 +45,7 @@ export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; 
               type="button"
               aria-pressed={active?.slug === r.slug}
               onClick={() => setActive(r)}
-              className={`chip ${active?.slug === r.slug ? 'border-ink bg-ink text-milk' : ''}`}
+              className={`chip ${active?.slug === r.slug ? 'border-ink bg-ink text-paper' : ''}`}
             >
               {r.label}
             </button>

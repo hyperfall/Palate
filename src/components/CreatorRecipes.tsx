@@ -104,7 +104,7 @@ export function CreatorRecipes() {
               type="button"
               aria-pressed={status === f.key}
               onClick={() => setStatus(f.key)}
-              className={`chip ${status === f.key ? 'border-ink bg-ink text-milk' : ''}`}
+              className={`chip ${status === f.key ? 'border-ink bg-ink text-paper' : ''}`}
             >
               {f.label}
             </button>

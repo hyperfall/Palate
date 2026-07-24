@@ -14,12 +14,14 @@ import { supabaseBrowser } from '@/lib/supabase/client'
 export function SharePlan({ week }: { week: WeekSnapshot }) {
   const supabase = supabaseBrowser()
   const [url, setUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const empty = weekDishCount(week) === 0
 
   const share = async () => {
     if (!supabase || busy || empty) return
     setBusy(true)
+    setError(null)
     try {
       const slugs = week.days.flatMap((d) => d.meals.flatMap((m) => m.dishes.map((dish) => dish.slug)))
       const { data, error } = await supabase
@@ -27,7 +29,8 @@ export function SharePlan({ week }: { week: WeekSnapshot }) {
         .insert({ week, recipe_slugs: slugs })
         .select('id')
         .single()
-      if (!error && data) setUrl(`${window.location.origin}/plan/shared/${data.id}`)
+      if (error) setError(error.message)
+      else if (data) setUrl(`${window.location.origin}/plan/shared/${data.id}`)
     } finally {
       setBusy(false)
     }
@@ -53,8 +56,15 @@ export function SharePlan({ week }: { week: WeekSnapshot }) {
   }
 
   return (
-    <button type="button" disabled={busy || empty} onClick={() => void share()} className="chip disabled:opacity-50">
-      Share this week
-    </button>
+    <div className="grid gap-1">
+      <button type="button" disabled={busy || empty} onClick={() => void share()} className="chip disabled:opacity-50">
+        Share this week
+      </button>
+      {error && (
+        <span className="font-mono text-[0.7rem] text-flame" role="alert">
+          Couldn&rsquo;t create link: {error}
+        </span>
+      )}
+    </div>
   )
 }

@@ -158,6 +158,9 @@ create table if not exists public.plan_shares (
   week jsonb,
   created_at timestamptz not null default now()
 );
+-- Back-fill the week snapshot column onto tables created before it existed
+-- (`create table if not exists` above is a no-op once the table is present).
+alter table public.plan_shares add column if not exists week jsonb;
 alter table public.plan_shares enable row level security;
 drop policy if exists "create own share" on public.plan_shares;
 create policy "create own share" on public.plan_shares for insert with check (user_id = auth.uid());

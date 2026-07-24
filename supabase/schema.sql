@@ -327,3 +327,47 @@ end;
 $$;
 revoke all on function public.join_household(text) from public;
 grant execute on function public.join_household(text) to authenticated;
+
+-- ── Shopping Mode (household-synced checklist) ──────────────────────────────
+-- A row = the item is "in the basket"; check = insert, uncheck = delete by
+-- item_key. Reuses the household machinery: set_row_household() stamps
+-- household_id, and RLS is own-or-household via my_household_id(). item_key is
+-- the shopping list's stable ShoppingLine key (id:<n> / name:<x>).
+create table if not exists public.shopping_checks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  household_id uuid references public.households (id) on delete cascade,
+  item_key text not null,
+  created_at timestamptz not null default now()
+);
+-- One check per item within a scope (household when shared, else the user).
+create unique index if not exists shopping_checks_household_key
+  on public.shopping_checks (household_id, item_key) where household_id is not null;
+create unique index if not exists shopping_checks_user_key
+  on public.shopping_checks (user_id, item_key) where household_id is null;
+
+-- So realtime DELETE events carry item_key (not just the pk) for live uncheck.
+alter table public.shopping_checks replica identity full;
+
+drop trigger if exists shopping_checks_household on public.shopping_checks;
+create trigger shopping_checks_household before insert or update on public.shopping_checks
+  for each row execute function public.set_row_household();
+
+alter table public.shopping_checks enable row level security;
+drop policy if exists "check access" on public.shopping_checks;
+create policy "check access" on public.shopping_checks
+  for all
+  using (user_id = auth.uid() or household_id = public.my_household_id())
+  with check (user_id = auth.uid());
+
+-- Live sync across household members. Guarded so re-running never errors if the
+-- table is already in the publication.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'shopping_checks'
+  ) then
+    alter publication supabase_realtime add table public.shopping_checks;
+  end if;
+end $$;

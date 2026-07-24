@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { GroceryPanel } from '@/components/GroceryPanel'
 import { MealBoard } from '@/components/MealBoard'
+import { ShoppingModeLauncher } from '@/components/ShoppingMode'
 import { getHouseholdContext } from '@/lib/household'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
@@ -100,6 +101,7 @@ export default async function PlanPage() {
                 </span>
               )}
             </div>
+            <ShoppingModeLauncher list={shopping} />
             <ShoppingList list={shopping} />
             <GroceryPanel lines={shopping.netted} />
           </div>

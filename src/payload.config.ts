@@ -10,6 +10,8 @@ import { AdEvents } from './collections/AdEvents'
 import { Authors } from './collections/Authors'
 import { BrandCards } from './collections/BrandCards'
 import { Cuisines } from './collections/Cuisines'
+import { GroceryEvents } from './collections/GroceryEvents'
+import { GroceryRetailers } from './collections/GroceryRetailers'
 import { Ingredients } from './collections/Ingredients'
 import { Media } from './collections/Media'
 import { PartnerRequests } from './collections/PartnerRequests'
@@ -47,7 +49,7 @@ export default buildConfig({
       titleSuffix: ' — Recipe platform',
     },
   },
-  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, AdEvents, Ratings, Users],
+  collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, AdEvents, GroceryRetailers, GroceryEvents, Ratings, Users],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

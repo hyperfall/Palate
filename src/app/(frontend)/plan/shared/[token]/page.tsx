@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { GroceryPanel } from '@/components/GroceryPanel'
 import { ShoppingList } from '@/components/ShoppingList'
 import { WeekCard } from '@/components/WeekCard'
 import { WeekCardActions } from '@/components/WeekCardActions'
@@ -61,6 +62,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         <WeekCard week={week} />
         <div className="mx-auto mt-8 max-w-[40rem]">
           <ShoppingList list={shopping} interactive={false} />
+          <GroceryPanel lines={shopping.netted} />
         </div>
         <WeekCardActions week={week} shopping={shopping} />
       </div>
@@ -82,6 +84,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         <WeekCard week={week} />
         <div className="mx-auto mt-8 max-w-[40rem]">
           <ShoppingList list={shopping} interactive={false} />
+          <GroceryPanel lines={shopping.netted} />
         </div>
         <WeekCardActions week={week} shopping={shopping} />
         <p className="mt-6 text-center text-[0.9375rem] text-slate">

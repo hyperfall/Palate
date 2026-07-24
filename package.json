@@ -20,6 +20,7 @@
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "seed:cuisines": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/worldCuisines.ts",
+    "seed:grocery": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/groceryRetailers.ts",
     "seed:cook-depth": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedCookDepth.ts",
     "clean:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/cleanIngredientNames.ts",
     "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts",

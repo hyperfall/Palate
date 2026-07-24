@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { GroceryPanel } from '@/components/GroceryPanel'
 import { MealBoard } from '@/components/MealBoard'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
@@ -90,6 +91,7 @@ export default async function PlanPage() {
               )}
             </div>
             <ShoppingList list={shopping} />
+            <GroceryPanel lines={shopping.netted} />
           </div>
 
           {leftovers.length > 0 && (

@@ -76,6 +76,8 @@ export interface Config {
     submissions: Submission;
     partnerRequests: PartnerRequest;
     adEvents: AdEvent;
+    groceryRetailers: GroceryRetailer;
+    groceryEvents: GroceryEvent;
     ratings: Rating;
     users: User;
     'payload-kv': PayloadKv;
@@ -94,6 +96,8 @@ export interface Config {
     submissions: SubmissionsSelect<false> | SubmissionsSelect<true>;
     partnerRequests: PartnerRequestsSelect<false> | PartnerRequestsSelect<true>;
     adEvents: AdEventsSelect<false> | AdEventsSelect<true>;
+    groceryRetailers: GroceryRetailersSelect<false> | GroceryRetailersSelect<true>;
+    groceryEvents: GroceryEventsSelect<false> | GroceryEventsSelect<true>;
     ratings: RatingsSelect<false> | RatingsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -969,6 +973,67 @@ export interface AdEvent {
   createdAt: string;
 }
 /**
+ * Where "Shop this list" sends people, by country. Add affiliate templates as programs get approved — links work without them.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "groceryRetailers".
+ */
+export interface GroceryRetailer {
+  id: number;
+  label: string;
+  /**
+   * Stable id for links and seeds, e.g. "tesco".
+   */
+  slug: string;
+  type: 'supermarket' | 'delivery' | 'marketplace';
+  /**
+   * ISO codes (GB, US, DE…). Leave empty to show everywhere.
+   */
+  countries?:
+    | {
+        code: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Search URL with {query}, e.g. https://www.tesco.com/groceries/en-GB/search?query={query}
+   */
+  searchUrlTemplate: string;
+  /**
+   * Optional wrapper with {url}, e.g. https://www.awin1.com/cread.php?awinmid=…&ued={url}. Leave empty until the program is approved.
+   */
+  affiliateUrlTemplate?: string | null;
+  network?: ('none' | 'awin' | 'amazon' | 'other') | null;
+  /**
+   * Higher shows first.
+   */
+  priority: number;
+  active?: boolean | null;
+  notes?: string | null;
+  impressions?: number | null;
+  clicks?: number | null;
+  /**
+   * Click-through %, all time.
+   */
+  ctr?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Impression/click log behind Shop this list. Written automatically.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "groceryEvents".
+ */
+export interface GroceryEvent {
+  id: number;
+  kind: 'impression' | 'click';
+  retailer: number | GroceryRetailer;
+  country?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Community star ratings — one per user per recipe. Written by the rate endpoint; the recipe’s average is kept in sync there.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1044,6 +1109,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'adEvents';
         value: number | AdEvent;
+      } | null)
+    | ({
+        relationTo: 'groceryRetailers';
+        value: number | GroceryRetailer;
+      } | null)
+    | ({
+        relationTo: 'groceryEvents';
+        value: number | GroceryEvent;
       } | null)
     | ({
         relationTo: 'ratings';
@@ -1446,6 +1519,43 @@ export interface AdEventsSelect<T extends boolean = true> {
   kind?: T;
   brandCard?: T;
   recipe?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "groceryRetailers_select".
+ */
+export interface GroceryRetailersSelect<T extends boolean = true> {
+  label?: T;
+  slug?: T;
+  type?: T;
+  countries?:
+    | T
+    | {
+        code?: T;
+        id?: T;
+      };
+  searchUrlTemplate?: T;
+  affiliateUrlTemplate?: T;
+  network?: T;
+  priority?: T;
+  active?: T;
+  notes?: T;
+  impressions?: T;
+  clicks?: T;
+  ctr?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "groceryEvents_select".
+ */
+export interface GroceryEventsSelect<T extends boolean = true> {
+  kind?: T;
+  retailer?: T;
+  country?: T;
   updatedAt?: T;
   createdAt?: T;
 }

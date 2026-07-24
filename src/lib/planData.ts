@@ -1,6 +1,18 @@
+import { getActiveHouseholdId } from './household'
 import { getPayloadClient } from './queries'
 import { supabaseServer } from './supabase/server'
 import type { PlanIngredient, Pantry } from './mealPlan'
+
+/**
+ * Scope a meal_plan/pantry query to the active context: the household's rows
+ * when a member, otherwise the user's personal (household_id null) rows. RLS
+ * grants access to both; this keeps the two views cleanly separate so leaving a
+ * household restores the personal week.
+ */
+function scopeToContext<T>(query: T, householdId: string | null): T {
+  const q = query as { eq: (c: string, v: string) => T; is: (c: string, v: null) => T }
+  return householdId ? q.eq('household_id', householdId) : q.is('household_id', null)
+}
 
 /**
  * Server-side reads for the /plan page: the signed-in user's meal-plan entries
@@ -35,9 +47,13 @@ async function userScoped() {
 export async function getPlanEntries(): Promise<PlanEntry[]> {
   const supabase = await userScoped()
   if (!supabase) return []
-  const { data } = await supabase
-    .from('meal_plan')
-    .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position')
+  const householdId = await getActiveHouseholdId()
+  const { data } = await scopeToContext(
+    supabase
+      .from('meal_plan')
+      .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position'),
+    householdId,
+  )
     .order('day')
     .order('position')
   return (data ?? []).map((r) => ({
@@ -56,10 +72,11 @@ export async function getPantryStaples(): Promise<Pantry> {
   const empty: Pantry = { ids: new Set(), names: new Set() }
   const supabase = await userScoped()
   if (!supabase) return empty
-  const { data } = await supabase
-    .from('pantry')
-    .select('ingredient_slug,ingredient_name')
-    .eq('is_staple', true)
+  const householdId = await getActiveHouseholdId()
+  const { data } = await scopeToContext(
+    supabase.from('pantry').select('ingredient_slug,ingredient_name'),
+    householdId,
+  ).eq('is_staple', true)
   const rows = data ?? []
   const names = new Set(rows.map((r) => String(r.ingredient_name).toLowerCase()))
   const ids = new Set<number>()
@@ -76,7 +93,11 @@ export async function getPantryStaples(): Promise<Pantry> {
 export async function getUserPantry(): Promise<Array<{ id: number | null; slug: string; name: string }>> {
   const supabase = await userScoped()
   if (!supabase) return []
-  const { data } = await supabase.from('pantry').select('ingredient_slug,ingredient_name').order('created_at')
+  const householdId = await getActiveHouseholdId()
+  const { data } = await scopeToContext(
+    supabase.from('pantry').select('ingredient_slug,ingredient_name'),
+    householdId,
+  ).order('created_at')
   const rows = data ?? []
   if (rows.length === 0) return []
   const payload = await getPayloadClient()

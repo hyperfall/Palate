@@ -199,3 +199,121 @@ alter table public.subscriptions enable row level security;
 drop policy if exists "read own subscription" on public.subscriptions;
 create policy "read own subscription" on public.subscriptions
   for select using (user_id = auth.uid());
+
+-- ── Household mode (shared plan + pantry + list) ─────────────────────────────
+-- Creating a household is a supporter perk (enforced server-side in the create
+-- route); joining is free. One household per user in v1. households and
+-- household_members are written only via the service role (create route) and
+-- the join_household RPC — regular users get read + leave.
+create table if not exists public.households (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default 'Our kitchen' check (char_length(trim(name)) between 1 and 60),
+  owner_id uuid not null references auth.users (id) on delete cascade,
+  invite_code text not null unique,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.household_members (
+  household_id uuid not null references public.households (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  role text not null default 'member' check (role in ('owner', 'member')),
+  joined_at timestamptz not null default now(),
+  primary key (household_id, user_id),
+  unique (user_id) -- one household per user (v1)
+);
+create index if not exists household_members_user_idx on public.household_members (user_id);
+
+alter table public.households enable row level security;
+alter table public.household_members enable row level security;
+
+-- Members read their household; nobody writes households directly (service role
+-- / RPC only), so no insert/update/delete policies for regular users.
+drop policy if exists "read own household" on public.households;
+create policy "read own household" on public.households
+  for select using (
+    id in (select household_id from public.household_members where user_id = auth.uid())
+  );
+
+-- Members read their household's membership list; anyone may leave (delete own).
+drop policy if exists "read household members" on public.household_members;
+create policy "read household members" on public.household_members
+  for select using (
+    household_id in (select household_id from public.household_members m where m.user_id = auth.uid())
+  );
+drop policy if exists "leave household" on public.household_members;
+create policy "leave household" on public.household_members
+  for delete using (user_id = auth.uid());
+
+-- Shared scope on plan + pantry: a nullable household_id, back-filled onto the
+-- existing tables (idempotent — the plan_shares lesson).
+alter table public.meal_plan add column if not exists household_id uuid references public.households (id) on delete set null;
+alter table public.pantry add column if not exists household_id uuid references public.households (id) on delete set null;
+create index if not exists meal_plan_household_idx on public.meal_plan (household_id);
+create index if not exists pantry_household_idx on public.pantry (household_id);
+
+-- Auto-stamp household_id from the writer's membership on every insert/update,
+-- so client mutations need no change and can never mis-set the scope. Fires
+-- for both because upserts (pantry "have it") land as updates.
+create or replace function public.set_row_household()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.household_id := (select household_id from public.household_members where user_id = auth.uid());
+  return new;
+end;
+$$;
+
+drop trigger if exists meal_plan_household on public.meal_plan;
+create trigger meal_plan_household before insert or update on public.meal_plan
+  for each row execute function public.set_row_household();
+drop trigger if exists pantry_household on public.pantry;
+create trigger pantry_household before insert or update on public.pantry
+  for each row execute function public.set_row_household();
+
+-- Access = your own rows OR your household's rows. WITH CHECK keeps user_id
+-- honest; the trigger owns household_id. (A member may delete a shared row —
+-- intentional for a shared week; only the row owner may update their own.)
+drop policy if exists "own plan" on public.meal_plan;
+create policy "plan access" on public.meal_plan
+  for all
+  using (
+    user_id = auth.uid()
+    or household_id in (select household_id from public.household_members where user_id = auth.uid())
+  )
+  with check (user_id = auth.uid());
+
+drop policy if exists "own pantry" on public.pantry;
+create policy "pantry access" on public.pantry
+  for all
+  using (
+    user_id = auth.uid()
+    or household_id in (select household_id from public.household_members where user_id = auth.uid())
+  )
+  with check (user_id = auth.uid());
+
+-- Join by invite code: security-definer so it can see households despite RLS.
+-- Refuses if the caller already belongs to a household (one per user, v1).
+create or replace function public.join_household(code text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  hid uuid;
+begin
+  if auth.uid() is null then raise exception 'not authenticated'; end if;
+  if exists (select 1 from public.household_members where user_id = auth.uid()) then
+    raise exception 'already in a household';
+  end if;
+  select id into hid from public.households where invite_code = code;
+  if hid is null then raise exception 'invalid code'; end if;
+  insert into public.household_members (household_id, user_id, role) values (hid, auth.uid(), 'member');
+  return hid;
+end;
+$$;
+revoke all on function public.join_household(text) from public;
+grant execute on function public.join_household(text) to authenticated;

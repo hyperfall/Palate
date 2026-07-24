@@ -32,7 +32,15 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
       .then(async ({ data }) => {
         setSignedIn(Boolean(data.user))
         if (!data.user) return
-        const { data: rows } = await supabase.from('meal_plan').select('id,day,meal').eq('recipe_slug', slug)
+        // Scope to the shared week when in a household, else personal rows.
+        const { data: membership } = await supabase
+          .from('household_members')
+          .select('household_id')
+          .maybeSingle()
+        const householdId = (membership?.household_id as string | undefined) ?? null
+        const base = supabase.from('meal_plan').select('id,day,meal').eq('recipe_slug', slug)
+        const scoped = householdId ? base.eq('household_id', householdId) : base.is('household_id', null)
+        const { data: rows } = await scoped
         setPlanned(
           (rows ?? []).map((r) => ({ id: r.id as string, day: r.day as number, meal: normalizeMeal(r.meal as string) })),
         )

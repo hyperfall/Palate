@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { GroceryPanel } from '@/components/GroceryPanel'
 import { MealBoard } from '@/components/MealBoard'
+import { getHouseholdContext } from '@/lib/household'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
 import { buildDishShoppingList, buildWeekSnapshot, weeklyCost } from '@/lib/mealPlan'
@@ -40,6 +41,7 @@ export default async function PlanPage() {
   const entries = await getPlanEntries()
   const recipes = await loadPlannedRecipes(entries.map((e) => e.slug))
   const pantry = await getPantryStaples()
+  const household = await getHouseholdContext()
 
   // A single ingredient-carrying snapshot drives the share, the shopping list,
   // and (once shared) the card + exports.
@@ -59,7 +61,15 @@ export default async function PlanPage() {
   return (
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[56ch]">
-        <p className="eyebrow m-0">Your week</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="eyebrow m-0">{household ? household.name : 'Your week'}</p>
+          <Link
+            href="/household"
+            className="font-mono text-[0.6875rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+          >
+            {household ? `Shared · ${household.members.length} →` : 'Cook with others →'}
+          </Link>
+        </div>
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Plan the week.</h1>
         <p className="mt-3 text-slate max-sm:hidden">
           Add recipes to days from any recipe page. The shopping list nets what overlaps and drops

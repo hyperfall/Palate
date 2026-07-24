@@ -702,32 +702,3 @@
 .slider:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-flame) 28%, transparent);
 }
-
-/*
- * Print → PDF: isolate the week card so "Save as PDF" yields the card alone,
- * no site chrome. Hide everything, reveal the card subtree, float it to the
- * page origin. `.no-print` opts any on-screen control out of print.
- */
-@media print {
-  @page {
-    margin: 1.5cm;
-  }
-  body * {
-    visibility: hidden !important;
-  }
-  .week-card,
-  .week-card * {
-    visibility: visible !important;
-  }
-  .week-card {
-    position: absolute;
-    left: 0;
-    top: 0;
-    margin: 0 !important;
-    max-width: 100% !important;
-    box-shadow: none !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-}

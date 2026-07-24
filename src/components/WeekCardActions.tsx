@@ -2,40 +2,58 @@
 
 import { useState } from 'react'
 
+import type { WeekShoppingList, WeekSnapshot } from '@/lib/mealPlan'
+import { renderWeekCanvas } from '@/lib/weekCardCanvas'
+import { renderWeekPdf } from '@/lib/weekCardPdf'
+
 /**
- * Export controls for the week card: Save as PDF (browser print, isolated by
- * the `@media print` rule), Download image (PNG via html-to-image on the
- * `.week-card` node), and Copy link. Marked `.no-print` so it never appears in
- * the exported artifact.
+ * Export controls for the shared week: Download image (PNG) and Download PDF,
+ * both painted from one theme-aware <canvas> renderer that includes the card
+ * and the shopping list, plus Copy link. No browser print, no html-to-image.
  */
-export function WeekCardActions() {
-  const [busy, setBusy] = useState(false)
+export function WeekCardActions({ week, shopping }: { week: WeekSnapshot; shopping: WeekShoppingList }) {
+  const [busy, setBusy] = useState<null | 'png' | 'pdf'>(null)
   const [failed, setFailed] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  const save = (blob: Blob, name: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   const downloadImage = async () => {
-    const el = document.querySelector<HTMLElement>('.week-card')
-    if (!el || busy) return
-    setBusy(true)
+    if (busy) return
+    setBusy('png')
     setFailed(false)
     try {
-      const { toPng } = await import('html-to-image')
-      // Fonts (next/font, same-origin) and photos (same-origin) embed fine.
-      // Guarded by a timeout so a browser that can't rasterize the SVG never
-      // leaves the button stuck — the user can fall back to Save as PDF.
-      const dataUrl = await Promise.race([
-        toPng(el, { pixelRatio: 2, backgroundColor: '#ffffff' }),
-        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('timed out')), 25_000)),
-      ])
-      const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = 'my-week.png'
-      a.click()
+      const canvas = await renderWeekCanvas({ week, shopping })
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'))
+      if (!blob) throw new Error('toBlob returned null')
+      save(blob, 'my-week.png')
     } catch (err) {
       console.error('[week card] image export failed:', err)
       setFailed(true)
     } finally {
-      setBusy(false)
+      setBusy(null)
+    }
+  }
+
+  const downloadPdf = async () => {
+    if (busy) return
+    setBusy('pdf')
+    setFailed(false)
+    try {
+      const blob = await renderWeekPdf({ week, shopping })
+      save(blob, 'my-week.pdf')
+    } catch (err) {
+      console.error('[week card] pdf export failed:', err)
+      setFailed(true)
+    } finally {
+      setBusy(null)
     }
   }
 
@@ -50,22 +68,20 @@ export function WeekCardActions() {
   }
 
   return (
-    <div className="no-print mt-6 grid justify-items-center gap-2">
+    <div className="mt-8 grid justify-items-center gap-2">
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <button type="button" onClick={() => window.print()} className="chip">
-          Save as PDF
+        <button type="button" onClick={() => void downloadImage()} disabled={busy !== null} className="chip disabled:opacity-50">
+          {busy === 'png' ? 'Rendering…' : 'Download image'}
         </button>
-        <button type="button" onClick={() => void downloadImage()} disabled={busy} className="chip disabled:opacity-50">
-          {busy ? 'Rendering…' : 'Download image'}
+        <button type="button" onClick={() => void downloadPdf()} disabled={busy !== null} className="chip disabled:opacity-50">
+          {busy === 'pdf' ? 'Building…' : 'Download PDF'}
         </button>
         <button type="button" onClick={() => void copyLink()} className="chip">
           {copied ? 'Copied ✓' : 'Copy link'}
         </button>
       </div>
       {failed && (
-        <p className="m-0 text-[0.8125rem] text-heat">
-          Couldn’t render the image here — try “Save as PDF”.
-        </p>
+        <p className="m-0 text-[0.8125rem] text-heat">Couldn’t generate that file — please try again.</p>
       )}
     </div>
   )

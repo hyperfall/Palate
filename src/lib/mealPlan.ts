@@ -104,7 +104,7 @@ export const MEAL_LABELS: Record<MealType, string> = {
 export const normalizeMeal = (m?: string | null): MealType =>
   (MEAL_ORDER as readonly string[]).includes(m ?? '') ? (m as MealType) : 'dinner'
 
-export type WeekDish = { slug: string; title: string; image: string | null }
+export type WeekDish = { slug: string; title: string; image: string | null; ingredients: PlanIngredient[] }
 export type WeekMeal = { meal: MealType; dishes: WeekDish[] }
 /** A day carries only the meals that actually have dishes, in MEAL_ORDER. */
 export type WeekDaySlot = { day: number; meals: WeekMeal[] }
@@ -125,6 +125,7 @@ export function buildWeekSnapshot(
     title: string
     image: string | null
     position: number
+    ingredients?: PlanIngredient[]
   }>,
   meta: { title?: string | null; weekOf?: string | null } = {},
 ): WeekSnapshot {
@@ -135,7 +136,7 @@ export function buildWeekSnapshot(
     if (!byDay.has(e.day)) byDay.set(e.day, new Map())
     const meals = byDay.get(e.day)!
     if (!meals.has(meal)) meals.set(meal, [])
-    meals.get(meal)!.push({ slug: e.slug, title: e.title, image: e.image })
+    meals.get(meal)!.push({ slug: e.slug, title: e.title, image: e.image, ingredients: e.ingredients ?? [] })
   }
   return {
     title: meta.title ?? null,
@@ -152,3 +153,47 @@ export function buildWeekSnapshot(
 
 export const weekDishCount = (w: WeekSnapshot): number =>
   w.days.reduce((n, d) => n + d.meals.reduce((k, m) => k + m.dishes.length, 0), 0)
+
+// --- Dish-grouped shopping list --------------------------------------------
+//
+// Two views of the same week, computed purely from a snapshot so the plan page,
+// the shared card, and the canvas exports all render from one source:
+//   • `dishes` — one collapsible category per distinct dish, listing that dish's
+//     FULL ingredients ("what I need to cook this"), never pantry-filtered.
+//   • `netted` — the consolidated buy-list across every dish instance, overlaps
+//     merged on canonical id and pantry staples dropped ("everything to buy").
+
+export type DishShoppingGroup = { slug: string; title: string; image: string | null; lines: ShoppingLine[] }
+export type WeekShoppingList = { dishes: DishShoppingGroup[]; netted: ShoppingLine[] }
+
+/** Flatten a snapshot to its dish instances in snapshot order (day → meal → position). */
+const weekDishes = (w: WeekSnapshot): WeekDish[] =>
+  w.days.flatMap((d) => d.meals.flatMap((m) => m.dishes))
+
+export function buildDishShoppingList(week: WeekSnapshot, pantry: Pantry = EMPTY_PANTRY): WeekShoppingList {
+  const instances = weekDishes(week)
+
+  // One category per distinct dish (first occurrence wins), full ingredients.
+  const seen = new Set<string>()
+  const dishes: DishShoppingGroup[] = []
+  for (const dish of instances) {
+    if (seen.has(dish.slug)) continue
+    seen.add(dish.slug)
+    const ingredients = dish.ingredients ?? []
+    dishes.push({
+      slug: dish.slug,
+      title: dish.title,
+      image: dish.image,
+      lines: consolidateShoppingList([{ title: dish.title, ingredients }]),
+    })
+  }
+
+  // Buy-list nets across ALL instances (a dish planned twice is cooked twice),
+  // matching the plan page's per-entry behaviour.
+  const netted = consolidateShoppingList(
+    instances.map((d) => ({ title: d.title, ingredients: d.ingredients ?? [] })),
+    pantry,
+  )
+
+  return { dishes, netted }
+}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { MealBoard } from '@/components/MealBoard'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
-import { buildWeekSnapshot, consolidateShoppingList, weeklyCost } from '@/lib/mealPlan'
+import { buildDishShoppingList, buildWeekSnapshot, weeklyCost } from '@/lib/mealPlan'
 import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/planData'
 import { serverUser } from '@/lib/supabase/server'
 
@@ -40,10 +40,10 @@ export default async function PlanPage() {
   const recipes = await loadPlannedRecipes(entries.map((e) => e.slug))
   const pantry = await getPantryStaples()
 
-  const shopping = consolidateShoppingList(
-    entries.map((e) => ({ title: e.title, ingredients: recipes.get(e.slug)?.ingredients ?? [] })),
-    pantry,
-  )
+  // A single ingredient-carrying snapshot drives the share, the shopping list,
+  // and (once shared) the card + exports.
+  const week = buildWeekSnapshot(entries.map((e) => ({ ...e, ingredients: recipes.get(e.slug)?.ingredients ?? [] })))
+  const shopping = buildDishShoppingList(week, pantry)
   const cost = weeklyCost(
     entries.map((e) => {
       const r = recipes.get(e.slug)
@@ -66,7 +66,7 @@ export default async function PlanPage() {
         </p>
         {entries.length > 0 && (
           <div className="mt-4">
-            <SharePlan week={buildWeekSnapshot(entries)} />
+            <SharePlan week={week} />
           </div>
         )}
       </header>
@@ -89,7 +89,7 @@ export default async function PlanPage() {
                 </span>
               )}
             </div>
-            <ShoppingList lines={shopping} />
+            <ShoppingList list={shopping} />
           </div>
 
           {leftovers.length > 0 && (

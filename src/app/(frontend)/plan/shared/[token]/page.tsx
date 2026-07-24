@@ -2,9 +2,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ShoppingList } from '@/components/ShoppingList'
 import { WeekCard } from '@/components/WeekCard'
 import { WeekCardActions } from '@/components/WeekCardActions'
-import { buildWeekSnapshot, consolidateShoppingList, type WeekSnapshot } from '@/lib/mealPlan'
+import { buildDishShoppingList, buildWeekSnapshot, consolidateShoppingList, type WeekSnapshot } from '@/lib/mealPlan'
 import { imageFrom } from '@/lib/media'
 import { loadPlannedRecipes } from '@/lib/planData'
 import { findRecipeBySlug } from '@/lib/queries'
@@ -37,6 +38,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
   // Preview the card look without a real share (both /plan and real shares are
   // auth/cloud-gated). Builds a week from real catalog recipes.
   if (token === 'sample') {
+    const planned = await loadPlannedRecipes(SAMPLE.map((s) => s.slug))
     const entries = []
     for (let i = 0; i < SAMPLE.length; i++) {
       const s = SAMPLE[i]
@@ -49,13 +51,18 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         title: recipe.title,
         image: imageFrom(recipe.heroImage, 'card')?.url ?? null,
         position: i,
+        ingredients: planned.get(s.slug)?.ingredients ?? [],
       })
     }
     const week = buildWeekSnapshot(entries, { title: 'A week on Palate', weekOf: 'Week of 21 July' })
+    const shopping = buildDishShoppingList(week)
     return (
       <div className="shell py-10 lg:py-14">
         <WeekCard week={week} />
-        <WeekCardActions />
+        <div className="mx-auto mt-8 max-w-[40rem]">
+          <ShoppingList list={shopping} interactive={false} />
+        </div>
+        <WeekCardActions week={week} shopping={shopping} />
       </div>
     )
   }
@@ -66,13 +73,18 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
   const { data } = await supabase.from('plan_shares').select('recipe_slugs, week').eq('id', token).maybeSingle()
   if (!data) notFound()
 
-  // New shares snapshot the structured week → render the card.
+  // New shares snapshot the structured week → render the card + shopping list.
   if (data.week) {
+    const week = data.week as WeekSnapshot
+    const shopping = buildDishShoppingList(week)
     return (
       <div className="shell py-10 lg:py-14">
-        <WeekCard week={data.week as WeekSnapshot} />
-        <WeekCardActions />
-        <p className="no-print mt-6 text-center text-[0.9375rem] text-slate">
+        <WeekCard week={week} />
+        <div className="mx-auto mt-8 max-w-[40rem]">
+          <ShoppingList list={shopping} interactive={false} />
+        </div>
+        <WeekCardActions week={week} shopping={shopping} />
+        <p className="mt-6 text-center text-[0.9375rem] text-slate">
           Want your own?{' '}
           <Link href="/plan" className="text-flame underline underline-offset-4">
             Plan your week on Palate

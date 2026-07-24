@@ -3,17 +3,59 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { Disclosure } from '@/components/Disclosure'
+import type { ShoppingLine, WeekShoppingList } from '@/lib/mealPlan'
 import { supabaseBrowser } from '@/lib/supabase/client'
-import type { ShoppingLine } from '@/lib/mealPlan'
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 
+/** One buy-list line. `onStaple` (interactive plan page only) adds a "have it"
+ *  action that marks the ingredient a pantry staple; `showRecipes` prints which
+ *  dishes need it (useful in the netted list, noise inside a single dish). */
+function LineRow({
+  line,
+  onStaple,
+  busy,
+  showRecipes,
+}: {
+  line: ShoppingLine
+  onStaple?: (l: ShoppingLine) => void
+  busy?: boolean
+  showRecipes?: boolean
+}) {
+  return (
+    <li className="grid gap-0.5 border-b border-rule py-2 last:border-b-0">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-[1.0625rem]">
+          {line.name}
+          {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
+        </span>
+        {onStaple && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onStaple(line)}
+            title="I always have this — hide it from the list"
+            className="shrink-0 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline disabled:opacity-50"
+          >
+            have it
+          </button>
+        )}
+      </div>
+      {showRecipes && line.recipes.length > 1 && (
+        <span className="font-mono text-[0.6875rem] text-slate/70">for {line.recipes.join(', ')}</span>
+      )}
+    </li>
+  )
+}
+
 /**
- * The consolidated list. "have it" marks an ingredient as a pantry staple, which
- * drops it from this and every future list (pantry memory) — the page re-nets on
- * refresh with the new staple excluded.
+ * The week's shopping list in two views: a netted "Everything to buy" section
+ * (overlaps merged, staples droppable) plus one collapsible category per dish
+ * showing its full ingredients. Interactive on the plan page (the "have it"
+ * staple action re-nets on refresh); read-only on a shared card.
  */
-export function ShoppingList({ lines }: { lines: ShoppingLine[] }) {
+export function ShoppingList({ list, interactive = true }: { list: WeekShoppingList; interactive?: boolean }) {
   const supabase = supabaseBrowser()
   const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
@@ -34,34 +76,65 @@ export function ShoppingList({ lines }: { lines: ShoppingLine[] }) {
     }
   }
 
-  if (lines.length === 0) {
-    return <p className="mt-4 text-[0.9375rem] text-slate">Nothing to buy — add recipes to your week.</p>
+  if (list.dishes.length === 0) {
+    return (
+      <p className="mt-4 text-[0.9375rem] text-slate">
+        {interactive ? 'Nothing to buy — add recipes to your week.' : 'No dishes in this week.'}
+      </p>
+    )
   }
 
+  const onStaple = interactive ? markStaple : undefined
+
   return (
-    <ul className="mt-4 grid list-none gap-2.5 p-0">
-      {lines.map((line) => (
-        <li key={line.key} className="grid gap-0.5 border-b border-rule pb-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-[1.0625rem]">
-              {line.name}
-              {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
+    <div className="mt-4 border-t border-rule">
+      {/* Netted buy-list — open by default */}
+      <Disclosure
+        defaultOpen
+        title={<span className="font-display text-[1.0625rem] text-ink">Everything to buy</span>}
+        meta={`${list.netted.length} ${list.netted.length === 1 ? 'item' : 'items'}`}
+      >
+        {list.netted.length === 0 ? (
+          <p className="text-[0.9375rem] text-slate">All set — every ingredient is a pantry staple.</p>
+        ) : (
+          <ul className="grid list-none gap-0 p-0">
+            {list.netted.map((line) => (
+              <LineRow key={line.key} line={line} onStaple={onStaple} busy={busy === line.key} showRecipes />
+            ))}
+          </ul>
+        )}
+      </Disclosure>
+
+      {/* One collapsible category per dish — collapsed by default */}
+      {list.dishes.map((dish) => (
+        <Disclosure
+          key={dish.slug}
+          title={
+            <span className="flex items-center gap-2.5">
+              {dish.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- small same-origin thumb
+                <img src={dish.image} alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded border border-rule object-cover" />
+              ) : (
+                <span aria-hidden="true" className="grid h-7 w-7 shrink-0 place-items-center rounded border border-dashed border-rule bg-wash text-slate/40">
+                  ◵
+                </span>
+              )}
+              <span className="min-w-0 truncate font-display text-[1.0625rem] text-ink">{dish.title}</span>
             </span>
-            <button
-              type="button"
-              disabled={busy === line.key}
-              onClick={() => void markStaple(line)}
-              title="I always have this — hide it from the list"
-              className="shrink-0 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline disabled:opacity-50"
-            >
-              have it
-            </button>
-          </div>
-          {line.recipes.length > 1 && (
-            <span className="font-mono text-[0.6875rem] text-slate/70">for {line.recipes.join(', ')}</span>
+          }
+          meta={`${dish.lines.length} ${dish.lines.length === 1 ? 'item' : 'items'}`}
+        >
+          {dish.lines.length === 0 ? (
+            <p className="text-[0.9375rem] text-slate">No ingredients recorded.</p>
+          ) : (
+            <ul className="grid list-none gap-0 p-0">
+              {dish.lines.map((line) => (
+                <LineRow key={line.key} line={line} />
+              ))}
+            </ul>
           )}
-        </li>
+        </Disclosure>
       ))}
-    </ul>
+    </div>
   )
 }

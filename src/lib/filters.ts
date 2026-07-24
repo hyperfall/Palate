@@ -69,8 +69,6 @@ const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', 'foryou', ...T
 /** The rating thresholds the catalog offers as filter chips. */
 export const RATING_CHOICES = [3, 4, 4.5] as const
 
-/** Per-serving cost ceilings offered as chips (cents ≈ pence). */
-export const COST_CHOICES = [200, 300, 500] as const
 /** Equipment values a recipe may require (mirrors the schema select). */
 export const EQUIPMENT_VALUES = new Set<string>([
   'stovetop', 'oven', 'microwave', 'grill', 'blender', 'food-processor', 'slow-cooker', 'air-fryer', 'no-cook',

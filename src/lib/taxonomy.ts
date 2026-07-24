@@ -79,13 +79,6 @@ export const MAIN_INGREDIENTS = [
 
 export type MainIngredient = (typeof MAIN_INGREDIENTS)[number]['value']
 
-/** Per-serving calorie ceilings for the catalog facet. */
-export const CALORIE_BUCKETS = [
-  { label: 'Under 300 kcal', value: 300 },
-  { label: 'Under 500 kcal', value: 500 },
-  { label: 'Under 700 kcal', value: 700 },
-] as const
-
 export const DIETARY_TAGS = [
   { label: 'Vegan', value: 'vegan' },
   { label: 'Vegetarian', value: 'vegetarian' },

@@ -38,21 +38,5 @@ export type SavedItem = {
   created_at: string
 }
 
-export type PantryRow = {
-  id: string
-  ingredient_slug: string
-  ingredient_name: string
-  is_staple: boolean
-}
-
-export type MealPlanEntry = {
-  id: string
-  day: number
-  recipe_slug: string
-  recipe_title: string
-  recipe_image: string | null
-  position: number
-}
-
 /** Weekday labels for the meal board, index 0 = Monday. */
 export const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const

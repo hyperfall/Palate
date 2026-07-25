@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { Disclosure } from '@/components/Disclosure'
@@ -57,20 +56,33 @@ function LineRow({
  */
 export function ShoppingList({ list, interactive = true }: { list: WeekShoppingList; interactive?: boolean }) {
   const supabase = supabaseBrowser()
-  const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
+  // Optimistically hide a line the moment "have it" is tapped — no full-page
+  // refresh. Reconciled from the server on the next real navigation.
+  const [removed, setRemoved] = useState<Set<string>>(new Set())
+  const [error, setError] = useState<string | null>(null)
 
   const markStaple = async (line: ShoppingLine) => {
     if (!supabase) return
     setBusy(line.key)
+    setError(null)
+    setRemoved((prev) => new Set(prev).add(line.key))
     try {
-      const { error } = await supabase
+      const { error: err } = await supabase
         .from('pantry')
         .upsert(
           { ingredient_slug: slugify(line.name), ingredient_name: line.name, is_staple: true },
           { onConflict: 'user_id,ingredient_slug' },
         )
-      if (!error) router.refresh()
+      if (err) {
+        // Restore the line and tell the cook, rather than failing silently.
+        setRemoved((prev) => {
+          const next = new Set(prev)
+          next.delete(line.key)
+          return next
+        })
+        setError(`Couldn’t save “${line.name}” as a staple — try again.`)
+      }
     } finally {
       setBusy(null)
     }
@@ -85,20 +97,22 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
   }
 
   const onStaple = interactive ? markStaple : undefined
+  const visibleNetted = list.netted.filter((l) => !removed.has(l.key))
 
   return (
     <div className="mt-4 border-t border-rule">
+      {error && <p className="mt-2 font-mono text-[0.75rem] text-heat">{error}</p>}
       {/* Netted buy-list — open by default */}
       <Disclosure
         defaultOpen
         title={<span className="font-display text-[1.0625rem] text-ink">Everything to buy</span>}
-        meta={`${list.netted.length} ${list.netted.length === 1 ? 'item' : 'items'}`}
+        meta={`${visibleNetted.length} ${visibleNetted.length === 1 ? 'item' : 'items'}`}
       >
-        {list.netted.length === 0 ? (
+        {visibleNetted.length === 0 ? (
           <p className="text-[0.9375rem] text-slate">All set — every ingredient is a pantry staple.</p>
         ) : (
           <ul className="grid list-none gap-0 p-0">
-            {list.netted.map((line) => (
+            {visibleNetted.map((line) => (
               <LineRow key={line.key} line={line} onStaple={onStaple} busy={busy === line.key} showRecipes />
             ))}
           </ul>

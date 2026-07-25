@@ -55,6 +55,10 @@ function buildCsp(nonce: string): string {
     // Creator video embeds (VideoEmbed allow-lists these providers).
     `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://www.tiktok.com`,
     `media-src 'self' https: blob:`,
+    // Report violations (Reporting-API group + legacy fallback) so a mis-sourced
+    // directive surfaces in the logs rather than silently breaking in prod.
+    `report-to csp`,
+    `report-uri /csp-report`,
     ...(isProd ? ['upgrade-insecure-requests'] : []),
   ]
   return directives.join('; ')
@@ -72,6 +76,8 @@ export async function proxy(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
   response.headers.set('Content-Security-Policy', csp)
+  // Names the 'csp' report-to group used by the CSP above.
+  response.headers.set('Reporting-Endpoints', 'csp="/csp-report"')
 
   if (!request.cookies.get(VISITOR_COOKIE)) {
     response.cookies.set(VISITOR_COOKIE, crypto.randomUUID(), {
@@ -106,5 +112,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Public pages only — the admin panel and API have no brand slots to rotate.
-  matcher: ['/((?!admin|api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!admin|api|csp-report|_next/static|_next/image|favicon.ico).*)'],
 }

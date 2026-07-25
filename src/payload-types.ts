@@ -916,6 +916,10 @@ export interface Submission {
    * Set automatically when approved.
    */
   promotedRecipe?: (number | null) | Recipe;
+  /**
+   * Set when a creator edits an existing recipe. On approval, that recipe is updated in place rather than a new one created.
+   */
+  editsRecipe?: (number | null) | Recipe;
   moderationStatus: 'pending' | 'approved' | 'rejected';
   /**
    * Legacy Payload-admin submitter link — unused for creator submissions. The real submitter is in Creator name / handle / email above (Supabase account).
@@ -1534,6 +1538,7 @@ export interface SubmissionsSelect<T extends boolean = true> {
   creatorAvatar?: T;
   videoUrl?: T;
   promotedRecipe?: T;
+  editsRecipe?: T;
   moderationStatus?: T;
   submittedBy?: T;
   submitterEmail?: T;

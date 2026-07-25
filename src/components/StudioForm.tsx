@@ -71,6 +71,9 @@ export function StudioForm({
   const [story, setStory] = useState('')
   const [storyMarkdown, setStoryMarkdown] = useState('')
   const [storyImageIds, setStoryImageIds] = useState<number[]>([])
+  const [editRecipeId, setEditRecipeId] = useState<number | null>(null)
+  const [editTitle, setEditTitle] = useState<string | null>(null)
+  const [keepHeroImageId, setKeepHeroImageId] = useState<number | null>(null)
   const [cuisine, setCuisine] = useState('')
   const [course, setCourse] = useState('dinner')
   const [mainIngredient, setMainIngredient] = useState('vegetables')
@@ -87,6 +90,43 @@ export function StudioForm({
     { ...emptyIngredientRow },
   ])
   const [stepRows, setStepRows] = useState<string[]>(['', '', ''])
+
+  // Edit mode: ?edit=<recipeId> pre-fills the form with the creator's own recipe.
+  // Resubmitting sends it back through review before it replaces the live version.
+  useEffect(() => {
+    const editId = Number(new URLSearchParams(window.location.search).get('edit'))
+    if (!Number.isInteger(editId) || editId <= 0) return
+    let active = true
+    void fetch(`/studio/recipe?id=${editId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!active || !d) return
+        setEditRecipeId(d.id)
+        setEditTitle(d.title)
+        setKeepHeroImageId(d.heroImageId ?? null)
+        if (d.heroImageUrl) setPhotoUrl(d.heroImageUrl)
+        setTitle(d.title ?? '')
+        setStory(d.story ?? '')
+        setStoryMarkdown(d.storyMarkdown ?? '')
+        setStoryImageIds(Array.isArray(d.storyImageIds) ? d.storyImageIds : [])
+        setCuisine(d.cuisine ? String(d.cuisine) : '')
+        setCourse(d.course ?? 'dinner')
+        setMainIngredient(d.mainIngredient ?? 'vegetables')
+        setDifficulty(d.difficulty ?? 'easy')
+        setServings(d.servings ?? 2)
+        setPrepMinutes(d.prepMinutes ?? 10)
+        setCookMinutes(d.cookMinutes ?? 20)
+        setTaste({ spiciness: d.spiciness ?? 0, sweetness: d.sweetness ?? 0, richness: d.richness ?? 0, effort: d.effort ?? 0 })
+        setDiets(Array.isArray(d.dietaryTags) ? d.dietaryTags : [])
+        setVideoUrl(d.videoUrl ?? '')
+        setIngredientRows(d.ingredients?.length ? d.ingredients : [{ ...emptyIngredientRow }, { ...emptyIngredientRow }])
+        setStepRows(d.steps?.length ? d.steps : ['', '', ''])
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!supabase) {
@@ -252,6 +292,8 @@ export function StudioForm({
           story: story.trim() || undefined,
           storyMarkdown: storyMarkdown.trim() || undefined,
           storyImageIds: storyImageIds.length ? storyImageIds : undefined,
+          ...(editRecipeId ? { editsRecipe: editRecipeId } : {}),
+          ...(!photo && keepHeroImageId ? { keepHeroImageId } : {}),
           ...taste,
           ingredients,
           steps,
@@ -260,6 +302,14 @@ export function StudioForm({
       const res = await fetch('/studio/submit', { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Submission failed.')
+      if (editRecipeId) {
+        // Edited recipe: it stays live as-is until the edit is approved.
+        setNotice({
+          kind: 'ok',
+          text: 'Changes submitted — a human reviews them, then they replace the live recipe. It stays published meanwhile.',
+        })
+        return
+      }
       setNotice({
         kind: 'ok',
         text: 'Submitted — a human reviews it next, then it goes live under your name.',
@@ -312,13 +362,22 @@ export function StudioForm({
 
   return (
     <>
-    <p className="mb-8 text-[0.9375rem] text-slate">
-      Tracking what you’ve already sent?{' '}
-      <Link href="/dashboard" className="text-flame underline underline-offset-4">
-        See your recipes on the dashboard
-      </Link>
-      .
-    </p>
+    {editRecipeId ? (
+      <div className="mb-8 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
+        <p className="m-0 text-[0.9375rem] text-ink">
+          Editing <span className="font-semibold">{editTitle ?? 'your recipe'}</span>. Changes go back for review — the live
+          recipe stays as it is until they’re approved.
+        </p>
+      </div>
+    ) : (
+      <p className="mb-8 text-[0.9375rem] text-slate">
+        Tracking what you’ve already sent?{' '}
+        <Link href="/dashboard" className="text-flame underline underline-offset-4">
+          See your recipes on the dashboard
+        </Link>
+        .
+      </p>
+    )}
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
     <form onSubmit={submit} className="grid min-w-0 grid-cols-1 gap-6">
       <label className={labelCls}>
@@ -520,7 +579,7 @@ export function StudioForm({
       )}
 
       <button type="submit" disabled={busy} className="btn-primary justify-self-start disabled:opacity-60">
-        {busy ? 'Sending…' : 'Submit for review'}
+        {busy ? 'Sending…' : editRecipeId ? 'Submit changes for review' : 'Submit for review'}
       </button>
     </form>
 

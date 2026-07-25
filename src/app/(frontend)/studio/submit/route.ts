@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
     story?: string
     storyMarkdown?: string
     storyImageIds?: number[]
+    editsRecipe?: number
+    keepHeroImageId?: number
     cuisine: number
     course: string
     mainIngredient: string
@@ -86,6 +88,19 @@ export async function POST(request: NextRequest) {
 
   const payload = await getPayloadClient()
 
+  // Editing an existing recipe → verify the creator owns it before linking.
+  let editsRecipe: number | undefined
+  if (Number.isInteger(recipe.editsRecipe)) {
+    const target = await payload
+      .findByID({ collection: 'recipes', id: recipe.editsRecipe as number, depth: 1 })
+      .catch(() => null)
+    const owner = target && typeof target.author === 'object' ? (target.author.creatorId ?? null) : null
+    if (!target || owner !== user.id) {
+      return NextResponse.json({ error: 'You can only edit your own recipes.' }, { status: 403 })
+    }
+    editsRecipe = recipe.editsRecipe as number
+  }
+
   // The creator's own photograph — the whole point of the platform.
   let heroImage: number | undefined
   const photo = form.get('photo')
@@ -116,6 +131,10 @@ export async function POST(request: NextRequest) {
       },
     })
     heroImage = media.id
+  }
+  // Editing without a new photo: keep the recipe's current hero image.
+  if (heroImage === undefined && Number.isInteger(recipe.keepHeroImageId)) {
+    heroImage = recipe.keepHeroImageId
   }
 
   // The creator's avatar id lives in their auth metadata; if that media was since
@@ -169,6 +188,7 @@ export async function POST(request: NextRequest) {
         prepMinutes: recipe.prepMinutes,
         cookMinutes: recipe.cookMinutes,
         difficulty: recipe.difficulty,
+        ...(editsRecipe ? { editsRecipe } : {}),
         moderationStatus: 'pending',
         creatorId: user.id,
         creatorName: user.user_metadata?.display_name ?? null,

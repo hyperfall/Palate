@@ -49,6 +49,41 @@ export const Submissions: CollectionConfig = {
         const relId = (v: unknown): number | undefined =>
           typeof v === 'object' && v ? (v as { id: number }).id : (v as number | undefined) ?? undefined
 
+        // Fields that live only on the submission, never copied onto a recipe.
+        const stripMeta = (d: Record<string, unknown>) => {
+          const {
+            id: _id, moderationStatus: _m, submittedBy: _s, submitterEmail: _se,
+            creatorId: _ci, creatorName: _cn, creatorEmail: _ce, creatorHandle: _ch,
+            creatorAvatar: _cav, promotedRecipe: _p, editsRecipe: _er, reviewNotes: _rn,
+            videoUrl: _v, heroImage: _hi, storyImages: _si, createdAt: _ca, updatedAt: _ua,
+            ...rest
+          } = d
+          return rest
+        }
+        const imageOverrides = (d: Record<string, unknown>) => ({
+          ...(relId(d.heroImage) ? { heroImage: relId(d.heroImage) } : {}),
+          ...(Array.isArray(d.storyImages)
+            ? { storyImages: (d.storyImages as unknown[]).map(relId).filter((n): n is number => typeof n === 'number') }
+            : {}),
+          ...(d.videoUrl ? { videoUrl: d.videoUrl } : {}),
+        })
+
+        // Edit of an existing recipe → update it in place, keep its author/slug.
+        const editId = relId(doc.editsRecipe)
+        if (editId) {
+          await payload.update({
+            collection: 'recipes',
+            id: editId,
+            req,
+            data: { ...stripMeta(doc as Record<string, unknown>), ...imageOverrides(doc as Record<string, unknown>) } as never,
+          })
+          const updated = await payload.findByID({ collection: 'recipes', id: editId, req }).catch(() => null)
+          const nut = updated ? await computeRecipeNutrition(payload, updated as never).catch(() => null) : null
+          if (nut) await payload.update({ collection: 'recipes', id: editId, data: { nutrition: nut } as never, req })
+          await payload.update({ collection: 'submissions', id: doc.id, data: { promotedRecipe: editId }, req })
+          return doc
+        }
+
         const authorName = doc.creatorName || 'Palate community'
         const creatorId = (doc.creatorId as string | null) || null
 
@@ -103,38 +138,12 @@ export const Submissions: CollectionConfig = {
           })
         }
 
-        const {
-          id: _id,
-          moderationStatus: _m,
-          submittedBy: _s,
-          submitterEmail: _se,
-          creatorId: _ci,
-          creatorName: _cn,
-          creatorEmail: _ce,
-          creatorHandle: _ch,
-          creatorAvatar: _cav,
-          promotedRecipe: _p,
-          reviewNotes: _rn,
-          videoUrl: _v,
-          heroImage: _hi,
-          createdAt: _ca,
-          updatedAt: _ua,
-          ...body
-        } = doc as Record<string, unknown> & { id: number }
-
         const recipe = await payload.create({
           collection: 'recipes',
           req,
           data: {
-            ...(body as object),
-            // heroImage may arrive populated (object) at this depth — pass the id.
-            ...(relId(doc.heroImage) ? { heroImage: relId(doc.heroImage) } : {}),
-            // storyImages likewise arrive populated — carry their ids.
-            ...(Array.isArray(doc.storyImages)
-              ? { storyImages: (doc.storyImages as unknown[]).map(relId).filter((n): n is number => typeof n === 'number') }
-              : {}),
-            // Carry the creator's video link onto the published recipe.
-            ...(doc.videoUrl ? { videoUrl: doc.videoUrl } : {}),
+            ...stripMeta(doc as Record<string, unknown>),
+            ...imageOverrides(doc as Record<string, unknown>),
             author: author.id,
             provenance: 'community',
             status: 'published',
@@ -185,6 +194,15 @@ export const Submissions: CollectionConfig = {
       type: 'relationship',
       relationTo: 'recipes',
       admin: { readOnly: true, description: 'Set automatically when approved.' },
+    },
+    {
+      name: 'editsRecipe',
+      type: 'relationship',
+      relationTo: 'recipes',
+      admin: {
+        readOnly: true,
+        description: 'Set when a creator edits an existing recipe. On approval, that recipe is updated in place rather than a new one created.',
+      },
     },
     {
       name: 'moderationStatus',

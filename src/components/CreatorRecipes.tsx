@@ -9,6 +9,7 @@ type Submission = {
   status: string
   createdAt: string
   recipeSlug: string | null
+  recipeId: number | null
 }
 
 type Page = { submissions: Submission[]; total: number; page: number; totalPages: number }
@@ -143,8 +144,18 @@ export function CreatorRecipes() {
                     </span>
                     <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-slate">{fmtDate(s.createdAt)}</span>
                   </span>
-                  <span className={`shrink-0 font-mono text-[0.75rem] font-medium tracking-[0.08em] uppercase ${st.cls}`}>
-                    {st.label}
+                  <span className="flex shrink-0 items-center gap-3">
+                    {s.recipeId && (
+                      <Link
+                        href={`/studio?edit=${s.recipeId}`}
+                        className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    )}
+                    <span className={`font-mono text-[0.75rem] font-medium tracking-[0.08em] uppercase ${st.cls}`}>
+                      {st.label}
+                    </span>
                   </span>
                 </li>
               )

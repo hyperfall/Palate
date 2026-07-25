@@ -41,13 +41,14 @@ export async function GET(request: NextRequest) {
 
   const submissions = result.docs.map((doc) => {
     const promoted = doc.promotedRecipe
+    const promotedObj = promoted && typeof promoted === 'object' ? (promoted as { id?: number; slug?: string }) : null
     return {
       id: doc.id,
       title: doc.title,
       status: doc.moderationStatus ?? 'pending',
       createdAt: doc.createdAt,
-      recipeSlug:
-        promoted && typeof promoted === 'object' ? ((promoted as { slug?: string }).slug ?? null) : null,
+      recipeSlug: promotedObj?.slug ?? null,
+      recipeId: promotedObj?.id ?? (typeof promoted === 'number' ? promoted : null),
     }
   })
 

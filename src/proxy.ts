@@ -12,8 +12,66 @@ export const VISITOR_COOKIE = 'palate_rotation'
  * weighted round-robin is stable for one person across pages instead of
  * re-rolling on every render (which clumps). Nothing reads it but the rotation.
  */
+/**
+ * Per-request Content-Security-Policy with a nonce. Locks scripts to our own
+ * nonce'd tags (Next propagates the nonce to its scripts automatically) so an
+ * injected inline script can't run — the main XSS defence. Sourced for what the
+ * app actually loads: Supabase (REST + realtime websocket), Google Analytics,
+ * the video-embed providers, and same-origin/blob/https images. The Payload
+ * admin + API are excluded by the matcher below, so its inline assets are never
+ * constrained. In dev we allow eval for HMR; prod uses strict-dynamic.
+ */
+function buildCsp(nonce: string): string {
+  const isProd = process.env.NODE_ENV === 'production'
+
+  let supaHttp = ''
+  let supaWss = ''
+  try {
+    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (raw) {
+      const origin = new URL(raw).origin
+      supaHttp = origin
+      supaWss = origin.replace(/^https/, 'wss')
+    }
+  } catch {
+    /* unset/invalid → no supabase sources, app degrades anyway */
+  }
+
+  const directives = [
+    `default-src 'self'`,
+    `base-uri 'self'`,
+    `object-src 'none'`,
+    `frame-ancestors 'self'`,
+    `form-action 'self'`,
+    // nonce → Next's own scripts; the sha256 is our static theme-boot script
+    // (hashed, not nonced, so server/client HTML match — no hydration mismatch).
+    `script-src 'self' 'nonce-${nonce}' 'sha256-SPCKtJb7vbkE0oGUlUkbSW9lKlfV2+hrafPs14RM2sA=' ${isProd ? "'strict-dynamic' https:" : "'unsafe-eval'"}`,
+    // Next + Tailwind inject inline <style>; nonces aren't propagated to styles.
+    `style-src 'self' 'unsafe-inline'`,
+    // Recipe/creator photos (Blob + /media), avatars, markdown + social images.
+    `img-src 'self' data: blob: https:`,
+    `font-src 'self' data:`,
+    `connect-src 'self' ${supaHttp} ${supaWss} https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`.replace(/\s+/g, ' ').trim(),
+    // Creator video embeds (VideoEmbed allow-lists these providers).
+    `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://www.tiktok.com`,
+    `media-src 'self' https: blob:`,
+    ...(isProd ? ['upgrade-insecure-requests'] : []),
+  ]
+  return directives.join('; ')
+}
+
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next()
+  // A fresh nonce per response; Next reads it off the request CSP header and
+  // stamps it onto its own scripts.
+  const nonce = btoa(crypto.randomUUID())
+  const csp = buildCsp(nonce)
+
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('content-security-policy', csp)
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  response.headers.set('Content-Security-Policy', csp)
 
   if (!request.cookies.get(VISITOR_COOKIE)) {
     response.cookies.set(VISITOR_COOKIE, crypto.randomUUID(), {

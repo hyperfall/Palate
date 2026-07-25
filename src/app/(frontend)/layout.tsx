@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
+export default function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
@@ -81,6 +81,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           Delivered via innerHTML on a hidden div: the browser's HTML parser
           executes it from the server-rendered markup, while React only ever
           sees opaque innerHTML — no script element, no hydration warning.
+        */}
+        {/*
+          Static, so allowed by its sha256 hash in the CSP (see src/proxy.ts) —
+          not a nonce, which would differ between server and client and trip a
+          hydration mismatch. If the script text below changes, recompute the hash.
         */}
         <div
           hidden

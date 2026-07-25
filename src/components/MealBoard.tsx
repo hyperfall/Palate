@@ -149,7 +149,7 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
         {WEEKDAYS.map((label, day) => (
           <section
             key={label}
-            className="border-t border-rule py-3 first:border-t-2 first:border-ink xl:border-t-0 xl:py-0 xl:first:border-t-0"
+            className="min-w-0 border-t border-rule py-3 first:border-t-2 first:border-ink xl:border-t-0 xl:py-0 xl:first:border-t-0"
           >
             <div className="flex items-baseline justify-between gap-2 xl:border-b-2 xl:border-ink xl:pb-1.5">
               <span
@@ -201,7 +201,7 @@ function MealSlot({
   const empty = dishes.length === 0
 
   return (
-    <div>
+    <div className="min-w-0">
       <p className="m-0 font-mono text-[0.625rem] font-medium tracking-[0.14em] text-slate/70 uppercase">
         {MEAL_LABELS[meal]}
       </p>
@@ -237,7 +237,7 @@ function DishItem({ entry, busy, onRemove }: { entry: BoardEntry; busy: boolean;
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-center gap-2 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40"
+      className="group flex min-w-0 items-center gap-2 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40"
     >
       <button
         type="button"

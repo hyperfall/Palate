@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { FollowButton } from '@/components/FollowButton'
+import { SocialLinks } from '@/components/SocialIcons'
 
 import { RecipeCard } from '@/components/RecipeCard'
 import { imageFrom } from '@/lib/media'
 import { findAuthorByHandle, findAuthorsWithHandles, findRecipesByAuthor } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
+import { cleanSocials } from '@/lib/socials'
 
 export const revalidate = 3600 // ISR — new recipes join a creator's grid hourly.
 
@@ -109,8 +111,9 @@ export default async function CreatorPage({ params }: { params: Promise<{ handle
             <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-milk/80">{author.bio}</p>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
             <FollowButton authorSlug={author.slug} />
+            <SocialLinks socials={cleanSocials((author.socials as Record<string, unknown>) ?? null)} className="text-milk/70" />
           </div>
         </div>
       </header>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Recipe } from '@/payload-types'
 import { imageFrom } from '@/lib/media'
 import { formatMinutes } from '@/lib/format'
+import { CreatorByline } from './CreatorByline'
 import { StarRating } from './StarRating'
 import { TasteTags } from './TasteGauge'
 
@@ -26,6 +27,7 @@ export function RecipeCard({
 }) {
   const image = imageFrom(recipe.heroImage, featured ? 'hero' : 'card')
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
+  const author = typeof recipe.author === 'object' && recipe.author ? recipe.author : null
   // ratingScore is editorial-override-or-community-average; only shown once a
   // recipe actually has a score, so unrated cards stay clean.
   const ratingScore = recipe.ratingScore ?? 0
@@ -132,6 +134,18 @@ export function RecipeCard({
           </div>
         </div>
       </Link>
+      {/* Byline sits OUTSIDE the card link — it's interactive (hover card) and
+          can't be nested in an anchor. */}
+      {author?.handle && (
+        <div className={`relative z-10 bg-card ${featured ? 'px-5 pb-5 sm:px-6' : 'px-4 pb-4'} -mt-1`}>
+          <CreatorByline
+            name={author.name}
+            handle={author.handle}
+            verified={Boolean(author.verified)}
+            variant="compact"
+          />
+        </div>
+      )}
     </article>
   )
 }

@@ -62,6 +62,18 @@ export const Authors: CollectionConfig = {
       admin: { description: 'Short profile bio (max 160 chars). Creators can edit their own from /account.' },
     },
     {
+      name: 'socials',
+      type: 'group',
+      admin: { description: 'Public social links. Creators can edit their own from /account.' },
+      fields: [
+        { name: 'instagram', type: 'text', admin: { description: 'Full URL, e.g. https://instagram.com/handle' } },
+        { name: 'tiktok', type: 'text', admin: { description: 'Full URL, e.g. https://tiktok.com/@handle' } },
+        { name: 'youtube', type: 'text', admin: { description: 'Full URL, e.g. https://youtube.com/@channel' } },
+        { name: 'x', type: 'text', admin: { description: 'Full URL, e.g. https://x.com/handle' } },
+        { name: 'website', type: 'text', admin: { description: 'Full URL, e.g. https://yoursite.com' } },
+      ],
+    },
+    {
       name: 'provenanceDefault',
       type: 'select',
       required: true,

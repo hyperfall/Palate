@@ -7,6 +7,7 @@ import { BrandSlot } from '@/components/BrandSlot'
 import { AddToPlan } from '@/components/AddToPlan'
 import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
+import { CreatorByline } from '@/components/CreatorByline'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
@@ -210,25 +211,15 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 provenance={recipe.provenance as Provenance}
                 attribution={recipe.sourceAttribution}
               />
-              {author && (
+              {author && author.handle && (
                 <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[1rem] leading-snug text-slate">
+                  Written by{' '}
+                  <CreatorByline name={author.name} handle={author.handle} verified={Boolean(author.verified)} />
+                </p>
+              )}
+              {author && !author.handle && (
+                <p className="mt-2 text-[1rem] leading-snug text-slate">
                   Written by <span className="text-ink">{author.name}</span>
-                  {author.verified && (
-                    <span
-                      title="Verified creator"
-                      className="grid h-4 w-4 place-items-center rounded-full bg-flame text-[0.625rem] text-paper"
-                    >
-                      ✓
-                    </span>
-                  )}
-                  {author.handle && (
-                    <Link
-                      href={`/creator/${author.handle}`}
-                      className="font-mono text-[0.8125rem] text-slate no-underline hover:text-flame"
-                    >
-                      @{author.handle}
-                    </Link>
-                  )}
                 </p>
               )}
               {(recipe.dietaryTags ?? []).length > 0 && (

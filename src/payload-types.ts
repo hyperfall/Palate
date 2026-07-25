@@ -587,6 +587,31 @@ export interface Author {
    */
   bio?: string | null;
   /**
+   * Public social links. Creators can edit their own from /account.
+   */
+  socials?: {
+    /**
+     * Full URL, e.g. https://instagram.com/handle
+     */
+    instagram?: string | null;
+    /**
+     * Full URL, e.g. https://tiktok.com/@handle
+     */
+    tiktok?: string | null;
+    /**
+     * Full URL, e.g. https://youtube.com/@channel
+     */
+    youtube?: string | null;
+    /**
+     * Full URL, e.g. https://x.com/handle
+     */
+    x?: string | null;
+    /**
+     * Full URL, e.g. https://yoursite.com
+     */
+    website?: string | null;
+  };
+  /**
    * Provenance applied to new recipes by this author unless overridden on the recipe itself.
    */
   provenanceDefault: 'authored' | 'community' | 'api-imported';
@@ -1314,6 +1339,15 @@ export interface AuthorsSelect<T extends boolean = true> {
   verified?: T;
   avatar?: T;
   bio?: T;
+  socials?:
+    | T
+    | {
+        instagram?: T;
+        tiktok?: T;
+        youtube?: T;
+        x?: T;
+        website?: T;
+      };
   provenanceDefault?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -129,6 +129,7 @@ function BioField() {
   const [state, setState] = useState<{ show: boolean; hasProfile: boolean }>({ show: false, hasProfile: false })
   const [bio, setBio] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -149,14 +150,22 @@ function BioField() {
 
   const save = async () => {
     setStatus('saving')
+    setError(null)
     try {
       const res = await fetch('/account/bio', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ bio }),
       })
-      setStatus(res.ok ? 'saved' : 'idle')
+      if (res.ok) {
+        setStatus('saved')
+      } else {
+        const d = await res.json().catch(() => ({}))
+        setError(d.error ?? 'Couldn’t save your bio — try again.')
+        setStatus('idle')
+      }
     } catch {
+      setError('Couldn’t save your bio — check your connection.')
       setStatus('idle')
     }
   }
@@ -190,6 +199,7 @@ function BioField() {
               {bio.length}/{BIO_MAX}
             </span>
           </div>
+          {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
           <SocialLinksField />
         </>
       ) : (

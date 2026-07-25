@@ -28,6 +28,7 @@ export function SaveRecipe({
   const [memberOf, setMemberOf] = useState<Set<string>>(new Set())
   const [newName, setNewName] = useState('')
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export function SaveRecipe({
   const toggle = async (collectionId: string) => {
     if (!supabase || busy) return
     setBusy(true)
+    setError(null)
     try {
       if (memberOf.has(collectionId)) {
         const { error } = await supabase
@@ -75,7 +77,8 @@ export function SaveRecipe({
         // Only flip the check mark once the write actually succeeded — a
         // silent failure here would tell someone a recipe is saved when it
         // isn't.
-        if (!error) {
+        if (error) setError('Couldn’t update — try again.')
+        else {
           setMemberOf((prev) => {
             const next = new Set(prev)
             next.delete(collectionId)
@@ -89,10 +92,11 @@ export function SaveRecipe({
           recipe_title: title,
           recipe_image: image,
         })
-        if (!error) setMemberOf((prev) => new Set(prev).add(collectionId))
+        if (error) setError('Couldn’t save — try again.')
+        else setMemberOf((prev) => new Set(prev).add(collectionId))
       }
     } catch {
-      // Network failure — leave the toggle state as it was.
+      setError('Couldn’t save — check your connection.')
     } finally {
       setBusy(false)
     }
@@ -102,13 +106,16 @@ export function SaveRecipe({
     event.preventDefault()
     if (!supabase || !newName.trim() || busy) return
     setBusy(true)
+    setError(null)
     try {
       const { data, error } = await supabase
         .from('collections')
         .insert({ name: newName.trim() })
         .select('id,name,created_at')
         .single()
-      if (!error && data) {
+      if (error || !data) {
+        setError('Couldn’t create that collection — try again.')
+      } else {
         setCollections((prev) => [...prev, data as Collection])
         setNewName('')
         await toggle((data as Collection).id)
@@ -143,6 +150,7 @@ export function SaveRecipe({
       {open && (
         <div className="absolute top-full left-0 z-50 mt-2 w-[19rem] rounded-md border border-ink/30 bg-card p-4 text-ink shadow-(--shadow-block)">
           <p className="eyebrow m-0">Save to</p>
+          {error && <p className="mt-1 mb-0 font-mono text-[0.6875rem] text-heat">{error}</p>}
 
           {collections.length > 0 ? (
             <ul className="m-0 mt-2 grid list-none gap-1 p-0">

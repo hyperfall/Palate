@@ -114,7 +114,11 @@ export function CreatorRecipes() {
       </div>
 
       {loading && !data ? (
-        <p className="mt-6 text-slate">Loading…</p>
+        <ul className="mt-4 grid list-none gap-0 p-0" aria-hidden="true">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <li key={i} className="skeleton my-1 h-10 w-full" />
+          ))}
+        </ul>
       ) : total === 0 ? (
         <p className="mt-6 text-[0.9375rem] text-slate">
           {isFiltering ? 'No recipes match that.' : 'No recipes yet — '}

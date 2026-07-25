@@ -1,16 +1,31 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 
 import { MarkdownStory } from '@/components/MarkdownStory'
 import { STORY_MARKDOWN_CAP } from '@/lib/recipeLimits'
 
 /**
- * Markdown Story editor for the studio: a textarea with an image uploader that
- * inserts `![](url)` at the cursor (images upload immediately so the markdown
- * has a real URL), plus a live Preview using the same renderer the recipe page
- * uses. Uploaded image ids are tracked so they're associated with the recipe.
+ * Markdown Story editor for the studio. A modern formatting toolbar (heading,
+ * bold, italic, link, list, quote, image) inserts the right Markdown at the
+ * cursor so creators never need to know the syntax, plus a live Preview using
+ * the same renderer the recipe page uses. Uploaded image ids are tracked so
+ * they stay associated with the recipe.
  */
+
+const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+
+const ICONS: Record<string, ReactNode> = {
+  h2: <svg viewBox="0 0 24 24" width="17" height="17" {...stroke}><path d="M4 6v12M12 6v12M4 12h8" /><path d="M17 18c0-2 4-2.5 4-5 0-1.4-1.2-2.2-2.4-2-.9.1-1.6.8-1.6 1.6" /></svg>,
+  h3: <svg viewBox="0 0 24 24" width="17" height="17" {...stroke}><path d="M4 6v12M11 6v12M4 12h7" /><path d="M15.5 8.5c.3-.7 1-1.2 2-1.2 1.2 0 2 .8 2 1.8s-.9 1.6-1.8 1.6c1.1 0 2 .7 2 1.8s-.9 1.9-2.2 1.9c-1 0-1.8-.5-2.1-1.2" /></svg>,
+  bold: <svg viewBox="0 0 24 24" width="16" height="16" {...stroke}><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z" /></svg>,
+  italic: <svg viewBox="0 0 24 24" width="16" height="16" {...stroke}><path d="M10 5h7M7 19h7M14 5l-4 14" /></svg>,
+  link: <svg viewBox="0 0 24 24" width="16" height="16" {...stroke}><path d="M10 14a4 4 0 0 0 6 .5l2-2a4 4 0 0 0-6-6l-1 1" /><path d="M14 10a4 4 0 0 0-6-.5l-2 2a4 4 0 0 0 6 6l1-1" /></svg>,
+  list: <svg viewBox="0 0 24 24" width="17" height="17" {...stroke}><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" /></svg>,
+  quote: <svg viewBox="0 0 24 24" width="17" height="17" {...stroke}><path d="M6 7c-1.5 0-2.5 1.2-2.5 2.7 0 1.4 1 2.3 2.2 2.3 1.3 0 2-.9 1.8-2.4M15 7c-1.5 0-2.5 1.2-2.5 2.7 0 1.4 1 2.3 2.2 2.3 1.3 0 2-.9 1.8-2.4" /><path d="M7.7 9.5c0 3-1 4.6-3 5.7M16.7 9.5c0 3-1 4.6-3 5.7" /></svg>,
+  image: <svg viewBox="0 0 24 24" width="17" height="17" {...stroke}><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9.5" r="1.5" /><path d="M21 16l-5-5-9 9" /></svg>,
+}
+
 export function StoryEditor({
   value,
   onChange,
@@ -27,17 +42,46 @@ export function StoryEditor({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const insertAtCursor = (snippet: string) => {
+  const cap = (s: string) => s.slice(0, STORY_MARKDOWN_CAP)
+
+  /** Wrap the current selection (or a placeholder) with before/after markers. */
+  const surround = (before: string, after: string, placeholder: string) => {
+    const ta = taRef.current
+    if (!ta) return
+    const start = ta.selectionStart ?? value.length
+    const end = ta.selectionEnd ?? value.length
+    const sel = value.slice(start, end) || placeholder
+    onChange(cap(value.slice(0, start) + before + sel + after + value.slice(end)))
+    requestAnimationFrame(() => {
+      ta.focus()
+      const s = start + before.length
+      ta.setSelectionRange(s, s + sel.length)
+    })
+  }
+
+  /** Add a prefix at the start of the current line (headings, list, quote). */
+  const linePrefix = (prefix: string) => {
+    const ta = taRef.current
+    if (!ta) return
+    const start = ta.selectionStart ?? value.length
+    const lineStart = value.lastIndexOf('\n', start - 1) + 1
+    onChange(cap(value.slice(0, lineStart) + prefix + value.slice(lineStart)))
+    requestAnimationFrame(() => {
+      ta.focus()
+      const pos = start + prefix.length
+      ta.setSelectionRange(pos, pos)
+    })
+  }
+
+  const insert = (snippet: string) => {
     const ta = taRef.current
     if (!ta) {
-      onChange(`${value}${snippet}`)
+      onChange(cap(value + snippet))
       return
     }
     const start = ta.selectionStart ?? value.length
     const end = ta.selectionEnd ?? value.length
-    const next = value.slice(0, start) + snippet + value.slice(end)
-    onChange(next.slice(0, STORY_MARKDOWN_CAP))
-    // Restore focus + caret after the inserted text.
+    onChange(cap(value.slice(0, start) + snippet + value.slice(end)))
     requestAnimationFrame(() => {
       ta.focus()
       const pos = start + snippet.length
@@ -57,7 +101,7 @@ export function StoryEditor({
         setError(data.error ?? 'Upload failed.')
         return
       }
-      insertAtCursor(`\n\n![](${data.url})\n\n`)
+      insert(`\n\n![](${data.url})\n\n`)
       if (typeof data.id === 'number') onImageIdsChange([...imageIds, data.id])
     } catch {
       setError('Upload failed.')
@@ -66,13 +110,50 @@ export function StoryEditor({
     }
   }
 
+  const TOOLS: { key: string; title: string; run: () => void }[] = [
+    { key: 'h2', title: 'Heading', run: () => linePrefix('## ') },
+    { key: 'h3', title: 'Subheading', run: () => linePrefix('### ') },
+    { key: 'bold', title: 'Bold', run: () => surround('**', '**', 'bold text') },
+    { key: 'italic', title: 'Italic', run: () => surround('*', '*', 'italic text') },
+    { key: 'link', title: 'Link', run: () => surround('[', '](https://)', 'link text') },
+    { key: 'list', title: 'List', run: () => linePrefix('- ') },
+    { key: 'quote', title: 'Quote', run: () => linePrefix('> ') },
+  ]
+
   return (
     <div className="grid gap-2">
       <div className="flex items-center justify-between gap-3">
-        <span className="eyebrow">Story (optional, Markdown)</span>
-        <div className="flex items-center gap-3">
-          <label className="cursor-pointer font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase hover:text-flame">
-            {uploading ? 'Uploading…' : '+ Image'}
+        <span className="eyebrow">Story (optional)</span>
+        <button
+          type="button"
+          onClick={() => setPreview((p) => !p)}
+          className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase hover:text-flame"
+        >
+          {preview ? 'Edit' : 'Preview'}
+        </button>
+      </div>
+
+      {!preview && (
+        <div className="flex flex-wrap items-center gap-0.5 rounded-t border border-rule bg-wash/50 p-1">
+          {TOOLS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              title={t.title}
+              aria-label={t.title}
+              onClick={t.run}
+              className="grid h-8 w-8 place-items-center rounded text-slate transition-colors hover:bg-card hover:text-flame"
+            >
+              {ICONS[t.key]}
+            </button>
+          ))}
+          <span className="mx-1 h-5 w-px bg-rule" aria-hidden="true" />
+          <label
+            title="Insert image"
+            aria-label="Insert image"
+            className="grid h-8 w-8 cursor-pointer place-items-center rounded text-slate transition-colors hover:bg-card hover:text-flame"
+          >
+            {uploading ? <span className="font-mono text-[0.6rem]">…</span> : ICONS.image}
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/avif"
@@ -85,15 +166,8 @@ export function StoryEditor({
               }}
             />
           </label>
-          <button
-            type="button"
-            onClick={() => setPreview((p) => !p)}
-            className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase hover:text-flame"
-          >
-            {preview ? 'Edit' : 'Preview'}
-          </button>
         </div>
-      </div>
+      )}
 
       {preview ? (
         <div className="min-h-[8rem] rounded border border-rule bg-transparent px-3 py-2">
@@ -109,9 +183,9 @@ export function StoryEditor({
           value={value}
           maxLength={STORY_MARKDOWN_CAP}
           rows={8}
-          placeholder={'Tell the story behind the dish. Markdown works:\n\n## A heading\n\nA paragraph, **bold**, a [link](https://…).\n\nUse + Image to drop a photo in.'}
+          placeholder="Tell the story behind the dish. Use the buttons above to format — or write plain and it still looks great."
           onChange={(e) => onChange(e.target.value)}
-          className="w-full resize-y rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] leading-relaxed text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+          className="w-full resize-y rounded-b border border-t-0 border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] leading-relaxed text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
         />
       )}
 

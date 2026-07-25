@@ -97,12 +97,14 @@ export function CreatorByline({
         aria-controls={panelId}
         onClick={() => (open ? setOpen(false) : reveal())}
         onFocus={reveal}
-        className="inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-left"
+        className="group/byline inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-left"
       >
         {variant === 'full' ? (
-          <span className="text-ink">{name}</span>
+          <span className="text-ink underline decoration-dotted decoration-slate/40 underline-offset-4 transition-colors group-hover/byline:decoration-flame">
+            {name}
+          </span>
         ) : (
-          <span className="font-mono text-[0.75rem] tracking-[0.04em] text-slate transition-colors hover:text-flame">
+          <span className="font-mono text-[0.75rem] tracking-[0.04em] text-slate underline decoration-dotted decoration-slate/40 underline-offset-2 transition-colors hover:text-flame">
             by @{handle}
           </span>
         )}

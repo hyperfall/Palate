@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
   let recipe: {
     title: string
     story?: string
+    storyMarkdown?: string
+    storyImageIds?: number[]
     cuisine: number
     course: string
     mainIngredient: string
@@ -139,6 +141,10 @@ export async function POST(request: NextRequest) {
         title: recipe.title.trim(),
         ...(heroImage ? { heroImage } : {}),
         ...(recipe.story?.trim() ? { story: plainTextToLexical(recipe.story) } : {}),
+        ...(recipe.storyMarkdown?.trim() ? { storyMarkdown: recipe.storyMarkdown.trim().slice(0, 5000) } : {}),
+        ...(Array.isArray(recipe.storyImageIds) && recipe.storyImageIds.length
+          ? { storyImages: recipe.storyImageIds.filter((n) => Number.isInteger(n)) }
+          : {}),
         servings: recipe.servings,
         // Pasted lines arrive whole in `item`; split quantity/unit out so the
         // recipe stores them structured (editor can correct before approval).

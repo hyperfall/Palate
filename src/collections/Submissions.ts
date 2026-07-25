@@ -129,6 +129,10 @@ export const Submissions: CollectionConfig = {
             ...(body as object),
             // heroImage may arrive populated (object) at this depth — pass the id.
             ...(relId(doc.heroImage) ? { heroImage: relId(doc.heroImage) } : {}),
+            // storyImages likewise arrive populated — carry their ids.
+            ...(Array.isArray(doc.storyImages)
+              ? { storyImages: (doc.storyImages as unknown[]).map(relId).filter((n): n is number => typeof n === 'number') }
+              : {}),
             // Carry the creator's video link onto the published recipe.
             ...(doc.videoUrl ? { videoUrl: doc.videoUrl } : {}),
             author: author.id,

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { ImagePicker } from '@/components/ImagePicker'
 import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
 import { LineListInput } from '@/components/LineListInput'
+import { StoryEditor } from '@/components/StoryEditor'
 import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
@@ -68,6 +69,8 @@ export function StudioForm({
   // on every keystroke while the creator is still typing the URL.
   const [videoPreview, setVideoPreview] = useState('')
   const [story, setStory] = useState('')
+  const [storyMarkdown, setStoryMarkdown] = useState('')
+  const [storyImageIds, setStoryImageIds] = useState<number[]>([])
   const [cuisine, setCuisine] = useState('')
   const [course, setCourse] = useState('dinner')
   const [mainIngredient, setMainIngredient] = useState('vegetables')
@@ -247,6 +250,8 @@ export function StudioForm({
           dietaryTags: diets,
           videoUrl: videoUrl.trim() || undefined,
           story: story.trim() || undefined,
+          storyMarkdown: storyMarkdown.trim() || undefined,
+          storyImageIds: storyImageIds.length ? storyImageIds : undefined,
           ...taste,
           ingredients,
           steps,
@@ -270,6 +275,8 @@ export function StudioForm({
       setVideoUrl('')
       setVideoPreview('')
       setStory('')
+      setStoryMarkdown('')
+      setStoryImageIds([])
       setCuisine('')
       setCourse('dinner')
       setMainIngredient('vegetables')
@@ -355,15 +362,22 @@ export function StudioForm({
       </div>
 
       <label className={labelCls}>
-        <span className="eyebrow">Notes / story (optional)</span>
+        <span className="eyebrow">Notes (optional)</span>
         <textarea
           value={story}
           onChange={(e) => setStory(e.target.value)}
-          rows={4}
+          rows={3}
           placeholder="A short note — a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
           className={`${inputCls} resize-y`}
         />
       </label>
+
+      <StoryEditor
+        value={storyMarkdown}
+        onChange={setStoryMarkdown}
+        imageIds={storyImageIds}
+        onImageIdsChange={setStoryImageIds}
+      />
 
       <div className="grid gap-6 sm:grid-cols-3">
         <label className={labelCls}>

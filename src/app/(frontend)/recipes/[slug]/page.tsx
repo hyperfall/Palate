@@ -8,6 +8,7 @@ import { AddToPlan } from '@/components/AddToPlan'
 import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
 import { CreatorByline } from '@/components/CreatorByline'
+import { MethodTabs } from '@/components/MethodTabs'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
@@ -285,24 +286,30 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               <h2 className="text-[1.5rem]">Method</h2>
             </div>
 
-            {/* Numbered because the order genuinely carries information here. */}
-            <ol className="mt-6 list-none space-y-7 p-0">
-              {(recipe.steps ?? []).map((step, index) => (
-                <li key={step.id ?? index} className="grid grid-cols-[3rem_1fr] gap-4">
-                  <span className="font-mono text-[1.375rem] leading-[1.3] font-semibold text-flame tabular-nums">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <div>
-                    <p className="m-0 text-[1.1875rem] leading-relaxed">
-                      <ConvertedText text={step.text} />
-                    </p>
-                    {step.timerSeconds ? (
-                      <p className="eyebrow mt-2">≈ {formatTimer(step.timerSeconds)}</p>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ol>
+            {/* Instructions by default; a creator's Story can replace them via
+                the toggle (opt-in — the recipe still comes first). */}
+            <div className="mt-6">
+              <MethodTabs story={recipe.storyMarkdown}>
+                {/* Numbered because the order genuinely carries information here. */}
+                <ol className="list-none space-y-7 p-0">
+                  {(recipe.steps ?? []).map((step, index) => (
+                    <li key={step.id ?? index} className="grid grid-cols-[3rem_1fr] gap-4">
+                      <span className="font-mono text-[1.375rem] leading-[1.3] font-semibold text-flame tabular-nums">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <div>
+                        <p className="m-0 text-[1.1875rem] leading-relaxed">
+                          <ConvertedText text={step.text} />
+                        </p>
+                        {step.timerSeconds ? (
+                          <p className="eyebrow mt-2">≈ {formatTimer(step.timerSeconds)}</p>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </MethodTabs>
+            </div>
 
             {/* The creator's own video — their reach is the reward for sharing. */}
             {recipe.videoUrl && (

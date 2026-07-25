@@ -16,6 +16,9 @@ export const RECIPE_LIMITS = {
   quantityMax: 10_000, // per-ingredient numeric ceiling
 } as const
 
+/** Long-form Story markdown cap — a story, not a novel; keeps "recipe first" honest. */
+export const STORY_MARKDOWN_CAP = 5000
+
 // A real recipe is at least two ingredients and two steps. Both the studio form
 // and the submit route import these so the floor can't drift between them.
 export const MIN_INGREDIENTS = 2

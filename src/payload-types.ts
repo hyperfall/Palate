@@ -152,7 +152,7 @@ export interface Recipe {
   heroImage: number | Media;
   gallery?: (number | Media)[] | null;
   /**
-   * Optional, and capped at 120 words. It renders *below* the recipe — it must never block the cook.
+   * Short notes, capped at 120 words. Renders *below* the recipe — never blocks the cook.
    */
   story?: {
     root: {
@@ -169,6 +169,14 @@ export interface Recipe {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Optional long-form Story in Markdown (supports images). Shown behind a Story toggle that replaces the instructions — opt-in, never the default.
+   */
+  storyMarkdown?: string | null;
+  /**
+   * Images referenced by the Story markdown (hosted here so links never rot).
+   */
+  storyImages?: (number | Media)[] | null;
   servings: number;
   ingredients: {
     quantity?: string | null;
@@ -694,7 +702,7 @@ export interface Submission {
   heroImage?: (number | null) | Media;
   gallery?: (number | Media)[] | null;
   /**
-   * Optional, and capped at 120 words. It renders *below* the recipe — it must never block the cook.
+   * Short notes, capped at 120 words. Renders *below* the recipe — never blocks the cook.
    */
   story?: {
     root: {
@@ -711,6 +719,14 @@ export interface Submission {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Optional long-form Story in Markdown (supports images). Shown behind a Story toggle that replaces the instructions — opt-in, never the default.
+   */
+  storyMarkdown?: string | null;
+  /**
+   * Images referenced by the Story markdown (hosted here so links never rot).
+   */
+  storyImages?: (number | Media)[] | null;
   servings: number;
   ingredients: {
     quantity?: string | null;
@@ -1202,6 +1218,8 @@ export interface RecipesSelect<T extends boolean = true> {
   heroImage?: T;
   gallery?: T;
   story?: T;
+  storyMarkdown?: T;
+  storyImages?: T;
   servings?: T;
   ingredients?:
     | T
@@ -1454,6 +1472,8 @@ export interface SubmissionsSelect<T extends boolean = true> {
   heroImage?: T;
   gallery?: T;
   story?: T;
+  storyMarkdown?: T;
+  storyImages?: T;
   servings?: T;
   ingredients?:
     | T

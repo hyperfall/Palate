@@ -9,6 +9,7 @@ import {
   TASTE_AXIS_LABELS,
 } from '../lib/taxonomy'
 import { countWords } from '../lib/lexical'
+import { STORY_MARKDOWN_CAP } from '../lib/recipeLimits'
 
 /**
  * §5 caps the story in the editor UI. The number is deliberately small: the
@@ -37,17 +38,34 @@ export function recipeBodyFields({ requireHero = true }: { requireHero?: boolean
     { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true },
     {
       name: 'story',
+      label: 'Notes',
       type: 'richText',
       admin: {
-        description: `Optional, and capped at ${STORY_WORD_CAP} words. It renders *below* the recipe — it must never block the cook.`,
+        description: `Short notes, capped at ${STORY_WORD_CAP} words. Renders *below* the recipe — never blocks the cook.`,
       },
       validate: (value: unknown) => {
         const words = countWords(value as never)
         if (words > STORY_WORD_CAP) {
-          return `Story is ${words} words — the cap is ${STORY_WORD_CAP}. Recipe first.`
+          return `Notes are ${words} words — the cap is ${STORY_WORD_CAP}. Recipe first.`
         }
         return true
       },
+    },
+    {
+      name: 'storyMarkdown',
+      type: 'textarea',
+      maxLength: STORY_MARKDOWN_CAP,
+      admin: {
+        description:
+          'Optional long-form Story in Markdown (supports images). Shown behind a Story toggle that replaces the instructions — opt-in, never the default.',
+      },
+    },
+    {
+      name: 'storyImages',
+      type: 'upload',
+      relationTo: 'media',
+      hasMany: true,
+      admin: { description: 'Images referenced by the Story markdown (hosted here so links never rot).' },
     },
     { name: 'servings', type: 'number', required: true, min: 1, defaultValue: 2 },
     {

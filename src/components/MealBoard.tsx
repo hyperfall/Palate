@@ -172,6 +172,7 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
                   meal={meal}
                   dishes={slotList(day, meal)}
                   busy={busy}
+                  dragging={activeId !== null}
                   onRemove={remove}
                 />
               ))}
@@ -189,19 +190,24 @@ function MealSlot({
   meal,
   dishes,
   busy,
+  dragging,
   onRemove,
 }: {
   day: number
   meal: MealType
   dishes: BoardEntry[]
   busy: string | null
+  dragging: boolean
   onRemove: (id: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: slotId(day, meal) })
   const empty = dishes.length === 0
 
+  // On phones the 3-per-day timetable is long, so empty slots are hidden and
+  // only revealed while dragging (they must stay droppable then). Desktop's
+  // calendar always shows all three.
   return (
-    <div className="min-w-0">
+    <div className={`min-w-0 ${empty && !dragging ? 'max-xl:hidden' : ''}`}>
       <p className="m-0 font-mono text-[0.625rem] font-medium tracking-[0.14em] text-slate/70 uppercase">
         {MEAL_LABELS[meal]}
       </p>

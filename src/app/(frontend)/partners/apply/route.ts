@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { getPayloadClient } from '@/lib/queries'
 import { normalizeRegions, validatePartnerRequest, type PartnerRequestInput } from '@/lib/partners'
+import { limited } from '@/lib/rateLimit'
 
 /**
  * Public advertising-request intake. Anyone may apply, but nothing is trusted:
@@ -14,6 +15,9 @@ import { normalizeRegions, validatePartnerRequest, type PartnerRequestInput } fr
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+  const rl = limited(request, { name: 'partners', limit: 3, windowMs: 10 * 60_000 })
+  if (rl) return rl
+
   let body: Partial<PartnerRequestInput>
   try {
     body = await request.json()

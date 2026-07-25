@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { imageFrom } from '@/lib/media'
 import { getPayloadClient } from '@/lib/queries'
+import { limited } from '@/lib/rateLimit'
 import { isCreator, serverUser } from '@/lib/supabase/server'
 
 /**
@@ -17,6 +18,8 @@ export async function POST(request: NextRequest) {
   const user = await serverUser()
   if (!user) return NextResponse.json({ error: 'Sign in first.' }, { status: 401 })
   if (!isCreator(user)) return NextResponse.json({ error: 'Creator account required.' }, { status: 403 })
+  const rl = limited(request, { name: 'story-image', id: user.id, limit: 30, windowMs: 5 * 60_000 })
+  if (rl) return rl
 
   const form = await request.formData()
   const file = form.get('image')

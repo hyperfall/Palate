@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 import { plainTextToLexical } from '@/lib/lexical'
+import { limited } from '@/lib/rateLimit'
 import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { getPayloadClient } from '@/lib/queries'
 import { isCreator, serverUser } from '@/lib/supabase/server'
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
   if (!isCreator(user)) {
     return NextResponse.json({ error: 'Creator account required.' }, { status: 403 })
   }
+  const rl = limited(request, { name: 'submit', id: user.id, limit: 5, windowMs: 10 * 60_000 })
+  if (rl) return rl
 
   const form = await request.formData()
   const raw = form.get('recipe')

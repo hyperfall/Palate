@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { getPayloadClient } from '@/lib/queries'
+import { limited } from '@/lib/rateLimit'
 import { serverUser } from '@/lib/supabase/server'
 
 /**
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: 'Sign in to rate.' }, { status: 401 })
   }
+  const rl = limited(request, { name: 'rate', id: user.id, limit: 30, windowMs: 5 * 60_000 })
+  if (rl) return rl
 
   let body: { recipeId?: unknown; stars?: unknown }
   try {

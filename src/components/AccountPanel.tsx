@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { ImagePicker } from '@/components/ImagePicker'
+import { scorePassword } from '@/lib/passwordStrength'
 import { isValidSocial, SOCIAL_PLATFORMS } from '@/lib/socials'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import { normalizeUsername, validateUsername } from '@/lib/username'
@@ -502,6 +503,9 @@ export function AccountPanel() {
   }
 
   // ---- Forms ---------------------------------------------------------------
+  const strength = scorePassword(password, { email, name })
+  const needsStrong = mode === 'sign-up' || mode === 'recovery'
+
   const fail = (error: unknown) =>
     setNotice({
       kind: 'error',
@@ -514,6 +518,12 @@ export function AccountPanel() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
+    // Block weak passwords before they reach the auth service (which is also
+    // the server-side backstop via Supabase's password policy).
+    if (needsStrong && !strength.acceptable) {
+      setNotice({ kind: 'error', text: strength.suggestions[0] ?? 'Choose a stronger password.' })
+      return
+    }
     setBusy(true)
     setNotice(null)
     try {
@@ -585,9 +595,36 @@ export function AccountPanel() {
         onChange={(e) => setPassword(e.target.value)}
         className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
       />
-      {mode !== 'sign-in' && (
-        <span className="text-[0.8125rem] text-slate">At least 8 characters.</span>
-      )}
+      {needsStrong &&
+        (password ? (
+          <div className="grid gap-1">
+            <div className="flex gap-1" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    i < strength.score
+                      ? strength.score <= 1
+                        ? 'bg-heat'
+                        : strength.score === 2
+                          ? 'bg-flame/60'
+                          : 'bg-flame'
+                      : 'bg-rule'
+                  }`}
+                />
+              ))}
+            </div>
+            <span
+              role="status"
+              className={`font-mono text-[0.75rem] ${strength.acceptable ? 'text-slate' : 'text-heat'}`}
+            >
+              {strength.label}
+              {strength.suggestions[0] ? ` — ${strength.suggestions[0]}` : ''}
+            </span>
+          </div>
+        ) : (
+          <span className="text-[0.8125rem] text-slate">At least 8 characters — longer is stronger.</span>
+        ))}
     </label>
   )
 

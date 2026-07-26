@@ -46,12 +46,14 @@ export function FollowButton({ authorSlug }: { authorSlug: string }) {
     }
     setBusy(true)
     try {
+      // Only flip once the write actually landed — a silent failure would show
+      // "Following" for a follow that never persisted (same rule as SaveRecipe).
       if (state === 'following') {
-        await supabase.from('follows').delete().eq('author_slug', authorSlug)
-        setState('out')
+        const { error } = await supabase.from('follows').delete().eq('author_slug', authorSlug)
+        if (!error) setState('out')
       } else {
-        await supabase.from('follows').insert({ author_slug: authorSlug })
-        setState('following')
+        const { error } = await supabase.from('follows').insert({ author_slug: authorSlug })
+        if (!error) setState('following')
       }
     } finally {
       setBusy(false)

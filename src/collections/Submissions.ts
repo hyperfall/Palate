@@ -69,7 +69,22 @@ export const Submissions: CollectionConfig = {
         })
 
         // Edit of an existing recipe → update it in place, keep its author/slug.
+        // Ownership was checked when the submission was CREATED, but approval can
+        // happen much later — re-verify the target still belongs to this creator
+        // so a stale editId can't overwrite someone else's (or a re-owned) recipe.
         const editId = relId(doc.editsRecipe)
+        if (editId) {
+          const target = await payload.findByID({ collection: 'recipes', id: editId, depth: 1, req }).catch(() => null)
+          const targetCreator =
+            target && typeof target.author === 'object' && target.author
+              ? ((target.author as { creatorId?: string | null }).creatorId ?? null)
+              : null
+          if (!target || !doc.creatorId || targetCreator !== doc.creatorId) {
+            throw new Error(
+              `Cannot approve: submission ${doc.id} edits recipe ${editId}, which no longer exists or no longer belongs to creator ${doc.creatorId ?? '(none)'}.`,
+            )
+          }
+        }
         if (editId) {
           await payload.update({
             collection: 'recipes',

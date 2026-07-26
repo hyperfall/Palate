@@ -330,7 +330,7 @@ export interface Recipe {
   totalMinutes?: number | null;
   difficulty: 'easy' | 'medium' | 'hard';
   /**
-   * US cents per serving, from the import pipeline. Blank = unknown. Powers the student budget features.
+   * Pence (GBP) per serving — the seed/estimates are authored in pence; prices render with £.
    */
   costPerServing?: number | null;
   /**
@@ -876,7 +876,7 @@ export interface Submission {
   totalMinutes?: number | null;
   difficulty: 'easy' | 'medium' | 'hard';
   /**
-   * US cents per serving, from the import pipeline. Blank = unknown. Powers the student budget features.
+   * Pence (GBP) per serving — the seed/estimates are authored in pence; prices render with £.
    */
   costPerServing?: number | null;
   /**

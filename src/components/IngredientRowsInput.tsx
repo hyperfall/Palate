@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 
@@ -50,6 +50,15 @@ function UnitCombobox({
   const [open, setOpen] = useState(false)
   const [hi, setHi] = useState(-1)
   const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clearBlurTimer = () => {
+    if (blurTimer.current) {
+      clearTimeout(blurTimer.current)
+      blurTimer.current = null
+    }
+  }
+  // A pending blur-close must not fire into an unmounted row (remove/paste-split)
+  // or force-close a dropdown that was refocused within the 120ms window.
+  useEffect(() => clearBlurTimer, [])
 
   const options = useMemo(() => filterUnits(value), [value])
 
@@ -84,7 +93,7 @@ function UnitCombobox({
         type="text"
         role="combobox"
         aria-expanded={open}
-        aria-controls={`units-${index}`}
+        aria-controls={open && options.length > 0 ? `units-${index}` : undefined}
         aria-autocomplete="list"
         autoComplete="off"
         maxLength={24}
@@ -96,8 +105,12 @@ function UnitCombobox({
           setOpen(true)
           setHi(-1)
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          clearBlurTimer()
+          setOpen(true)
+        }}
         onBlur={() => {
+          clearBlurTimer()
           blurTimer.current = setTimeout(() => setOpen(false), 120)
         }}
         onKeyDown={onKeyDown}

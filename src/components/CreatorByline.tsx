@@ -94,7 +94,7 @@ export function CreatorByline({
         ref={triggerRef}
         type="button"
         aria-expanded={open}
-        aria-controls={panelId}
+        aria-controls={open && pos ? panelId : undefined}
         onClick={() => (open ? setOpen(false) : reveal())}
         onFocus={reveal}
         className="group/byline inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-left"

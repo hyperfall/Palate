@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { SOCIAL_PLATFORMS, type SocialKey, type Socials } from '@/lib/socials'
 
 /**
@@ -45,24 +47,29 @@ const ICONS: Record<SocialKey, React.ReactNode> = {
   ),
 }
 
-/** Instagram in its signature gradient — the `brand` variant swaps it in. */
-const INSTAGRAM_BRAND = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" strokeWidth="1.9" aria-hidden="true">
-    <defs>
-      <linearGradient id="ig-grad" x1="2" y1="22" x2="22" y2="2" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stopColor="#feda75" />
-        <stop offset="0.35" stopColor="#fa7e1e" />
-        <stop offset="0.65" stopColor="#d62976" />
-        <stop offset="1" stopColor="#962fbf" />
-      </linearGradient>
-    </defs>
-    <g stroke="url(#ig-grad)">
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-    </g>
-    <circle cx="17.5" cy="6.5" r="1.1" fill="url(#ig-grad)" />
-  </svg>
-)
+/** Instagram in its signature gradient — the `brand` variant swaps it in.
+ *  The gradient id must be unique per mount: two hovercards overlapping during
+ *  the close delay would otherwise put duplicate ids in the DOM. */
+function InstagramBrand() {
+  const gid = `ig-grad-${useId().replace(/:/g, '')}`
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" strokeWidth="1.9" aria-hidden="true">
+      <defs>
+        <linearGradient id={gid} x1="2" y1="22" x2="22" y2="2" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#feda75" />
+          <stop offset="0.35" stopColor="#fa7e1e" />
+          <stop offset="0.65" stopColor="#d62976" />
+          <stop offset="1" stopColor="#962fbf" />
+        </linearGradient>
+      </defs>
+      <g stroke={`url(#${gid})`}>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+      </g>
+      <circle cx="17.5" cy="6.5" r="1.1" fill={`url(#${gid})`} />
+    </svg>
+  )
+}
 
 /**
  * A row of social-link icons; renders nothing when there are none.
@@ -100,7 +107,7 @@ export function SocialLinks({
               : 'text-slate transition-colors hover:text-flame'
           }
         >
-          {brand && p.key === 'instagram' ? INSTAGRAM_BRAND : ICONS[p.key]}
+          {brand && p.key === 'instagram' ? <InstagramBrand /> : ICONS[p.key]}
         </a>
       ))}
     </div>

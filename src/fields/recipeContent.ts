@@ -218,7 +218,7 @@ export function recipeFacetFields(): Field[] {
       index: true,
       admin: {
         description:
-          'US cents per serving, from the import pipeline. Blank = unknown. Powers the student budget features.',
+          'Pence (GBP) per serving — the seed/estimates are authored in pence; prices render with £.',
       },
     },
     {

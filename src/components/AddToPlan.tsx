@@ -70,9 +70,19 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
         if (error) setError(error.message)
         else setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
       } else {
+        // Position: every insert defaulted to 0, so multi-dish slots had
+        // undefined order until a manual drag. Epoch seconds appends new dishes
+        // after existing ones (drag renumbers to small ints, which sort first).
         const { data, error } = await supabase
           .from('meal_plan')
-          .insert({ day, meal, recipe_slug: slug, recipe_title: title, recipe_image: image })
+          .insert({
+            day,
+            meal,
+            recipe_slug: slug,
+            recipe_title: title,
+            recipe_image: image,
+            position: Math.floor(Date.now() / 1000),
+          })
           .select('id')
           .single()
         if (error) setError(error.message)

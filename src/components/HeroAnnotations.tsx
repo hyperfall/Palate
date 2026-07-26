@@ -209,12 +209,13 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
                     open ? 'scale-150' : ''
                   }`}
                   style={{
-                    // Flame stays the core; only the halo adapts — a light rim on
-                    // dark pixels, a dark rim on light ones — so it reads anywhere.
+                    // Flame stays the core; the halo adapts — a soft light glow on
+                    // dark pixels, a soft dark one on light — blurred (no hard rim)
+                    // so it blends into the photo, layered under the flame glow.
                     boxShadow:
                       (tones[i] ?? 'light') === 'light'
-                        ? '0 0 0 1.5px rgba(255,255,255,0.9), 0 0 11px 3px rgba(228,87,46,0.5)'
-                        : '0 0 0 1.5px rgba(20,16,12,0.55), 0 0 10px 3px rgba(228,87,46,0.45)',
+                        ? '0 0 5px 1px rgba(255,255,255,0.6), 0 0 13px 5px rgba(228,87,46,0.4)'
+                        : '0 0 5px 1px rgba(20,16,12,0.5), 0 0 13px 5px rgba(228,87,46,0.38)',
                   }}
                 />
               </button>

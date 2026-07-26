@@ -7,11 +7,13 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 /**
- * Baseline security headers on every response. These are the low-risk, high-
- * value ones — clickjacking, MIME-sniffing, referrer leakage, and unused
- * device APIs. A full Content-Security-Policy is deliberately omitted for now:
- * the inline theme-boot script and the Payload admin make a strict CSP
- * breakage-prone, so it's a measured follow-up (ideally nonce-based).
+ * Baseline security headers on every response — clickjacking, MIME-sniffing,
+ * referrer leakage, and unused device APIs.
+ *
+ * The Content-Security-Policy is NOT here: it needs a per-request nonce, so it's
+ * built in the proxy/middleware (`src/proxy.ts`) as a strict, nonce-based
+ * `strict-dynamic` policy with a `/csp-report` violation sink. Keep policy edits
+ * there; this list is only the static, nonce-free headers.
  */
 const securityHeaders = [
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },

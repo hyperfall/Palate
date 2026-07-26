@@ -276,66 +276,72 @@ function DishItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex min-w-0 items-center gap-2 rounded-md border border-rule bg-card p-2 transition-colors hover:border-flame/40"
+      className="group relative flex min-w-0 flex-col gap-1 rounded-md border border-rule bg-card p-2 pb-1.5 transition-colors hover:border-flame/40"
     >
-      <button
-        type="button"
-        aria-label="Drag to reorder"
-        className="shrink-0 cursor-grab touch-none px-0.5 text-slate/50 hover:text-flame active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-          <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" />
-          <circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" />
-          <circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />
-        </svg>
-      </button>
-      {entry.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- snapshot thumbnail
-        <img src={entry.image} alt="" className="h-9 w-9 shrink-0 rounded object-cover" />
-      ) : (
-        <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded border border-dashed border-rule bg-wash text-slate/40">
-          ◵
-        </span>
-      )}
-      <Link href={`/recipes/${entry.slug}`} className="min-w-0 flex-1 truncate text-[0.9375rem] leading-tight text-ink no-underline group-hover:text-flame">
-        {entry.title}
-      </Link>
-      <div
-        className="flex shrink-0 items-center gap-0.5 font-mono text-[0.75rem]"
-        title="Servings planned for this day"
-      >
+      <div className="flex min-w-0 items-center gap-2">
         <button
           type="button"
-          onClick={() => onServings(entry.id, entry.servings - 1)}
-          disabled={entry.servings <= 1}
-          aria-label="Fewer servings"
-          className="grid h-5 w-5 cursor-pointer place-items-center rounded border border-rule text-slate transition-colors hover:border-flame hover:text-flame disabled:opacity-40"
+          aria-label="Drag to reorder"
+          className="shrink-0 cursor-grab touch-none px-0.5 text-slate/50 hover:text-flame active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
         >
-          −
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <circle cx="9" cy="6" r="1.4" /><circle cx="15" cy="6" r="1.4" />
+            <circle cx="9" cy="12" r="1.4" /><circle cx="15" cy="12" r="1.4" />
+            <circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="18" r="1.4" />
+          </svg>
         </button>
-        <span className="min-w-[1.1rem] text-center tabular-nums text-ink" aria-label={`${entry.servings} servings`}>
-          {entry.servings}
-        </span>
+        {entry.image ? (
+          // eslint-disable-next-line @next/next/no-img-element -- snapshot thumbnail
+          <img src={entry.image} alt="" className="h-9 w-9 shrink-0 rounded object-cover" />
+        ) : (
+          <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded border border-dashed border-rule bg-wash text-slate/40">
+            ◵
+          </span>
+        )}
+        <Link href={`/recipes/${entry.slug}`} className="min-w-0 flex-1 truncate text-[0.9375rem] leading-tight text-ink no-underline group-hover:text-flame">
+          {entry.title}
+        </Link>
         <button
           type="button"
-          onClick={() => onServings(entry.id, entry.servings + 1)}
-          aria-label="More servings"
-          className="grid h-5 w-5 cursor-pointer place-items-center rounded border border-rule text-slate transition-colors hover:border-flame hover:text-flame"
+          disabled={busy}
+          onClick={() => onRemove(entry.id)}
+          aria-label={`Remove ${entry.title}`}
+          className="grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-[0.75rem] text-slate transition-colors hover:border-heat hover:text-heat disabled:opacity-50"
         >
-          +
+          ✕
         </button>
       </div>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => onRemove(entry.id)}
-        aria-label={`Remove ${entry.title}`}
-        className="grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-[0.75rem] text-slate transition-colors hover:border-heat hover:text-heat disabled:opacity-50"
-      >
-        ✕
-      </button>
+
+      {/* Servings — an accented bubble in the bottom-right, out of the title's way. */}
+      <div className="-mb-0.5 flex justify-end">
+        <div
+          className="flex items-center gap-0.5 rounded-full border border-flame/30 bg-flame/10 px-1 py-px font-mono text-[0.6875rem] font-medium text-flame"
+          title="Servings planned for this day"
+        >
+          <button
+            type="button"
+            onClick={() => onServings(entry.id, entry.servings - 1)}
+            disabled={entry.servings <= 1}
+            aria-label="Fewer servings"
+            className="grid h-4 w-4 cursor-pointer place-items-center rounded-full transition-colors hover:bg-flame/20 disabled:opacity-40"
+          >
+            −
+          </button>
+          <span className="min-w-[0.9rem] text-center tabular-nums" aria-label={`Serves ${entry.servings}`}>
+            {entry.servings}
+          </span>
+          <button
+            type="button"
+            onClick={() => onServings(entry.id, entry.servings + 1)}
+            aria-label="More servings"
+            className="grid h-4 w-4 cursor-pointer place-items-center rounded-full transition-colors hover:bg-flame/20"
+          >
+            +
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

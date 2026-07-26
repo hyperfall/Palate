@@ -17,6 +17,10 @@ export type IngredientNutrition = {
   proteinPer100g?: number | null
   carbsPer100g?: number | null
   fatPer100g?: number | null
+  saturatesPer100g?: number | null
+  sugarsPer100g?: number | null
+  fibrePer100g?: number | null
+  saltPer100g?: number | null
 }
 
 export type NutritionIngredient = {
@@ -31,10 +35,23 @@ export type NutritionRow = {
   ingredient?: NutritionIngredient | null
 }
 
-export type Macros = { calories: number; protein: number; carbs: number; fat: number }
+export type Macros = {
+  calories: number
+  protein: number
+  carbs: number
+  fat: number
+  /** UK front-of-pack set — null when no contributing ingredient carried the field. */
+  saturates: number | null
+  sugars: number | null
+  fibre: number | null
+  salt: number | null
+}
 
 export type NutritionResult = {
   perServing: Macros
+  /** Estimated grams of food per serving — lets a caller derive per-100g values
+   *  (the basis FSA traffic-light thresholds are defined on). */
+  servingGrams: number
   /** Fraction of rows (0–1) that had enough data to price. */
   coverage: number
   usable: number
@@ -117,6 +134,15 @@ export function computeNutrition(rows: NutritionRow[], servings: number): Nutrit
   let protein = 0
   let carbs = 0
   let fat = 0
+  let saturates = 0
+  let sugars = 0
+  let fibre = 0
+  let salt = 0
+  let sawSaturates = false
+  let sawSugars = false
+  let sawFibre = false
+  let sawSalt = false
+  let gramsTotal = 0
   let usable = 0
   // Denominator is rows that STATE an amount — a no-quantity garnish ("spring
   // onion, to serve") is inherently unpriceable and shouldn't count against
@@ -140,19 +166,76 @@ export function computeNutrition(rows: NutritionRow[], servings: number): Nutrit
     protein += (n.proteinPer100g ?? 0) * f
     carbs += (n.carbsPer100g ?? 0) * f
     fat += (n.fatPer100g ?? 0) * f
+    if (n.saturatesPer100g != null) {
+      saturates += n.saturatesPer100g * f
+      sawSaturates = true
+    }
+    if (n.sugarsPer100g != null) {
+      sugars += n.sugarsPer100g * f
+      sawSugars = true
+    }
+    if (n.fibrePer100g != null) {
+      fibre += n.fibrePer100g * f
+      sawFibre = true
+    }
+    if (n.saltPer100g != null) {
+      salt += n.saltPer100g * f
+      sawSalt = true
+    }
+    gramsTotal += grams
     usable++
   }
 
   const s = Math.max(1, Math.round(servings) || 1)
+  const r1 = (n: number) => Math.round((n / s) * 10) / 10
   return {
     total: quantified,
     usable,
     coverage: quantified ? usable / quantified : 0,
+    servingGrams: Math.round(gramsTotal / s),
     perServing: {
       calories: Math.round(kcal / s),
       protein: Math.round(protein / s),
       carbs: Math.round(carbs / s),
       fat: Math.round(fat / s),
+      // 1dp (2dp for salt) — UK labels quote these to the decimal, and integer
+      // rounding would erase salt entirely (a whole day's RI is 6g).
+      saturates: sawSaturates ? r1(saturates) : null,
+      sugars: sawSugars ? r1(sugars) : null,
+      fibre: sawFibre ? r1(fibre) : null,
+      salt: sawSalt ? Math.round((salt / s) * 100) / 100 : null,
     },
   }
+}
+
+// --- UK front-of-pack display standards -------------------------------------
+
+/** NHS/gov Reference Intakes (adult): the "% RI" a label compares a portion to. */
+export const UK_REFERENCE_INTAKES = {
+  calories: 2000,
+  fat: 70,
+  saturates: 20,
+  carbs: 260,
+  sugars: 90,
+  protein: 50,
+  fibre: 30,
+  salt: 6,
+} as const
+
+export type TrafficNutrient = 'fat' | 'saturates' | 'sugars' | 'salt'
+export type TrafficLight = 'green' | 'amber' | 'red'
+
+/** FSA front-of-pack thresholds, defined per 100g of food. */
+const FSA_PER_100G: Record<TrafficNutrient, { green: number; red: number }> = {
+  fat: { green: 3, red: 17.5 },
+  saturates: { green: 1.5, red: 5 },
+  sugars: { green: 5, red: 22.5 },
+  salt: { green: 0.3, red: 1.5 },
+}
+
+export function trafficLight(nutrient: TrafficNutrient, per100g: number): TrafficLight {
+  const t = FSA_PER_100G[nutrient]
+  if (per100g <= t.green) return 'green'
+  if (per100g > t.red) return 'red'
+  return 'amber'
 }

@@ -2,7 +2,23 @@ import 'dotenv/config'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
+import usdaData from '../data/usdaNutrition.json'
+
 import { INGREDIENT_NUTRITION } from '../data/ingredientNutrition'
+
+type UsdaEntry = {
+  kcal: number
+  protein: number
+  carbs: number
+  fat: number
+  saturates?: number
+  sugars?: number
+  fibre?: number
+  salt?: number
+  gramsPerPiece?: number
+  source?: string
+}
+const USDA = usdaData as Record<string, UsdaEntry>
 
 /**
  * Writes per-100g nutrition (+ piece weight, + density) onto the canonical
@@ -18,24 +34,40 @@ const missed: string[] = []
 
 for (const ing of all.docs) {
   const key = ing.name.trim().toLowerCase()
-  const n = INGREDIENT_NUTRITION[key]
-  if (!n) {
+  // The USDA build (genuine sourced values, full UK nutrient set) is primary;
+  // the hand-curated table remains the fallback for foods USDA doesn't carry
+  // (gochujang, dashi…) and the authority on density/piece weights it defines.
+  const u = USDA[key]
+  const c = INGREDIENT_NUTRITION[key]
+  if (!u && !c) {
     missed.push(ing.name)
     continue
   }
+  const base = u ?? {
+    kcal: c!.kcal,
+    protein: c!.protein,
+    carbs: c!.carbs,
+    fat: c!.fat,
+  }
+  const gramsPerPiece = c?.gramsPerPiece ?? u?.gramsPerPiece
+  const densityGPerMl = c?.densityGPerMl
   await payload.update({
     collection: 'ingredients',
     id: ing.id,
     data: {
       nutrition: {
-        kcalPer100g: n.kcal,
-        proteinPer100g: n.protein,
-        carbsPer100g: n.carbs,
-        fatPer100g: n.fat,
-        source: 'USDA (seed — review)',
+        kcalPer100g: base.kcal,
+        proteinPer100g: base.protein,
+        carbsPer100g: base.carbs,
+        fatPer100g: base.fat,
+        saturatesPer100g: u?.saturates ?? null,
+        sugarsPer100g: u?.sugars ?? null,
+        fibrePer100g: u?.fibre ?? null,
+        saltPer100g: u?.salt ?? null,
+        source: u ? `USDA SR Legacy: ${u.source ?? ''}` : 'curated seed (USDA-derived, review)',
       },
-      ...(n.gramsPerPiece != null ? { gramsPerPiece: n.gramsPerPiece } : {}),
-      ...(n.densityGPerMl != null ? { densityGPerMl: n.densityGPerMl } : {}),
+      ...(gramsPerPiece != null ? { gramsPerPiece } : {}),
+      ...(densityGPerMl != null ? { densityGPerMl } : {}),
     } as never,
   })
   set++

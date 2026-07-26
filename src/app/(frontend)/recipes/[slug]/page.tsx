@@ -9,6 +9,7 @@ import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
 import { CreatorByline } from '@/components/CreatorByline'
 import { MethodTabs } from '@/components/MethodTabs'
+import { NutritionPanel } from '@/components/NutritionPanel'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
@@ -293,28 +294,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               baseServings={recipe.servings}
             />
 
-            {recipe.nutrition?.calories != null && (
-              <div className="mt-8 border-t border-rule pt-5">
-                <p className="eyebrow m-0">Nutrition · per serving</p>
-                <dl className="mt-3 grid gap-2">
-                  {[
-                    ['Calories', `${recipe.nutrition.calories} kcal`],
-                    ['Protein', `${recipe.nutrition.protein ?? 0} g`],
-                    ['Carbs', `${recipe.nutrition.carbs ?? 0} g`],
-                    ['Fat', `${recipe.nutrition.fat ?? 0} g`],
-                  ].map(([label, value]) => (
-                    <div key={label} className="leader">
-                      <dt className="eyebrow">{label}</dt>
-                      <span className="leader__dots" aria-hidden="true" />
-                      <dd className="datum m-0">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="mt-2.5 font-mono text-[0.6875rem] tracking-[0.08em] text-slate/70 uppercase">
-                  Estimated
-                </p>
-              </div>
-            )}
+            <NutritionPanel nutrition={recipe.nutrition} />
 
             <div className="mt-8">
               <BrandSlot recipeSlug={recipe.slug} />

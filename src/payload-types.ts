@@ -378,6 +378,26 @@ export interface Recipe {
      * grams
      */
     fat?: number | null;
+    /**
+     * grams
+     */
+    saturates?: number | null;
+    /**
+     * grams
+     */
+    sugars?: number | null;
+    /**
+     * grams
+     */
+    fibre?: number | null;
+    /**
+     * grams
+     */
+    salt?: number | null;
+    /**
+     * Estimated grams per serving — derives per-100g values for FSA traffic lights.
+     */
+    servingGrams?: number | null;
   };
   /**
    * Optional curator override (1–5). Leave blank to show the community average — we don’t seed ratings.
@@ -548,6 +568,10 @@ export interface Ingredient {
     proteinPer100g?: number | null;
     carbsPer100g?: number | null;
     fatPer100g?: number | null;
+    saturatesPer100g?: number | null;
+    sugarsPer100g?: number | null;
+    fibrePer100g?: number | null;
+    saltPer100g?: number | null;
     /**
      * USDA food matched at seed time.
      */
@@ -928,6 +952,26 @@ export interface Submission {
      * grams
      */
     fat?: number | null;
+    /**
+     * grams
+     */
+    saturates?: number | null;
+    /**
+     * grams
+     */
+    sugars?: number | null;
+    /**
+     * grams
+     */
+    fibre?: number | null;
+    /**
+     * grams
+     */
+    salt?: number | null;
+    /**
+     * Estimated grams per serving — derives per-100g values for FSA traffic lights.
+     */
+    servingGrams?: number | null;
   };
   /**
    * Supabase user id of the creator who submitted this.
@@ -1319,6 +1363,11 @@ export interface RecipesSelect<T extends boolean = true> {
         protein?: T;
         carbs?: T;
         fat?: T;
+        saturates?: T;
+        sugars?: T;
+        fibre?: T;
+        salt?: T;
+        servingGrams?: T;
       };
   editorialRating?: T;
   ratingCount?: T;
@@ -1371,6 +1420,10 @@ export interface IngredientsSelect<T extends boolean = true> {
         proteinPer100g?: T;
         carbsPer100g?: T;
         fatPer100g?: T;
+        saturatesPer100g?: T;
+        sugarsPer100g?: T;
+        fibrePer100g?: T;
+        saltPer100g?: T;
         source?: T;
       };
   needsReview?: T;
@@ -1573,6 +1626,11 @@ export interface SubmissionsSelect<T extends boolean = true> {
         protein?: T;
         carbs?: T;
         fat?: T;
+        saturates?: T;
+        sugars?: T;
+        fibre?: T;
+        salt?: T;
+        servingGrams?: T;
       };
   creatorId?: T;
   creatorName?: T;

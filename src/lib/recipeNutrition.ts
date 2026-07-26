@@ -19,7 +19,7 @@ export async function computeRecipeNutrition(
   payload: Payload,
   recipe: RecipeLike,
   { minCoverage = 0.6 }: { minCoverage?: number } = {},
-): Promise<{ calories: number; protein: number; carbs: number; fat: number } | null> {
+): Promise<Record<string, number | null> | null> {
   // Section labels aren't ingredients; counting them would drag coverage down
   // and suppress the number for a recipe we can actually compute.
   const rows = (recipe.ingredients ?? []).filter((r) => !r.heading)
@@ -44,6 +44,10 @@ export async function computeRecipeNutrition(
             proteinPer100g?: number | null
             carbsPer100g?: number | null
             fatPer100g?: number | null
+            saturatesPer100g?: number | null
+            sugarsPer100g?: number | null
+            fibrePer100g?: number | null
+            saltPer100g?: number | null
           } | null
         }
       | undefined
@@ -58,5 +62,5 @@ export async function computeRecipeNutrition(
 
   const result = computeNutrition(nrows, recipe.servings ?? 1)
   if (result.coverage < minCoverage) return null
-  return result.perServing
+  return { ...result.perServing, servingGrams: result.servingGrams }
 }

@@ -67,6 +67,14 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
             ...(nutrition?.protein ? { proteinContent: `${nutrition.protein} g` } : {}),
             ...(nutrition?.carbs ? { carbohydrateContent: `${nutrition.carbs} g` } : {}),
             ...(nutrition?.fat ? { fatContent: `${nutrition.fat} g` } : {}),
+            ...(nutrition?.saturates != null ? { saturatedFatContent: `${nutrition.saturates} g` } : {}),
+            ...(nutrition?.sugars != null ? { sugarContent: `${nutrition.sugars} g` } : {}),
+            ...(nutrition?.fibre != null ? { fiberContent: `${nutrition.fibre} g` } : {}),
+            // schema.org speaks sodium, UK labels speak salt: sodium = salt ÷ 2.5.
+            ...(nutrition?.salt != null
+              ? { sodiumContent: `${Math.round((nutrition.salt / 2.5) * 1000)} mg` }
+              : {}),
+            ...(nutrition?.servingGrams ? { servingSize: `${nutrition.servingGrams} g` } : {}),
           },
         }
       : {}),

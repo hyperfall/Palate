@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeNutrition, parseQuantity, toGrams, type NutritionRow } from '@/lib/nutrition'
+import { UK_REFERENCE_INTAKES, computeNutrition, trafficLight, parseQuantity, toGrams, type NutritionRow } from '@/lib/nutrition'
 
 describe('parseQuantity', () => {
   it('reads integers and decimals', () => {
@@ -53,7 +53,16 @@ describe('computeNutrition', () => {
 
   it('sums grams × per-100g and divides by servings', () => {
     const r = computeNutrition(rows, 2)
-    expect(r.perServing).toEqual({ calories: 269, protein: 11, carbs: 10, fat: 21 })
+    expect(r.perServing).toEqual({
+      calories: 269,
+      protein: 11,
+      carbs: 10,
+      fat: 21,
+      saturates: null,
+      sugars: null,
+      fibre: null,
+      salt: null,
+    })
     expect(r.coverage).toBe(1)
     expect(r.usable).toBe(3)
   })
@@ -76,5 +85,52 @@ describe('computeNutrition', () => {
   it('treats zero/blank servings as 1', () => {
     const r = computeNutrition([{ quantity: '100', unit: 'g', ingredient: { nutrition: { kcalPer100g: 100 } } }], 0)
     expect(r.perServing.calories).toBe(100)
+  })
+})
+
+describe('UK front-of-pack extensions', () => {
+  it('sums saturates/sugars/fibre/salt and reports serving grams', () => {
+    const r = computeNutrition(
+      [
+        {
+          quantity: '200',
+          unit: 'g',
+          ingredient: {
+            nutrition: { kcalPer100g: 100, saturatesPer100g: 5, sugarsPer100g: 10, fibrePer100g: 2, saltPer100g: 0.5 },
+          },
+        },
+      ],
+      2,
+    )
+    expect(r.servingGrams).toBe(100)
+    expect(r.perServing.saturates).toBe(5)
+    expect(r.perServing.sugars).toBe(10)
+    expect(r.perServing.fibre).toBe(2)
+    expect(r.perServing.salt).toBe(0.5) // 2dp survives — integer rounding would erase it
+  })
+
+  it('reports null, not 0, when no ingredient carried a field', () => {
+    const r = computeNutrition(
+      [{ quantity: '100', unit: 'g', ingredient: { nutrition: { kcalPer100g: 100 } } }],
+      1,
+    )
+    expect(r.perServing.saturates).toBeNull()
+    expect(r.perServing.salt).toBeNull()
+  })
+
+  it('scores FSA traffic lights on the per-100g boundaries', () => {
+    expect(trafficLight('fat', 3)).toBe('green') // boundary is inclusive-green
+    expect(trafficLight('fat', 10)).toBe('amber')
+    expect(trafficLight('fat', 17.6)).toBe('red')
+    expect(trafficLight('saturates', 1.5)).toBe('green')
+    expect(trafficLight('saturates', 5.1)).toBe('red')
+    expect(trafficLight('sugars', 22.5)).toBe('amber') // > red threshold only
+    expect(trafficLight('salt', 0.3)).toBe('green')
+    expect(trafficLight('salt', 1.51)).toBe('red')
+  })
+
+  it('carries the UK reference intakes a label compares against', () => {
+    expect(UK_REFERENCE_INTAKES.calories).toBe(2000)
+    expect(UK_REFERENCE_INTAKES.salt).toBe(6)
   })
 })

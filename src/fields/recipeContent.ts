@@ -269,6 +269,21 @@ export function recipeFacetFields(): Field[] {
             { name: 'fat', type: 'number', min: 0, admin: { description: 'grams' } },
           ],
         },
+        {
+          type: 'row',
+          fields: [
+            { name: 'saturates', type: 'number', min: 0, admin: { description: 'grams' } },
+            { name: 'sugars', type: 'number', min: 0, admin: { description: 'grams' } },
+            { name: 'fibre', type: 'number', min: 0, admin: { description: 'grams' } },
+            { name: 'salt', type: 'number', min: 0, admin: { description: 'grams' } },
+            {
+              name: 'servingGrams',
+              type: 'number',
+              min: 0,
+              admin: { description: 'Estimated grams per serving — derives per-100g values for FSA traffic lights.' },
+            },
+          ],
+        },
       ],
     },
   ]

@@ -46,6 +46,13 @@ describe('normalizeItem', () => {
     expect(normalizeItem('cilantro, for garnish')).toBe('cilantro')
     expect(normalizeItem('flour, plus more for dusting')).toBe('flour')
   })
+  it('folds accents so an accented name matches its ascii twin', () => {
+    expect(normalizeItem('tomato purée')).toBe('tomato puree')
+    expect(normalizeItem('jalapeño')).toBe('jalapeno')
+    expect(normalizeItem('crème fraîche')).toBe('creme fraiche')
+    // and it no longer punches a hole mid-word ("pur e")
+    expect(normalizeItem('tomato purée')).not.toContain(' e')
+  })
   it('returns empty string for junk', () => {
     expect(normalizeItem('   ')).toBe('')
   })

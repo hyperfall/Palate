@@ -41,7 +41,14 @@ export function normalizeItem(raw: string): string {
   // splits these out now, but pasted lines and legacy rows still glue them on —
   // without this the catalog fills with "tbsp olive oil"-style names.
   const item = parseIngredientLine(raw).item || raw
-  let s = item.toLowerCase().trim()
+  // Fold accents first (purée → puree, jalapeño → jalapeno) so the later
+  // ascii-only filter doesn't punch a hole mid-word ("pur e") and split a name
+  // off from its unaccented twin.
+  let s = item
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // strip combining diacritics
+    .trim()
   s = s.replace(/\([^)]*\)/g, ' ') // drop parentheticals
   s = s.split(',')[0] // keep the head, drop ", minced" etc.
   for (const marker of TAIL_MARKERS) {

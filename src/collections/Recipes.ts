@@ -5,6 +5,19 @@ import { deriveTotalMinutes, recipeBodyFields, recipeFacetFields } from '../fiel
 import { slugField } from '../fields/slug'
 import { normalizeItem } from '../lib/ingredients/normalize'
 import { matchIngredient, type Candidate } from '../lib/ingredients/match'
+import { computeRecipeNutrition } from '../lib/recipeNutrition'
+
+/** What nutrition depends on — recompute only when this changes. */
+const nutritionSignature = (d: Record<string, unknown> | null | undefined): string =>
+  JSON.stringify({
+    s: d?.servings ?? null,
+    i: ((d?.ingredients as Array<Record<string, unknown>> | undefined) ?? []).map((r) => ({
+      q: r.quantity ?? null,
+      u: r.unit ?? null,
+      it: r.item ?? null,
+      ing: typeof r.ingredient === 'object' && r.ingredient ? (r.ingredient as { id: unknown }).id : r.ingredient,
+    })),
+  })
 
 /** Design spec §5 `recipes`. */
 export const Recipes: CollectionConfig = {
@@ -61,7 +74,7 @@ export const Recipes: CollectionConfig = {
           ingredient?: unknown
           needsReview?: boolean
         }>
-        if (!rows.some((r) => r.item && !r.ingredient)) return data
+        if (!rows.some((r) => r.item)) return data
 
         const found = await req.payload.find({ collection: 'ingredients', limit: 1000, depth: 0, req })
         const candidates: Candidate[] = found.docs.map((d) => ({
@@ -70,8 +83,13 @@ export const Recipes: CollectionConfig = {
           aliases: (d.aliases as string[] | undefined) ?? [],
         }))
 
+        // Re-match EVERY row, linked or not. The link is hook-owned (the field is
+        // read-only in admin), so it must always reflect the current item text —
+        // the old "skip rows that already have a link" left "onion" linked after
+        // the item was edited to "shallot", silently corrupting nutrition,
+        // netting, and substitutions downstream.
         for (const row of rows) {
-          if (row.ingredient || !row.item) continue
+          if (!row.item) continue
           const normalized = normalizeItem(row.item)
           if (!normalized) continue
           const match = matchIngredient(normalized, candidates)
@@ -79,16 +97,64 @@ export const Recipes: CollectionConfig = {
             row.ingredient = match.id
             continue
           }
-          const created = await req.payload.create({
-            collection: 'ingredients',
-            req,
-            data: { name: normalized, needsReview: true } as never,
-          })
-          candidates.push({ id: created.id as number, name: normalized, aliases: [] })
-          row.ingredient = created.id
-          row.needsReview = true
+          // Unmatched → create a review stub. Concurrent saves can race the
+          // find-then-create; on a unique collision, re-find and use the winner
+          // instead of 500ing the whole recipe save.
+          try {
+            const created = await req.payload.create({
+              collection: 'ingredients',
+              req,
+              data: { name: normalized, needsReview: true } as never,
+            })
+            candidates.push({ id: created.id as number, name: normalized, aliases: [] })
+            row.ingredient = created.id
+            row.needsReview = true
+          } catch {
+            const again = await req.payload.find({
+              collection: 'ingredients',
+              where: { name: { equals: normalized } },
+              limit: 1,
+              depth: 0,
+              req,
+            })
+            const winner = again.docs[0]
+            if (winner) {
+              candidates.push({
+                id: winner.id as number,
+                name: winner.name as string,
+                aliases: (winner.aliases as string[] | undefined) ?? [],
+              })
+              row.ingredient = winner.id
+              row.needsReview = true
+            }
+            // Still nothing → leave the row unlinked rather than fail the save.
+          }
         }
         return data
+      },
+    ],
+    afterChange: [
+      // Nutrition was previously recomputed only when a submission was promoted —
+      // a direct admin edit to ingredients/servings left it stale forever. Now
+      // any change to what nutrition depends on recomputes it, with a context
+      // flag guarding the self-update from looping.
+      async ({ doc, previousDoc, req, context }) => {
+        if (context?.skipNutritionSync) return doc
+        if (previousDoc && nutritionSignature(doc) === nutritionSignature(previousDoc)) return doc
+        const full = await req.payload
+          .findByID({ collection: 'recipes', id: doc.id, req })
+          .catch(() => null)
+        const nut = full ? await computeRecipeNutrition(req.payload, full as never).catch(() => null) : null
+        if (nut) {
+          await req.payload.update({
+            collection: 'recipes',
+            id: doc.id,
+            data: { nutrition: nut } as never,
+            req,
+            context: { skipNutritionSync: true },
+          })
+        }
+        return doc
       },
     ],
   },

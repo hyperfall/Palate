@@ -59,12 +59,14 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
                 }`}
               >
                 <span
-                  className={`grid h-4 w-4 place-items-center rounded-full bg-flame shadow-[0_0_0_2px_rgba(255,255,255,0.85)] ring-4 ring-flame/25 transition-transform ${
-                    open ? 'scale-110' : ''
+                  className={`block h-2.5 w-2.5 rounded-full bg-flame transition-transform duration-200 ${
+                    open ? 'scale-150' : ''
                   }`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-on-flame" />
-                </span>
+                  style={{
+                    boxShadow:
+                      '0 0 5px 1px rgba(228,87,46,0.7), 0 0 13px 4px rgba(228,87,46,0.35)',
+                  }}
+                />
               </button>
 
               <span

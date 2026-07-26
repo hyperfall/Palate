@@ -146,7 +146,10 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               <h1 className="max-w-[15ch] text-[clamp(2.75rem,8vw,6rem)] leading-[0.9] tracking-[-0.01em] text-balance text-milk">
                 {recipe.title}
               </h1>
-              <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.8125rem] tracking-[0.02em] text-milk/85">
+              {/* The decision line — cuisine, time, servings, difficulty. It sat at
+                  13px under a 96px title, a 7:1 jump that left the actual
+                  decision-making information whispering. */}
+              <p className="mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[clamp(0.875rem,1.05vw,1.0625rem)] tracking-[0.02em] text-milk">
                 {cuisine && (
                   <>
                     <Link
@@ -342,6 +345,23 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                         {step.timerSeconds ? (
                           <p className="eyebrow mt-2">≈ {formatTimer(step.timerSeconds)}</p>
                         ) : null}
+                        {/* A step photo answers "does mine look right?" — the one
+                            question text can't. The field existed from the start
+                            and was never rendered. */}
+                        {(() => {
+                          const shot = imageFrom(step.image, 'card')
+                          if (!shot) return null
+                          return (
+                            <Image
+                              src={shot.url}
+                              alt={shot.alt || `Step ${index + 1} of ${recipe.title}`}
+                              width={shot.width ?? 800}
+                              height={shot.height ?? 600}
+                              sizes="(min-width: 1024px) 40rem, 100vw"
+                              className="mt-4 w-full rounded-lg border border-rule object-cover"
+                            />
+                          )
+                        })()}
                       </div>
                     </li>
                   ))}

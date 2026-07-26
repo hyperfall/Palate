@@ -79,22 +79,56 @@ export default async function PlanPage() {
   return (
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[56ch]">
-        <div className="flex items-center justify-between gap-3">
-          <p className="eyebrow m-0">{household ? household.name : 'Your week'}</p>
-          <Link
-            href="/household"
-            className="font-mono text-[0.6875rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
-          >
-            {household ? `Shared · ${household.members.length} →` : 'Cook with others →'}
-          </Link>
-        </div>
+        <p className="eyebrow m-0">{household ? household.name : 'Your week'}</p>
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Plan the week.</h1>
         <p className="mt-3 text-slate max-sm:hidden">
           Add recipes to days from any recipe page. The shopping list nets what overlaps and drops
           what you’ve marked as a staple.
         </p>
+
+        {/*
+          Cooking together is a headline mode, but it used to be an 11px slate
+          link in the header's top corner — quieter than every other control on
+          the page. It now carries chip weight beside the week's other actions:
+          a flame invitation when you're solo, a plain status badge when shared.
+        */}
+        <div className="mt-5">
+          <Link
+            href="/household"
+            className={`group inline-flex min-h-[2.125rem] items-center gap-2 rounded-[4px] border px-3 py-[0.4375rem] font-mono text-[0.75rem] font-medium tracking-[0.06em] uppercase no-underline transition-colors ${
+              household
+                ? 'border-rule bg-wash text-ink hover:border-ink'
+                : 'border-flame/40 bg-flame/10 text-flame hover:border-flame hover:bg-flame hover:text-on-flame'
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="shrink-0"
+            >
+              <path d="M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19" />
+              <circle cx="10" cy="7.5" r="3.2" />
+              <path d="M20 19v-1.5a3.5 3.5 0 0 0-2.6-3.4" />
+              <path d="M15.5 4.7a3.2 3.2 0 0 1 0 5.9" />
+            </svg>
+            {household
+              ? `Shared · ${household.members.length} cook${household.members.length === 1 ? '' : 's'}`
+              : 'Cook with others'}
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">
+              →
+            </span>
+          </Link>
+        </div>
+
         {entries.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-3">
             <SharePlan week={week} />
           </div>
         )}

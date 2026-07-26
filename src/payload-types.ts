@@ -187,6 +187,10 @@ export interface Recipe {
      */
     note?: string | null;
     /**
+     * This row is a section label ("To serve", "For the sauce"), not an ingredient. Skipped by matching, the shopping list, and nutrition.
+     */
+    heading?: boolean | null;
+    /**
      * Optional key linking this ingredient to an affiliate product. Phase 1 stores it; Phase 2 resolves it.
      */
     affiliateKey?: string | null;
@@ -761,6 +765,10 @@ export interface Submission {
      */
     note?: string | null;
     /**
+     * This row is a section label ("To serve", "For the sauce"), not an ingredient. Skipped by matching, the shopping list, and nutrition.
+     */
+    heading?: boolean | null;
+    /**
      * Optional key linking this ingredient to an affiliate product. Phase 1 stores it; Phase 2 resolves it.
      */
     affiliateKey?: string | null;
@@ -1256,6 +1264,7 @@ export interface RecipesSelect<T extends boolean = true> {
         unit?: T;
         item?: T;
         note?: T;
+        heading?: T;
         affiliateKey?: T;
         ingredient?: T;
         needsReview?: T;
@@ -1519,6 +1528,7 @@ export interface SubmissionsSelect<T extends boolean = true> {
         unit?: T;
         item?: T;
         note?: T;
+        heading?: T;
         affiliateKey?: T;
         ingredient?: T;
         needsReview?: T;

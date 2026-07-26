@@ -89,6 +89,15 @@ export function recipeBodyFields({ requireHero = true }: { requireHero?: boolean
           admin: { description: 'e.g. "finely diced", "room temperature"' },
         },
         {
+          name: 'heading',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description:
+              'This row is a section label ("To serve", "For the sauce"), not an ingredient. Skipped by matching, the shopping list, and nutrition.',
+          },
+        },
+        {
           name: 'affiliateKey',
           type: 'text',
           admin: {

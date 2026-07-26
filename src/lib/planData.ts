@@ -130,7 +130,9 @@ export async function loadPlannedRecipes(slugs: string[]): Promise<Map<string, P
   const payload = await getPayloadClient()
   const found = await payload.find({ collection: 'recipes', where: { slug: { in: [...new Set(slugs)] } }, depth: 2, limit: 200 })
   for (const r of found.docs) {
-    const ingredients: PlanIngredient[] = (r.ingredients ?? []).map((row) => {
+    // Drop section labels — otherwise the netted buy-list tells you to shop for
+    // "To serve".
+    const ingredients: PlanIngredient[] = (r.ingredients ?? []).filter((row) => !row.heading).map((row) => {
       const canon = typeof row.ingredient === 'object' && row.ingredient ? row.ingredient : null
       return {
         quantity: row.quantity ?? null,

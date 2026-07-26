@@ -12,7 +12,7 @@ import { computeNutrition, type NutritionRow } from './nutrition'
 const idOf = (v: unknown): number | null =>
   typeof v === 'object' && v ? ((v as { id?: number }).id ?? null) : typeof v === 'number' ? v : null
 
-type Row = { quantity?: string | null; unit?: string | null; ingredient?: unknown }
+type Row = { quantity?: string | null; unit?: string | null; ingredient?: unknown; heading?: boolean | null }
 type RecipeLike = { ingredients?: Row[] | null; servings?: number | null }
 
 export async function computeRecipeNutrition(
@@ -20,7 +20,9 @@ export async function computeRecipeNutrition(
   recipe: RecipeLike,
   { minCoverage = 0.6 }: { minCoverage?: number } = {},
 ): Promise<{ calories: number; protein: number; carbs: number; fat: number } | null> {
-  const rows = recipe.ingredients ?? []
+  // Section labels aren't ingredients; counting them would drag coverage down
+  // and suppress the number for a recipe we can actually compute.
+  const rows = (recipe.ingredients ?? []).filter((r) => !r.heading)
   const ids = [...new Set(rows.map((r) => idOf(r.ingredient)).filter((x): x is number => x != null))]
   if (ids.length === 0) return null
 

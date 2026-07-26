@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { ImagePicker } from '@/components/ImagePicker'
 import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
 import { LineListInput } from '@/components/LineListInput'
+import { foldIngredientRows } from '@/lib/ingredients/rows'
 import { StoryEditor } from '@/components/StoryEditor'
 import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
@@ -230,18 +231,22 @@ export function StudioForm({
     event.preventDefault()
     setNotice(null)
 
-    const ingredients = ingredientRows
-      .map((r) => ({
-        quantity: r.quantity.trim(),
-        unit: r.unit.trim(),
-        item: r.item.trim(),
-      }))
-      .filter((r) => r.item)
-      .map((r) => ({
-        item: r.item,
-        ...(r.quantity ? { quantity: r.quantity } : {}),
-        ...(r.unit ? { unit: r.unit } : {}),
-      }))
+    // Fold stray qualifier lines ("cut in half") into the ingredient above and
+    // flag section labels, so neither becomes a phantom ingredient downstream.
+    const ingredients = foldIngredientRows(
+      ingredientRows
+        .map((r) => ({
+          quantity: r.quantity.trim(),
+          unit: r.unit.trim(),
+          item: r.item.trim(),
+        }))
+        .filter((r) => r.item),
+    ).map((r) => ({
+      item: r.item,
+      ...(r.quantity ? { quantity: r.quantity } : {}),
+      ...(r.unit ? { unit: r.unit } : {}),
+      ...(r.heading ? { heading: true } : {}),
+    }))
     const steps = stepRows
       .map((l) => l.trim())
       .filter(Boolean)

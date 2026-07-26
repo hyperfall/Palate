@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
+import { foldIngredientRows } from '@/lib/ingredients/rows'
 
 export type IngredientRow = { quantity: string; unit: string; item: string }
 
@@ -223,7 +224,9 @@ export function IngredientRowsInput({
       return
     }
     e.preventDefault()
-    const parsed = lines.map(toRow)
+    // Fold qualifier lines into the ingredient above them as the rows appear,
+    // so what the creator reviews is what gets stored.
+    const parsed = foldIngredientRows(lines.map(toRow))
     const next = [...value]
     next.splice(i, rowIsEmpty(value[i]) ? 1 : 0, ...parsed)
     onChange(next)

@@ -27,6 +27,7 @@ type Ingredient = {
   unit?: string | null
   item: string
   note?: string | null
+  heading?: boolean | null
   ingredient?: CanonicalIngredient | number | null
 }
 
@@ -175,6 +176,19 @@ export function IngredientsPanel({
         {ingredients.map((ingredient, index) => {
           const measure = measureFor(ingredient)
 
+          // A section label ("To serve") is a heading, not a line item — a
+          // dotted leader on it promises a measure that will never come.
+          if (ingredient.heading) {
+            return (
+              <li
+                key={ingredient.id ?? index}
+                className="eyebrow pt-3 first:pt-0 text-ink"
+              >
+                {ingredient.item}
+              </li>
+            )
+          }
+
           return (
             <li key={ingredient.id ?? index} className="leader text-[1.0625rem] leading-snug">
               {(() => {
@@ -192,8 +206,14 @@ export function IngredientsPanel({
                   </span>
                 )
               })()}
-              <span className="leader__dots" aria-hidden="true" />
-              {measure ? <span className="datum shrink-0">{measure}</span> : null}
+              {/* The dotted leader is a promise of a measure — draw it only when
+                  one is coming, or "spicy salsa" trails dots into empty space. */}
+              {measure ? (
+                <>
+                  <span className="leader__dots" aria-hidden="true" />
+                  <span className="datum shrink-0">{measure}</span>
+                </>
+              ) : null}
             </li>
           )
         })}

@@ -71,6 +71,9 @@ export const Recipes: CollectionConfig = {
       async ({ data, req }) => {
         const rows = (data.ingredients ?? []) as Array<{
           item?: string
+          quantity?: string | null
+          unit?: string | null
+          heading?: boolean | null
           ingredient?: unknown
           needsReview?: boolean
         }>
@@ -89,12 +92,26 @@ export const Recipes: CollectionConfig = {
         // the item was edited to "shallot", silently corrupting nutrition,
         // netting, and substitutions downstream.
         for (const row of rows) {
+          // A section label ("To serve") is not an ingredient — never link it.
+          if (row.heading) {
+            row.ingredient = null
+            continue
+          }
           if (!row.item) continue
           const normalized = normalizeItem(row.item)
           if (!normalized) continue
           const match = matchIngredient(normalized, candidates)
           if (match) {
             row.ingredient = match.id
+            continue
+          }
+          // A row carrying neither quantity nor unit is far more often stray
+          // qualifier text ("cut in half", "quartered") than a real ingredient,
+          // and minting a canonical for it poisons the namespace, the netted
+          // shopping list, and nutrition coverage. Such rows may still LINK to an
+          // existing canonical above — they just never create a new one.
+          if (!row.quantity && !row.unit) {
+            row.ingredient = null
             continue
           }
           // Unmatched → create a review stub. Concurrent saves can race the

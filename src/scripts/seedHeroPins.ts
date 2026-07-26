@@ -20,10 +20,12 @@ if (!recipe) {
   process.exit(1)
 }
 
+// Kept in the upper band so they sit on the dish, clear of the oversized title
+// that fills the lower-left.
 const heroAnnotations = [
-  { x: 48, y: 42, kicker: 'Yolk', note: 'Pull at 6 min — jammy, not set.' },
-  { x: 30, y: 68, kicker: 'Base', note: 'Harissa-spiked tomato, reduced thick.' },
-  { x: 72, y: 22, kicker: 'Off heat', note: 'Torn parsley to finish.' },
+  { x: 46, y: 30, kicker: 'Yolk', note: 'Pull at 6 min — jammy, not set.' },
+  { x: 20, y: 16, kicker: 'Base', note: 'Harissa-spiked tomato, reduced thick.' },
+  { x: 74, y: 20, kicker: 'Off heat', note: 'Torn parsley to finish.' },
 ]
 
 await payload.update({

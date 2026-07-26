@@ -108,7 +108,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
       */}
       <article>
         {/* Full-bleed plate shot with the title over it. */}
-        <header className="relative overflow-hidden bg-pan text-milk">
+        <header className="group/hero relative overflow-hidden bg-pan text-milk">
           {hero && (
             <>
               {/* Blur-up: the tiny thumbnail shows instantly, scaled + blurred,

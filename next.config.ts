@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
   images: {
+    // Food photography is the product — serve modern formats and let the
+    // optimizer emit AVIF (then WebP) per device instead of the source JPEG/PNG.
+    formats: ['image/avif', 'image/webp'],
+    // Allowed `quality` values (Next 16 requires the set to be explicit).
+    qualities: [75, 82, 90],
     localPatterns: [
       {
         pathname: '/api/media/file/**',

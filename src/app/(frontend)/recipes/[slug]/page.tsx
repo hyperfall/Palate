@@ -74,7 +74,10 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
 
   const related = await findRelatedRecipes(recipe)
 
-  const hero = imageFrom(recipe.heroImage, 'hero')
+  // Feed the optimizer the full-res original so big/retina screens get real
+  // pixels (Next resizes + emits AVIF per device); the thumbnail is the blur-up.
+  const hero = imageFrom(recipe.heroImage) ?? imageFrom(recipe.heroImage, 'hero')
+  const heroLqip = imageFrom(recipe.heroImage, 'thumbnail')?.url ?? null
   // Art-direct the crop from the media's focal point so the dish, not the frame
   // centre, anchors the un-cropped hero.
   const heroMedia = typeof recipe.heroImage === 'object' ? recipe.heroImage : null
@@ -107,16 +110,27 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         {/* Full-bleed plate shot with the title over it. */}
         <header className="relative overflow-hidden bg-pan text-milk">
           {hero && (
-            <Image
-              src={hero.url}
-              alt={hero.alt}
-              fill
-              priority
-              sizes="100vw"
-              quality={82}
-              className="object-cover"
-              style={{ objectPosition: heroFocal }}
-            />
+            <>
+              {/* Blur-up: the tiny thumbnail shows instantly, scaled + blurred,
+                  under the priority hero so there's never a bare pan rectangle. */}
+              {heroLqip && (
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 scale-110 bg-cover blur-2xl"
+                  style={{ backgroundImage: `url(${heroLqip})`, backgroundPosition: heroFocal }}
+                />
+              )}
+              <Image
+                src={hero.url}
+                alt={hero.alt}
+                fill
+                priority
+                sizes="100vw"
+                quality={82}
+                className="object-cover"
+                style={{ objectPosition: heroFocal }}
+              />
+            </>
           )}
           {/* Un-dimmed: the plate stays vivid. A soft wash rises only across the
               lower third, so the oversized title reads without muting the food. */}

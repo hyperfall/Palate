@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { limited } from '@/lib/rateLimit'
+
 /**
  * Sink for CSP violation reports (both the legacy `report-uri` body and the
  * newer `report-to`/Reporting-API batch). Logs a concise line per distinct
@@ -56,6 +58,10 @@ function extract(body: unknown): Violation[] {
 }
 
 export async function POST(request: NextRequest) {
+  // Unauthenticated write sink — the dedupe only collapses identical reports, so
+  // varying payloads could flood the logs without a per-IP ceiling.
+  const rl = limited(request, { name: 'csp-report', limit: 30, windowMs: 60_000 })
+  if (rl) return rl
   let body: unknown
   try {
     body = await request.json()

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { findAuthorByHandle } from '@/lib/queries'
+import { limited } from '@/lib/rateLimit'
 import { serverUser, supabaseServer } from '@/lib/supabase/server'
 import { normalizeUsername, validateUsername } from '@/lib/username'
 
@@ -16,6 +17,9 @@ import { normalizeUsername, validateUsername } from '@/lib/username'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  // Unthrottled, this is a handle-namespace scraper: 60/min per IP is plenty for typing.
+  const rl = limited(request, { name: 'username-available', limit: 60, windowMs: 60_000 })
+  if (rl) return rl
   const username = normalizeUsername(request.nextUrl.searchParams.get('u') ?? '')
 
   const format = validateUsername(username)

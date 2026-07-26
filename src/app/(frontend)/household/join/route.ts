@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { limited } from '@/lib/rateLimit'
 import { supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -10,6 +11,9 @@ import { supabaseServer } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+  // Invite codes are 40-bit — not brute-forceable at 20 tries / 10 min, but only with a throttle.
+  const rl = limited(request, { name: 'household-join', limit: 20, windowMs: 10 * 60_000 })
+  if (rl) return rl
   const supabase = await supabaseServer()
   if (!supabase) return NextResponse.redirect(new URL('/account', request.url))
 

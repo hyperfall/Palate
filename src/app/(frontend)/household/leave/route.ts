@@ -25,7 +25,15 @@ export async function POST(request: NextRequest) {
     await admin.from('households').delete().eq('id', context.id)
   } else {
     const { data: userData } = await supabase.auth.getUser()
-    await supabase.from('household_members').delete().eq('user_id', userData.user?.id ?? '')
+    const uid = userData.user?.id ?? ''
+    // Take your data with you: rows the leaver owns must stop being visible to
+    // the household they're leaving. Without this, the old household_id stays on
+    // their plan/pantry rows and every remaining (or future) member keeps full
+    // read/write over them indefinitely.
+    await supabase.from('meal_plan').update({ household_id: null }).eq('user_id', uid).eq('household_id', context.id)
+    await supabase.from('pantry').update({ household_id: null }).eq('user_id', uid).eq('household_id', context.id)
+    await supabase.from('shopping_checks').delete().eq('user_id', uid).eq('household_id', context.id)
+    await supabase.from('household_members').delete().eq('user_id', uid)
   }
 
   return NextResponse.redirect(new URL('/plan', request.url), { status: 303 })

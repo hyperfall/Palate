@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { getPayloadClient } from '@/lib/queries'
+import { limited } from '@/lib/rateLimit'
 import { serverUser } from '@/lib/supabase/server'
 
 /**
@@ -11,6 +12,9 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   const user = await serverUser()
+  // Uploads are storage-cost abuse without a ceiling.
+  const rl = limited(request, { name: 'avatar', id: user?.id, limit: 10, windowMs: 10 * 60_000 })
+  if (rl) return rl
   if (!user) return NextResponse.json({ error: 'Sign in first.' }, { status: 401 })
 
   const form = await request.formData()

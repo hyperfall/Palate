@@ -73,7 +73,11 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
   const supabase = await supabaseServer()
   if (!supabase) notFound()
 
-  const { data } = await supabase.from('plan_shares').select('recipe_slugs, week').eq('id', token).maybeSingle()
+  // Reads go through a security-definer RPC that returns exactly one row by its
+  // unguessable id — direct table select is closed off by RLS (a `using (true)`
+  // policy made every user's share world-readable via the REST API).
+  const { data: rows, error } = await supabase.rpc('get_plan_share', { share_id: token })
+  const data = !error && Array.isArray(rows) ? (rows[0] as { recipe_slugs: string[] | null; week: unknown } | undefined) : undefined
   if (!data) notFound()
 
   // New shares snapshot the structured week → render the card + shopping list.

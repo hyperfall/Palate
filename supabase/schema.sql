@@ -169,8 +169,27 @@ drop policy if exists "create own share" on public.plan_shares;
 create policy "create own share" on public.plan_shares for insert with check (user_id = auth.uid());
 drop policy if exists "delete own share" on public.plan_shares;
 create policy "delete own share" on public.plan_shares for delete using (user_id = auth.uid());
+-- SECURITY: the old "read shares by link" policy was `using (true)`, which made
+-- the whole table world-readable via the REST API with just the anon key — the
+-- unguessable-token design only works if the ONLY read path takes the token.
+-- RLS can't express "only rows you already name", so reads go through a
+-- security-definer function that returns exactly one row by id, and the open
+-- select policy is gone. Owners can still read their own shares (the app reads
+-- the id back after insert).
 drop policy if exists "read shares by link" on public.plan_shares;
-create policy "read shares by link" on public.plan_shares for select using (true);
+drop policy if exists "read own shares" on public.plan_shares;
+create policy "read own shares" on public.plan_shares for select using (user_id = auth.uid());
+
+create or replace function public.get_plan_share(share_id uuid)
+returns table (recipe_slugs text[], week jsonb)
+language sql
+security definer
+set search_path = public
+as $$
+  select recipe_slugs, week from public.plan_shares where id = share_id
+$$;
+revoke all on function public.get_plan_share(uuid) from public;
+grant execute on function public.get_plan_share(uuid) to anon, authenticated;
 
 -- Follows: a viewer follows a creator by their public author slug.
 create table if not exists public.follows (

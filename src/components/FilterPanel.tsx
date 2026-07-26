@@ -382,6 +382,33 @@ export function FilterPanel({
   // move focus in on open and restore it to the trigger on close.
   const drawerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // The desktop rail scrolls independently of the page, so it can look "cut off"
+  // with no sign there's more below. Track whether content overflows above/below
+  // the viewport and fade the edges to signal it.
+  const railRef = useRef<HTMLDivElement>(null)
+  const [rail, setRail] = useState({ top: false, bottom: false })
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+    const update = () =>
+      setRail({
+        top: el.scrollTop > 4,
+        bottom: el.scrollTop + el.clientHeight < el.scrollHeight - 4,
+      })
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      ro.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
   useEffect(() => {
     if (!open) return
     const prevOverflow = document.body.style.overflow
@@ -813,7 +840,25 @@ export function FilterPanel({
               </button>
             )}
           </div>
-          <div className="scroll-rail flex-1 overflow-y-auto pr-2 pt-4 pb-4">{panelBody}</div>
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div ref={railRef} className="scroll-rail min-h-0 flex-1 overflow-y-auto pr-2 pt-4 pb-4">
+              {panelBody}
+            </div>
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-paper to-transparent transition-opacity duration-200 ${rail.top ? 'opacity-100' : 'opacity-0'}`}
+            />
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-paper to-transparent transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
+            />
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-x-0 bottom-1 text-center font-mono text-[0.625rem] tracking-[0.12em] text-slate/70 uppercase transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
+            >
+              more ↓
+            </span>
+          </div>
         </div>
       </div>
     </aside>

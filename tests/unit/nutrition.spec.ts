@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { UK_REFERENCE_INTAKES, computeNutrition, trafficLight, parseQuantity, toGrams, type NutritionRow } from '@/lib/nutrition'
+import { DAILY_REFERENCE_INTAKES, computeNutrition, trafficLight, parseQuantity, toGrams, type NutritionRow } from '@/lib/nutrition'
 
 describe('parseQuantity', () => {
   it('reads integers and decimals', () => {
@@ -129,8 +129,8 @@ describe('UK front-of-pack extensions', () => {
     expect(trafficLight('salt', 1.51)).toBe('red')
   })
 
-  it('carries the UK reference intakes a label compares against', () => {
-    expect(UK_REFERENCE_INTAKES.calories).toBe(2000)
-    expect(UK_REFERENCE_INTAKES.salt).toBe(6)
+  it('carries the daily reference intakes a label compares against', () => {
+    expect(DAILY_REFERENCE_INTAKES.calories).toBe(2000)
+    expect(DAILY_REFERENCE_INTAKES.salt).toBe(6)
   })
 })

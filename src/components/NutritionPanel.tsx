@@ -1,4 +1,4 @@
-import { UK_REFERENCE_INTAKES, trafficLight, type TrafficNutrient } from '@/lib/nutrition'
+import { DAILY_REFERENCE_INTAKES, trafficLight, type TrafficNutrient } from '@/lib/nutrition'
 
 type RecipeNutrition = {
   calories?: number | null
@@ -12,8 +12,8 @@ type RecipeNutrition = {
   servingGrams?: number | null
 }
 
-/** FSA light → the taste-axis tokens, so the lights stay on the site's palette
- *  and theme-aware rather than importing stoplight hexes. */
+/** Level → the taste-axis tokens, so the lights stay on the site's palette and
+ *  theme-aware rather than importing stoplight hexes. */
 const LIGHT_CLASS = {
   green: 'bg-richness',
   amber: 'bg-sweetness',
@@ -21,11 +21,12 @@ const LIGHT_CLASS = {
 } as const
 
 /**
- * Per-serving nutrition in the UK front-of-pack grammar: the label's eight
- * values, a % of Reference Intake beside each, and FSA traffic lights for the
- * four watch nutrients (computed per 100g via the serving weight, which is the
- * basis the thresholds are defined on). Typeset as ticket lines like the
- * ingredients — label, leader, datum.
+ * Per-serving nutrition in food-label grammar: the eight familiar values, a
+ * percentage of a 2,000 kcal reference day beside each, and low/medium/high
+ * dots for the four watch nutrients (banded per 100g via the serving weight,
+ * which is the basis such thresholds are defined on). Country-neutral on
+ * purpose — a global audience shouldn't be reading another country's scheme.
+ * Typeset as ticket lines like the ingredients — label, leader, datum.
  */
 export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | null | undefined }) {
   if (nutrition?.calories == null) return null
@@ -41,14 +42,14 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
     ri: number
     light?: TrafficNutrient
   }> = [
-    { label: 'Calories', value: nutrition.calories, unit: ' kcal', ri: UK_REFERENCE_INTAKES.calories },
-    { label: 'Fat', value: nutrition.fat, unit: ' g', ri: UK_REFERENCE_INTAKES.fat, light: 'fat' },
-    { label: 'Saturates', value: nutrition.saturates, unit: ' g', ri: UK_REFERENCE_INTAKES.saturates, light: 'saturates' },
-    { label: 'Carbs', value: nutrition.carbs, unit: ' g', ri: UK_REFERENCE_INTAKES.carbs },
-    { label: 'Sugars', value: nutrition.sugars, unit: ' g', ri: UK_REFERENCE_INTAKES.sugars, light: 'sugars' },
-    { label: 'Fibre', value: nutrition.fibre, unit: ' g', ri: UK_REFERENCE_INTAKES.fibre },
-    { label: 'Protein', value: nutrition.protein, unit: ' g', ri: UK_REFERENCE_INTAKES.protein },
-    { label: 'Salt', value: nutrition.salt, unit: ' g', ri: UK_REFERENCE_INTAKES.salt, light: 'salt' },
+    { label: 'Calories', value: nutrition.calories, unit: ' kcal', ri: DAILY_REFERENCE_INTAKES.calories },
+    { label: 'Fat', value: nutrition.fat, unit: ' g', ri: DAILY_REFERENCE_INTAKES.fat, light: 'fat' },
+    { label: 'Saturates', value: nutrition.saturates, unit: ' g', ri: DAILY_REFERENCE_INTAKES.saturates, light: 'saturates' },
+    { label: 'Carbs', value: nutrition.carbs, unit: ' g', ri: DAILY_REFERENCE_INTAKES.carbs },
+    { label: 'Sugars', value: nutrition.sugars, unit: ' g', ri: DAILY_REFERENCE_INTAKES.sugars, light: 'sugars' },
+    { label: 'Fibre', value: nutrition.fibre, unit: ' g', ri: DAILY_REFERENCE_INTAKES.fibre },
+    { label: 'Protein', value: nutrition.protein, unit: ' g', ri: DAILY_REFERENCE_INTAKES.protein },
+    { label: 'Salt', value: nutrition.salt, unit: ' g', ri: DAILY_REFERENCE_INTAKES.salt, light: 'salt' },
   ]
 
   return (
@@ -66,7 +67,7 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
                 {light && (
                   <span
                     aria-hidden="true"
-                    title={`FSA per-100g: ${light}`}
+                    title={`${light === 'green' ? 'Low' : light === 'amber' ? 'Medium' : 'High'} per 100 g`}
                     className={`h-2 w-2 shrink-0 rounded-full ${LIGHT_CLASS[light]}`}
                   />
                 )}
@@ -76,14 +77,14 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
               <dd className="datum m-0">
                 {row.value}
                 {row.unit}
-                <span className="ml-1.5 font-normal text-slate">{pctRi}% RI</span>
+                <span className="ml-1.5 font-normal text-slate">{pctRi}%</span>
               </dd>
             </div>
           )
         })}
       </dl>
       <p className="mt-2.5 font-mono text-[0.6875rem] tracking-[0.08em] text-slate/70 uppercase">
-        Estimated from ingredients · % of UK adult reference intake
+        Estimated from ingredients · % of a 2,000 kcal reference day
         {grams ? ` · serving ≈ ${grams} g` : ''}
       </p>
     </div>

@@ -208,10 +208,13 @@ export function computeNutrition(rows: NutritionRow[], servings: number): Nutrit
   }
 }
 
-// --- UK front-of-pack display standards -------------------------------------
+// --- Label display standards -------------------------------------------------
 
-/** NHS/gov Reference Intakes (adult): the "% RI" a label compares a portion to. */
-export const UK_REFERENCE_INTAKES = {
+/** Adult daily reference intakes for a 2,000 kcal day. These are the EU/UK RI
+ *  figures, which share the 2,000 kcal anchor with the US %DV — close enough
+ *  for an estimate panel that never claims regulatory precision. The UI never
+ *  brands them to a country; it just says "% of a 2,000 kcal reference day". */
+export const DAILY_REFERENCE_INTAKES = {
   calories: 2000,
   fat: 70,
   saturates: 20,
@@ -225,7 +228,9 @@ export const UK_REFERENCE_INTAKES = {
 export type TrafficNutrient = 'fat' | 'saturates' | 'sugars' | 'salt'
 export type TrafficLight = 'green' | 'amber' | 'red'
 
-/** FSA front-of-pack thresholds, defined per 100g of food. */
+/** Low/medium/high banding per 100g of food (the UK FSA front-of-pack
+ *  thresholds — used here as sensible, evidence-based cutoffs, presented to
+ *  users as plain low/medium/high, never as a national scheme). */
 const FSA_PER_100G: Record<TrafficNutrient, { green: number; red: number }> = {
   fat: { green: 3, red: 17.5 },
   saturates: { green: 1.5, red: 5 },

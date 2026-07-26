@@ -232,7 +232,7 @@ export interface Recipe {
    */
   videoUrl?: string | null;
   /**
-   * Mise-en-place pins on the hero photo — a short kicker + note, hidden on the page until a reader hovers or taps. Set the x/y percentages (a visual click-to-place editor is coming).
+   * Mise-en-place pins on the hero photo — a short kicker + note, hidden on the page until a reader hovers or taps. Place them visually on the photo above; add, remove, and label them here.
    */
   heroAnnotations?:
     | {

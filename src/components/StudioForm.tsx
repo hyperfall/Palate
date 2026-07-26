@@ -370,13 +370,18 @@ export function StudioForm({
     `${prepMinutes + cookMinutes} min`,
     `Serves ${servings}`,
   ].filter(Boolean)
-  const previewIngredients = ingredientRows
-    .map((r) => ({
-      item: r.item.trim(),
-      measure: [r.quantity.trim(), r.unit.trim()].filter(Boolean).join(' '),
-    }))
-    .filter((r) => r.item)
-  const previewSteps = stepRows.map((r) => r.text.trim()).filter(Boolean)
+  // Run the same fold the save does, so the preview shows the list that will
+  // actually ship — headings as headings, qualifiers folded into the line above.
+  const previewIngredients = foldIngredientRows(
+    ingredientRows
+      .map((r) => ({ quantity: r.quantity.trim(), unit: r.unit.trim(), item: r.item.trim() }))
+      .filter((r) => r.item),
+  ).map((r) => ({
+    item: r.item,
+    measure: [r.quantity?.trim(), r.unit?.trim()].filter(Boolean).join(' '),
+    heading: Boolean(r.heading),
+  }))
+  const previewSteps = stepRows.filter((r) => r.text.trim())
 
   return (
     <>
@@ -620,7 +625,7 @@ export function StudioForm({
         <div className="relative bg-pan text-milk">
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
-            <img src={photoUrl} alt="" className="aspect-[4/3] w-full object-cover opacity-60" />
+            <img src={photoUrl} alt="" className="aspect-[4/3] w-full object-cover" />
           ) : (
             <div className="grid aspect-[4/3] w-full place-items-center bg-pan-deep">
               <span className="rounded-sm border border-dashed border-milk/25 px-4 py-2 font-mono text-[0.75rem] tracking-[0.06em] text-milk/50 uppercase">
@@ -628,11 +633,16 @@ export function StudioForm({
               </span>
             </div>
           )}
-          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-pan-deep/90 to-transparent p-5">
-            <p className="eyebrow m-0 text-flame">{previewFacts.join(' · ')}</p>
-            <h3 className="mt-1 font-display text-[1.75rem] leading-tight text-milk">
+          {/* Mirrors the published hero: photo at full colour, a wash only across
+              the lower third, flame rule, oversized serif title, spec line under. */}
+          <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-pan-deep/90 via-pan-deep/25 to-transparent p-5">
+            <span className="mb-2 block h-[2px] w-8 bg-flame" aria-hidden="true" />
+            <h3 className="font-display text-[2rem] leading-[0.95] tracking-[-0.01em] text-milk">
               {title || 'Your recipe title'}
             </h3>
+            <p className="mt-2 m-0 font-mono text-[0.75rem] tracking-[0.02em] text-milk">
+              {previewFacts.join(' · ')}
+            </p>
           </div>
         </div>
 
@@ -656,16 +666,28 @@ export function StudioForm({
             <ul className="m-0 mt-2 list-none space-y-2 p-0">
               {(previewIngredients.length
                 ? previewIngredients
-                : [{ item: 'something delicious', measure: '2 tbsp' }]
+                : [{ item: 'something delicious', measure: '2 tbsp', heading: false }]
               )
                 .slice(0, 8)
-                .map((row, i) => (
-                  <li key={i} className="leader text-[0.9375rem] leading-snug">
-                    <span className="break-words [overflow-wrap:anywhere]">{row.item}</span>
-                    <span className="leader__dots" aria-hidden="true" />
-                    {row.measure ? <span className="datum shrink-0">{row.measure}</span> : null}
-                  </li>
-                ))}
+                .map((row, i) =>
+                  row.heading ? (
+                    <li key={i} className="eyebrow pt-2 text-ink first:pt-0">
+                      {row.item}
+                    </li>
+                  ) : (
+                    <li key={i} className="leader text-[0.9375rem] leading-snug">
+                      <span className="break-words [overflow-wrap:anywhere]">{row.item}</span>
+                      {/* The dotted leader promises a measure — only draw it when
+                          one is coming, exactly as the recipe page does. */}
+                      {row.measure ? (
+                        <>
+                          <span className="leader__dots" aria-hidden="true" />
+                          <span className="datum shrink-0">{row.measure}</span>
+                        </>
+                      ) : null}
+                    </li>
+                  ),
+                )}
               {previewIngredients.length > 8 && (
                 <li className="pt-1 font-mono text-[0.75rem] text-slate">+ {previewIngredients.length - 8} more</li>
               )}
@@ -674,12 +696,29 @@ export function StudioForm({
           <div>
             <p className="eyebrow m-0">Method</p>
             <ol className="m-0 mt-2 list-none space-y-3 p-0">
-              {(previewSteps.length ? previewSteps : ['Steps appear here as you write them.']).slice(0, 4).map((step, i) => (
-                <li key={i} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-2">
-                  <span className="font-mono text-[0.9375rem] font-bold text-flame tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-                  <p className="m-0 text-[0.9375rem] leading-relaxed break-words [overflow-wrap:anywhere]">{step}</p>
-                </li>
-              ))}
+              {(previewSteps.length
+                ? previewSteps
+                : [{ text: 'Steps appear here as you write them.', imageUrl: null }]
+              )
+                .slice(0, 4)
+                .map((step, i) => (
+                  <li key={i} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2 gap-y-2">
+                    <span className="font-mono text-[0.9375rem] font-bold text-flame tabular-nums">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <p className="m-0 text-[0.9375rem] leading-relaxed break-words [overflow-wrap:anywhere]">
+                      {step.text.trim()}
+                    </p>
+                    {step.imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element -- local preview
+                      <img
+                        src={step.imageUrl}
+                        alt=""
+                        className="col-start-2 w-full rounded border border-rule object-cover"
+                      />
+                    )}
+                  </li>
+                ))}
               {previewSteps.length > 4 && (
                 <li className="font-mono text-[0.75rem] text-slate">+ {previewSteps.length - 4} more steps</li>
               )}

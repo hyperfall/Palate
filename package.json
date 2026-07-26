@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "cross-env NODE_OPTIONS=--no-deprecation vitest run tests/unit --config ./vitest.config.mts",
     "fix:ingredient-rows": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fixIngredientRows.ts",
+    "build:usda": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/import/buildUsdaNutrition.ts",
     "review:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/reviewIngredients.ts",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",

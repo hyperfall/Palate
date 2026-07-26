@@ -205,20 +205,17 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
                 }`}
               >
                 <span
-                  className={`block h-2.5 w-2.5 rounded-full transition-transform duration-200 ${
+                  className={`block h-2.5 w-2.5 rounded-full bg-flame transition-transform duration-200 ${
                     open ? 'scale-150' : ''
                   }`}
-                  style={
-                    (tones[i] ?? 'light') === 'dark'
-                      ? {
-                          background: '#17130e',
-                          boxShadow: '0 0 0 1px rgba(255,255,255,0.65), 0 0 11px 3px rgba(228,87,46,0.4)',
-                        }
-                      : {
-                          background: '#f5f4ec',
-                          boxShadow: '0 0 0 1px rgba(20,16,12,0.35), 0 0 11px 3px rgba(228,87,46,0.45)',
-                        }
-                  }
+                  style={{
+                    // Flame stays the core; only the halo adapts — a light rim on
+                    // dark pixels, a dark rim on light ones — so it reads anywhere.
+                    boxShadow:
+                      (tones[i] ?? 'light') === 'light'
+                        ? '0 0 0 1.5px rgba(255,255,255,0.9), 0 0 11px 3px rgba(228,87,46,0.5)'
+                        : '0 0 0 1.5px rgba(20,16,12,0.55), 0 0 10px 3px rgba(228,87,46,0.45)',
+                  }}
                 />
               </button>
 

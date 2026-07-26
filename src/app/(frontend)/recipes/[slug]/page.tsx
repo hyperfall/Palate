@@ -141,7 +141,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           {/* Type block is inert to the pointer so the annotation layer beneath it
               still catches hover/tap on the photo; only the controls opt back in. */}
           <div className="shell pointer-events-none relative z-30 flex min-h-[56vh] flex-col justify-end py-12 lg:min-h-[64vh]">
-            <div className="max-w-[min(100%,44rem)]">
+            <div data-hero-type className="max-w-[min(100%,44rem)]">
               <span className="mb-4 block h-[3px] w-12 bg-flame" aria-hidden="true" />
               <h1 className="max-w-[15ch] text-[clamp(2.75rem,8vw,6rem)] leading-[0.9] tracking-[-0.01em] text-balance text-milk">
                 {recipe.title}

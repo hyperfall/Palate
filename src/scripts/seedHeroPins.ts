@@ -24,8 +24,10 @@ if (!recipe) {
 // that fills the lower-left.
 const heroAnnotations = [
   { x: 46, y: 30, kicker: 'Yolk', note: 'Pull at 6 min — jammy, not set.' },
-  { x: 20, y: 16, kicker: 'Base', note: 'Harissa-spiked tomato, reduced thick.' },
   { x: 74, y: 20, kicker: 'Off heat', note: 'Torn parsley to finish.' },
+  // Deliberately authored inside the lower-left title zone — the smart layout
+  // should lift this one clear of the title on the page.
+  { x: 22, y: 74, kicker: 'Base', note: 'Harissa-spiked tomato, reduced thick.' },
 ]
 
 await payload.update({

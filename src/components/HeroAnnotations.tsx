@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 export type HeroPin = { x: number; y: number; kicker: string; note: string }
 
@@ -29,6 +29,8 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
   const [pos, setPos] = useState<Array<{ x: number; y: number }>>(() =>
     (items ?? []).map((p) => ({ x: clamp(p.x, 5, 95), y: clamp(p.y, 5, 95) })),
   )
+  // 'light' | 'dark' core per pin, chosen from the pixels beneath it.
+  const [tones, setTones] = useState<Array<'light' | 'dark'>>([])
 
   useLayoutEffect(() => {
     if (!items || items.length === 0) return
@@ -93,6 +95,70 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
     }
   }, [items])
 
+  // Sample the hero pixels under each (adjusted) pin and pick a light or dark
+  // core so the dot stays legible on a busy photo — a flame dot vanishes on a
+  // red sauce. Re-runs when pins move (resize) or the image finishes loading.
+  useEffect(() => {
+    if (!items || items.length === 0) return
+    const header = wrapRef.current?.closest('header') as HTMLElement | null
+    const img = header?.querySelector('img') as HTMLImageElement | null
+    if (!header || !img) return
+
+    const sample = () => {
+      if (!img.complete || !img.naturalWidth) return
+      const hr = header.getBoundingClientRect()
+      if (!hr.width || !hr.height) return
+      const cw = 120
+      const ch = Math.max(1, Math.round((120 * hr.height) / hr.width))
+      const canvas = document.createElement('canvas')
+      canvas.width = cw
+      canvas.height = ch
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
+      if (!ctx) return
+      // Replicate object-fit: cover with the image's focal point so canvas
+      // coordinates line up with what's actually on screen.
+      const op = getComputedStyle(img).objectPosition.split(' ')
+      const fx = (parseFloat(op[0]) || 50) / 100
+      const fy = (parseFloat(op[1] ?? op[0]) || 50) / 100
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight)
+      const dw = img.naturalWidth * scale
+      const dh = img.naturalHeight * scale
+      try {
+        ctx.drawImage(img, (cw - dw) * fx, (ch - dh) * fy, dw, dh)
+        const d = ctx.getImageData(0, 0, cw, ch).data
+        const lumAt = (xp: number, yp: number) => {
+          const px = clamp(Math.round((xp / 100) * cw), 0, cw - 1)
+          const py = clamp(Math.round((yp / 100) * ch), 0, ch - 1)
+          let r = 0
+          let g = 0
+          let b = 0
+          let n = 0
+          for (let a = -1; a <= 1; a++) {
+            for (let c = -1; c <= 1; c++) {
+              const xx = clamp(px + a, 0, cw - 1)
+              const yy = clamp(py + c, 0, ch - 1)
+              const i = (yy * cw + xx) * 4
+              r += d[i]
+              g += d[i + 1]
+              b += d[i + 2]
+              n += 1
+            }
+          }
+          return (0.2126 * r + 0.7152 * g + 0.0722 * b) / n
+        }
+        setTones(pos.map((p) => (lumAt(p.x, p.y) < 140 ? 'light' : 'dark')))
+      } catch {
+        // Cross-origin taint or draw failure — keep the default tone.
+      }
+    }
+
+    if (img.complete) sample()
+    else {
+      img.addEventListener('load', sample)
+      return () => img.removeEventListener('load', sample)
+    }
+  }, [items, pos])
+
   if (!items || items.length === 0) return null
   const isMouse = (t: string) => t === 'mouse' || t === 'pen'
 
@@ -139,12 +205,20 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
                 }`}
               >
                 <span
-                  className={`block h-2.5 w-2.5 rounded-full bg-flame transition-transform duration-200 ${
+                  className={`block h-2.5 w-2.5 rounded-full transition-transform duration-200 ${
                     open ? 'scale-150' : ''
                   }`}
-                  style={{
-                    boxShadow: '0 0 5px 1px rgba(228,87,46,0.7), 0 0 13px 4px rgba(228,87,46,0.35)',
-                  }}
+                  style={
+                    (tones[i] ?? 'light') === 'dark'
+                      ? {
+                          background: '#17130e',
+                          boxShadow: '0 0 0 1px rgba(255,255,255,0.65), 0 0 11px 3px rgba(228,87,46,0.4)',
+                        }
+                      : {
+                          background: '#f5f4ec',
+                          boxShadow: '0 0 0 1px rgba(20,16,12,0.35), 0 0 11px 3px rgba(228,87,46,0.45)',
+                        }
+                  }
                 />
               </button>
 

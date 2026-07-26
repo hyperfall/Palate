@@ -128,4 +128,43 @@ export const INGREDIENT_NUTRITION: Record<string, IngNut> = {
   'kaffir lime leave': { kcal: 40, protein: 3, carbs: 8, fat: 0.5 },
   salt: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
   water: { kcal: 0, protein: 0, carbs: 0, fat: 0, densityGPerMl: 1.0 },
+
+  // — added after a coverage audit: every one of these was linked by the matcher
+  //   but had no macros, so recipes using them fell under the coverage floor and
+  //   showed no nutrition at all. USDA SR Legacy / FoodData Central figures.
+  'sunflower oil': { kcal: 884, protein: 0, carbs: 0, fat: 100, densityGPerMl: 0.92 },
+  'vegetable oil': { kcal: 884, protein: 0, carbs: 0, fat: 100, densityGPerMl: 0.92 },
+  'braising steak': { kcal: 217, protein: 19.6, carbs: 0, fat: 15.1 },
+  'beef chuck': { kcal: 217, protein: 19.6, carbs: 0, fat: 15.1 },
+  'bone marrow': { kcal: 786, protein: 7, carbs: 0, fat: 84, gramsPerPiece: 40 },
+  'bone marrow disc': { kcal: 786, protein: 7, carbs: 0, fat: 84, gramsPerPiece: 40 },
+  mozzarella: { kcal: 300, protein: 22.2, carbs: 2.2, fat: 22.4 },
+  'flour tortilla': { kcal: 304, protein: 8.2, carbs: 49.5, fat: 7.6, gramsPerPiece: 45 },
+  lime: { kcal: 30, protein: 0.7, carbs: 10.5, fat: 0.2, gramsPerPiece: 67 },
+  coriander: { kcal: 23, protein: 2.1, carbs: 3.7, fat: 0.5 },
+  'bay leaf': { kcal: 313, protein: 7.6, carbs: 75, fat: 8.4, gramsPerPiece: 0.2 },
+  'sea salt flake': { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+  'sea salt': { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+  'white wine vinegar': { kcal: 18, protein: 0, carbs: 0.6, fat: 0, densityGPerMl: 1.01 },
+  'red wine vinegar': { kcal: 19, protein: 0, carbs: 0.3, fat: 0, densityGPerMl: 1.01 },
+  ginger: { kcal: 335, protein: 9, carbs: 71.6, fat: 4.2 },
+  cinnamon: { kcal: 247, protein: 4, carbs: 80.6, fat: 1.2 },
+  oregano: { kcal: 265, protein: 9, carbs: 68.9, fat: 4.3 },
+  // Dried chillies — the singularizer used to render these "chilly".
+  'ancho chilli': { kcal: 281, protein: 11, carbs: 51.4, fat: 8.2, gramsPerPiece: 17 },
+  'guajillo chilli': { kcal: 281, protein: 11, carbs: 51.4, fat: 8.2, gramsPerPiece: 12 },
+  'arbol chilli': { kcal: 324, protein: 13, carbs: 56.6, fat: 14.3, gramsPerPiece: 1 },
+  'dried chilli': { kcal: 281, protein: 11, carbs: 51.4, fat: 8.2, gramsPerPiece: 5 },
+  'birds eye chilli': { kcal: 40, protein: 1.9, carbs: 8.8, fat: 0.4, gramsPerPiece: 2 },
+  chilli: { kcal: 40, protein: 1.9, carbs: 8.8, fat: 0.4, gramsPerPiece: 45 },
+  'spicy salsa': { kcal: 36, protein: 1.5, carbs: 7, fat: 0.2, densityGPerMl: 1.03 },
+
+  // Legacy canonical names minted by the old singularizer ("chillies" → "chilly",
+  // "leaves" → "leave") before it was fixed. Keyed here so existing recipes keep
+  // their macros; the review queue still lists them for a manual merge.
+  'arbol chilly': { kcal: 324, protein: 13, carbs: 56.6, fat: 14.3, gramsPerPiece: 1 },
+  'guajillo chilly': { kcal: 281, protein: 11, carbs: 51.4, fat: 8.2, gramsPerPiece: 12 },
+  'bird s eye chilly': { kcal: 40, protein: 1.9, carbs: 8.8, fat: 0.4, gramsPerPiece: 2 },
+  'bay leave': { kcal: 313, protein: 7.6, carbs: 75, fat: 8.4, gramsPerPiece: 0.2 },
+  'tomato puree': { kcal: 38, protein: 1.7, carbs: 8.9, fat: 0.2, densityGPerMl: 1.07 },
 }

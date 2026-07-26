@@ -7,6 +7,7 @@ const DESCRIPTORS = new Set([
   'grated', 'crushed', 'whole', 'large', 'small', 'medium', 'ripe', 'boneless',
   'skinless', 'raw', 'cooked', 'extra', 'virgin', 'extra-virgin', 'toasted',
   'roasted', 'unsalted', 'salted', 'organic', 'finely', 'roughly', 'thinly',
+  'warmed', 'chilled',
 ])
 
 /** Phrases that, once seen, truncate the rest of the string. */
@@ -14,6 +15,21 @@ const TAIL_MARKERS = [' to taste', ' for garnish', ' plus more', ' for dusting',
 
 /** Mass nouns that already end in "-ss(es)" but have no distinct singular form. */
 const INVARIANT = new Set(['molasses'])
+
+/**
+ * Plurals the -ies/-es/-s rules get wrong. "chillies" is the trap that matters:
+ * the -ies rule turns it into "chilly" (the weather), splitting every chilli in
+ * the catalog off from its canonical and its nutrition.
+ */
+const IRREGULAR_PLURALS: Record<string, string> = {
+  chillies: 'chilli',
+  chilies: 'chili',
+  leaves: 'leaf',
+  halves: 'half',
+  knives: 'knife',
+  loaves: 'loaf',
+  shelves: 'shelf',
+}
 
 /**
  * Count-units that, when they TRAIL another word, describe a form of the base
@@ -27,6 +43,8 @@ const TRAILING_COUNT_UNITS = new Set(['clove', 'sprig', 'stalk'])
 export function singularize(word: string): string {
   if (word.length < 4) return word
   if (INVARIANT.has(word)) return word
+  const irregular = IRREGULAR_PLURALS[word]
+  if (irregular) return irregular
   if (word.endsWith('ies')) return `${word.slice(0, -3)}y`
   if (word.endsWith('oes')) return word.slice(0, -2) // tomatoes -> tomato
   if (/(s|x|z|ch|sh)es$/.test(word)) return word.slice(0, -2)
@@ -48,6 +66,7 @@ export function normalizeItem(raw: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '') // strip combining diacritics
+    .replace(/['’]/g, '') // bird's eye → birds eye, not "bird s eye"
     .trim()
   s = s.replace(/\([^)]*\)/g, ' ') // drop parentheticals
   s = s.split(',')[0] // keep the head, drop ", minced" etc.

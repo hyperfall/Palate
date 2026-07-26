@@ -10,6 +10,16 @@ describe('singularize', () => {
     expect(singularize('glasses')).toBe('glass') // -ses keeps one s
     expect(singularize('molasses')).toBe('molasses') // -ss unchanged
   })
+
+  it('handles the plurals the -ies/-ves rules get wrong', () => {
+    // The -ies rule turned "chillies" into "chilly" — the weather — splitting
+    // every chilli in the catalog off from its canonical and its nutrition.
+    expect(singularize('chillies')).toBe('chilli')
+    expect(singularize('chilies')).toBe('chili')
+    expect(singularize('leaves')).toBe('leaf')
+    expect(singularize('halves')).toBe('half')
+    expect(singularize('berries')).toBe('berry') // the regular -ies rule still applies
+  })
 })
 
 describe('normalizeItem', () => {
@@ -52,6 +62,12 @@ describe('normalizeItem', () => {
     expect(normalizeItem('crème fraîche')).toBe('creme fraiche')
     // and it no longer punches a hole mid-word ("pur e")
     expect(normalizeItem('tomato purée')).not.toContain(' e')
+  })
+  it('keeps apostrophised names in one piece', () => {
+    // The ascii filter used to punch a space here: "bird s eye chilly".
+    expect(normalizeItem("2 bird's eye chillies")).toBe('birds eye chilli')
+    expect(normalizeItem('4 bay leaves')).toBe('bay leaf')
+    expect(normalizeItem('24 warmed corn tortillas')).toBe('corn tortilla')
   })
   it('returns empty string for junk', () => {
     expect(normalizeItem('   ')).toBe('')

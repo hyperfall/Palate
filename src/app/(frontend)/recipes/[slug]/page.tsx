@@ -20,6 +20,7 @@ import { VideoEmbed } from '@/components/VideoEmbed'
 import { formatMinutes, formatTimer } from '@/lib/format'
 import { lexicalToPlainText } from '@/lib/lexical'
 import { imageFrom } from '@/lib/media'
+import { HeroAnnotations, type HeroPin } from '@/components/HeroAnnotations'
 import { findAllRecipeSlugs, findRecipeBySlug, findRelatedRecipes } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
 import { buildCookSteps } from '@/lib/stepIngredients'
@@ -74,6 +75,13 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
   const related = await findRelatedRecipes(recipe)
 
   const hero = imageFrom(recipe.heroImage, 'hero')
+  // Art-direct the crop from the media's focal point so the dish, not the frame
+  // centre, anchors the un-cropped hero.
+  const heroMedia = typeof recipe.heroImage === 'object' ? recipe.heroImage : null
+  const heroFocal =
+    heroMedia && heroMedia.focalX != null && heroMedia.focalY != null
+      ? `${heroMedia.focalX}% ${heroMedia.focalY}%`
+      : '50% 50%'
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
   const author = typeof recipe.author === 'object' ? recipe.author : null
   const story = recipe.story ? lexicalToPlainText(recipe.story as never) : ''
@@ -97,7 +105,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
       */}
       <article>
         {/* Full-bleed plate shot with the title over it. */}
-        <header className="relative bg-pan text-milk">
+        <header className="relative overflow-hidden bg-pan text-milk">
           {hero && (
             <Image
               src={hero.url}
@@ -105,36 +113,52 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               fill
               priority
               sizes="100vw"
-              className="object-cover opacity-55"
+              quality={82}
+              className="object-cover"
+              style={{ objectPosition: heroFocal }}
             />
           )}
-          <div className="relative bg-gradient-to-t from-pan-deep/95 via-pan-deep/40 to-transparent">
-            <div className="shell flex min-h-[44vh] flex-col justify-end py-10 lg:min-h-[52vh]">
-              {cuisine && (
-                <Link
-                  href={`/cuisine/${cuisine.slug}`}
-                  className="eyebrow w-fit text-flame no-underline hover:underline"
-                >
-                  {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
-                  {cuisine.name}
-                </Link>
-              )}
-              <h1 className="mt-3 max-w-[18ch] text-[clamp(2.5rem,5vw,4.75rem)] text-milk">
+          {/* Un-dimmed: the plate stays vivid. A soft wash rises only across the
+              lower third, so the oversized title reads without muting the food. */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-pan-deep/90 via-pan-deep/25 to-transparent" />
+
+          <HeroAnnotations items={recipe.heroAnnotations as HeroPin[] | null} />
+
+          {/* Type block is inert to the pointer so the annotation layer beneath it
+              still catches hover/tap on the photo; only the controls opt back in. */}
+          <div className="shell pointer-events-none relative z-30 flex min-h-[56vh] flex-col justify-end py-12 lg:min-h-[64vh]">
+            <div className="max-w-[min(100%,44rem)]">
+              <span className="mb-4 block h-[3px] w-12 bg-flame" aria-hidden="true" />
+              <h1 className="max-w-[15ch] text-[clamp(2.75rem,8vw,6rem)] leading-[0.9] tracking-[-0.01em] text-balance text-milk">
                 {recipe.title}
               </h1>
-              <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-2">
-                <span className="datum text-milk">
-                  <span className="eyebrow mr-2 text-milk/80">Total</span>
-                  {formatMinutes(recipe.totalMinutes)}
-                </span>
-                <span className="datum text-milk">
-                  <span className="eyebrow mr-2 text-milk/80">Serves</span>
-                  {recipe.servings}
-                </span>
-                <span className="datum text-milk capitalize">
-                  <span className="eyebrow mr-2 text-milk/80">Difficulty</span>
-                  {recipe.difficulty}
-                </span>
+              <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[0.8125rem] tracking-[0.02em] text-milk/85">
+                {cuisine && (
+                  <>
+                    <Link
+                      href={`/cuisine/${cuisine.slug}`}
+                      className="pointer-events-auto text-flame no-underline hover:underline"
+                    >
+                      {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
+                      {cuisine.name}
+                    </Link>
+                    <span aria-hidden="true" className="text-milk/40">·</span>
+                  </>
+                )}
+                <span>{formatMinutes(recipe.totalMinutes)}</span>
+                <span aria-hidden="true" className="text-milk/40">·</span>
+                <span>Serves {recipe.servings}</span>
+                <span aria-hidden="true" className="text-milk/40">·</span>
+                <span className="capitalize">{recipe.difficulty}</span>
+                {communityAverage > 0 && (
+                  <>
+                    <span aria-hidden="true" className="text-milk/40">·</span>
+                    <span>{communityAverage.toFixed(1)} ★</span>
+                  </>
+                )}
+              </p>
+
+              <div className="pointer-events-auto mt-7 flex flex-wrap items-center gap-3">
                 <CookModeLauncher
                   title={recipe.title}
                   steps={buildCookSteps(
@@ -164,7 +188,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 />
               </div>
 
-              <div className="mt-5 max-w-[22rem]">
+              <div className="pointer-events-auto mt-6 max-w-[22rem]">
                 <RateWidget
                   recipeId={recipe.id}
                   initialAverage={communityAverage}

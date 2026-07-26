@@ -231,6 +231,30 @@ export interface Recipe {
    * Optional. A creator’s TikTok/YouTube/Reels/Vimeo link — embedded on the recipe page. Set automatically when a creator submission is approved.
    */
   videoUrl?: string | null;
+  /**
+   * Mise-en-place pins on the hero photo — a short kicker + note, hidden on the page until a reader hovers or taps. Set the x/y percentages (a visual click-to-place editor is coming).
+   */
+  heroAnnotations?:
+    | {
+        /**
+         * % from left
+         */
+        x: number;
+        /**
+         * % from top
+         */
+        y: number;
+        /**
+         * Short label, e.g. “Yolk”.
+         */
+        kicker: string;
+        /**
+         * One line, e.g. “Pull at 6 min — jammy, not set.”
+         */
+        note: string;
+        id?: string | null;
+      }[]
+    | null;
   cuisine: number | Cuisine;
   course: 'breakfast' | 'lunch' | 'dinner' | 'side' | 'snack' | 'dessert';
   /**
@@ -1254,6 +1278,15 @@ export interface RecipesSelect<T extends boolean = true> {
         leftoverIdeas?: T;
       };
   videoUrl?: T;
+  heroAnnotations?:
+    | T
+    | {
+        x?: T;
+        y?: T;
+        kicker?: T;
+        note?: T;
+        id?: T;
+      };
   cuisine?: T;
   course?: T;
   mainIngredient?: T;

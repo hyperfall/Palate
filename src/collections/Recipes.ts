@@ -93,6 +93,53 @@ export const Recipes: CollectionConfig = {
                   'Optional. A creator’s TikTok/YouTube/Reels/Vimeo link — embedded on the recipe page. Set automatically when a creator submission is approved.',
               },
             },
+            {
+              name: 'heroAnnotations',
+              type: 'array',
+              label: 'Hero annotations',
+              labels: { singular: 'Pin', plural: 'Pins' },
+              admin: {
+                description:
+                  'Mise-en-place pins on the hero photo — a short kicker + note, hidden on the page until a reader hovers or taps. Set the x/y percentages (a visual click-to-place editor is coming).',
+              },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'x',
+                      type: 'number',
+                      required: true,
+                      min: 0,
+                      max: 100,
+                      admin: { width: '20%', description: '% from left' },
+                    },
+                    {
+                      name: 'y',
+                      type: 'number',
+                      required: true,
+                      min: 0,
+                      max: 100,
+                      admin: { width: '20%', description: '% from top' },
+                    },
+                    {
+                      name: 'kicker',
+                      type: 'text',
+                      required: true,
+                      maxLength: 24,
+                      admin: { width: '60%', description: 'Short label, e.g. “Yolk”.' },
+                    },
+                  ],
+                },
+                {
+                  name: 'note',
+                  type: 'text',
+                  required: true,
+                  maxLength: 80,
+                  admin: { description: 'One line, e.g. “Pull at 6 min — jammy, not set.”' },
+                },
+              ],
+            },
           ],
         },
         {

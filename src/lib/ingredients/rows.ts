@@ -45,6 +45,23 @@ export function classifyIngredientRow(raw: string | null | undefined): RowKind {
 export type RawRow = { quantity?: string | null; unit?: string | null; item: string; heading?: boolean | null }
 
 /**
+ * Merge a pasted line into a row the creator has already started typing.
+ *
+ * Pasting only ever ADDS what it actually carries: paste "olive oil" into a row
+ * where you already typed 2 / tbsp and you keep 2 tbsp olive oil. Paste a full
+ * "400 g tinned tomatoes" and the pasted measure wins, because you clearly meant
+ * to replace the line.
+ */
+export function mergePastedRow<T extends RawRow>(existing: T, pasted: RawRow): T {
+  return {
+    ...existing,
+    item: pasted.item || existing.item,
+    quantity: pasted.quantity?.trim() ? pasted.quantity : existing.quantity,
+    unit: pasted.unit?.trim() ? pasted.unit : existing.unit,
+  }
+}
+
+/**
  * Fold qualifier rows into the ingredient above them and flag section labels.
  * A qualifier with no ingredient above it (nothing to attach to) is kept as-is
  * rather than dropped — never silently lose a creator's text.

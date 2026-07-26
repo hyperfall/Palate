@@ -40,6 +40,7 @@ export function StoryEditor({
   const taRef = useRef<HTMLTextAreaElement>(null)
   const [preview, setPreview] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const cap = (s: string) => s.slice(0, STORY_MARKDOWN_CAP)
@@ -108,6 +109,30 @@ export function StoryEditor({
     } finally {
       setUploading(false)
     }
+  }
+
+  /** Paste or drop an image straight into the story — uploaded, then written in
+   *  as Markdown at the caret. The hero picker ignores pastes aimed at this
+   *  textarea, so the two no longer fight over the clipboard. */
+  const imageFromTransfer = (items: DataTransferItemList | null | undefined, files: FileList | null | undefined) => {
+    const fromItems = [...(items ?? [])].find((it) => it.kind === 'file' && it.type.startsWith('image/'))
+    if (fromItems) return fromItems.getAsFile()
+    return [...(files ?? [])].find((f) => f.type.startsWith('image/')) ?? null
+  }
+
+  const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const file = imageFromTransfer(e.clipboardData?.items, e.clipboardData?.files)
+    if (!file || uploading) return
+    e.preventDefault()
+    void upload(file)
+  }
+
+  const onDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    const file = imageFromTransfer(e.dataTransfer?.items, e.dataTransfer?.files)
+    if (!file || uploading) return
+    e.preventDefault()
+    setDragOver(false)
+    void upload(file)
   }
 
   const TOOLS: { key: string; title: string; run: () => void }[] = [
@@ -183,9 +208,20 @@ export function StoryEditor({
           value={value}
           maxLength={STORY_MARKDOWN_CAP}
           rows={8}
-          placeholder="Tell the story behind the dish. Use the buttons above to format — or write plain and it still looks great."
+          placeholder="Tell the story behind the dish. Use the buttons above to format — or write plain and it still looks great. Paste or drop a photo straight in."
           onChange={(e) => onChange(e.target.value)}
-          className="w-full resize-y rounded-b border border-t-0 border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] leading-relaxed text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+          onPaste={onPaste}
+          onDrop={onDrop}
+          onDragOver={(e) => {
+            if ([...(e.dataTransfer?.items ?? [])].some((it) => it.kind === 'file')) {
+              e.preventDefault()
+              setDragOver(true)
+            }
+          }}
+          onDragLeave={() => setDragOver(false)}
+          className={`w-full resize-y rounded-b border border-t-0 bg-transparent px-3 py-2 font-mono text-[0.875rem] leading-relaxed text-ink placeholder:text-slate/50 focus:outline-none ${
+            dragOver ? 'border-flame bg-flame/5' : 'border-rule focus:border-flame'
+          }`}
         />
       )}
 

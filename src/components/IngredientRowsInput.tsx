@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
-import { foldIngredientRows } from '@/lib/ingredients/rows'
+import { foldIngredientRows, mergePastedRow } from '@/lib/ingredients/rows'
 
 export type IngredientRow = { quantity: string; unit: string; item: string }
 
@@ -215,11 +215,13 @@ export function IngredientRowsInput({
   const onItemPaste = (e: React.ClipboardEvent<HTMLInputElement>, i: number) => {
     const text = e.clipboardData.getData('text')
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean)
-    // A single-line paste into an empty item still gets parsed (splits qty/unit out).
+    // A single-line paste still gets parsed (splits qty/unit out) — but it only
+    // fills what it actually carries. Pasting a bare name into a row where the
+    // quantity and unit are already typed must not wipe them.
     if (lines.length <= 1) {
-      if (lines.length === 1 && value[i].item === '') {
+      if (lines.length === 1 && !value[i].item.trim()) {
         e.preventDefault()
-        setAt(i, toRow(lines[0]))
+        setAt(i, mergePastedRow(value[i], toRow(lines[0])))
       }
       return
     }
@@ -227,8 +229,17 @@ export function IngredientRowsInput({
     // Fold qualifier lines into the ingredient above them as the rows appear,
     // so what the creator reviews is what gets stored.
     const parsed = foldIngredientRows(lines.map(toRow))
+    const cur = value[i]
     const next = [...value]
-    next.splice(i, rowIsEmpty(value[i]) ? 1 : 0, ...parsed)
+    if (rowIsEmpty(cur)) {
+      // Nothing typed here — the list simply lands.
+      next.splice(i, 1, ...parsed)
+    } else if (!cur.item.trim()) {
+      // Measure typed, name pasted: the first line joins this row, the rest follow.
+      next.splice(i, 1, mergePastedRow(cur, parsed[0]), ...parsed.slice(1))
+    } else {
+      next.splice(i, 0, ...parsed)
+    }
     onChange(next)
     focusItem(i + parsed.length - 1)
   }

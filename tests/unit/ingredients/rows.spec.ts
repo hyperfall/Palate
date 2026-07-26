@@ -1,6 +1,27 @@
 import { describe, expect, it } from 'vitest'
 
-import { classifyIngredientRow, foldIngredientRows } from '@/lib/ingredients/rows'
+import { classifyIngredientRow, foldIngredientRows, mergePastedRow } from '@/lib/ingredients/rows'
+
+describe('mergePastedRow', () => {
+  it('keeps a typed quantity and unit when the pasted line carries none', () => {
+    // The studio bug: type 2 / tbsp, paste "olive oil", lose the 2 tbsp.
+    const out = mergePastedRow({ quantity: '2', unit: 'tbsp', item: '' }, { quantity: '', unit: '', item: 'olive oil' })
+    expect(out).toEqual({ quantity: '2', unit: 'tbsp', item: 'olive oil' })
+  })
+
+  it('lets a pasted measure win — that paste meant to replace the line', () => {
+    const out = mergePastedRow(
+      { quantity: '2', unit: 'tbsp', item: '' },
+      { quantity: '400', unit: 'g', item: 'tinned tomatoes' },
+    )
+    expect(out).toEqual({ quantity: '400', unit: 'g', item: 'tinned tomatoes' })
+  })
+
+  it('keeps the existing name when the paste has none', () => {
+    const out = mergePastedRow({ quantity: '', unit: '', item: 'garlic' }, { quantity: '3', unit: '', item: '' })
+    expect(out).toEqual({ quantity: '3', unit: '', item: 'garlic' })
+  })
+})
 
 describe('classifyIngredientRow', () => {
   it('treats a bare participle phrase as a qualifier', () => {

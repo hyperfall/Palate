@@ -69,6 +69,18 @@ export function ImagePicker({
   useEffect(() => {
     if (!acceptPaste) return
     const onPaste = (event: ClipboardEvent) => {
+      // The listener is on window so a paste anywhere lands the hero photo — but
+      // if the caret is in some other editor (the Story textarea, an ingredient
+      // field), that field owns the paste. Otherwise typing a story and pasting
+      // a screenshot silently replaces the dish photo.
+      const target = event.target as HTMLElement | null
+      const inOtherEditor =
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.tagName === 'TEXTAREA' ||
+          (target.tagName === 'INPUT' && !['file', 'checkbox', 'radio', 'button'].includes((target as HTMLInputElement).type)))
+      if (inOtherEditor) return
+
       const item = [...(event.clipboardData?.items ?? [])].find((i) => i.type.startsWith('image/'))
       if (item) {
         event.preventDefault()

@@ -15,16 +15,19 @@ export type CreatorCard = {
 /** The mini profile shown by the hover/tap byline. Presentational only. */
 export function CreatorHoverCard({ card, loading }: { card: CreatorCard | null; loading: boolean }) {
   return (
-    <div className="w-64 overflow-hidden rounded-lg border border-ink/15 bg-card p-4 shadow-block">
+    <div className="w-64 overflow-hidden rounded-xl border border-ink/10 bg-card shadow-block">
+      {/* A single hairline of brand colour — identity without a wall of orange. */}
+      <div className="h-0.5 bg-flame" aria-hidden="true" />
+
       {loading || !card ? (
-        <div className="flex items-center gap-3">
-          <span className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-wash" />
+        <div className="flex items-center gap-3 p-4">
+          <span className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-wash" />
           <span className="h-4 w-28 animate-pulse rounded bg-wash" />
         </div>
       ) : (
-        <>
+        <div className="p-4">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full border border-rule bg-wash font-display text-lg text-slate">
+            <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-wash font-display text-lg text-ink ring-1 ring-ink/10">
               {card.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- small avatar
                 <img src={card.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -48,18 +51,19 @@ export function CreatorHoverCard({ card, loading }: { card: CreatorCard | null; 
             </span>
           </div>
 
-          {card.bio && <p className="mt-3 text-[0.875rem] leading-snug text-slate">{card.bio}</p>}
+          {card.bio && <p className="mt-3 text-[0.875rem] leading-snug text-ink/70">{card.bio}</p>}
 
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <SocialLinks socials={card.socials} />
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-rule pt-3">
+            <SocialLinks socials={card.socials} variant="brand" />
             <Link
               href={`/creator/${card.handle}`}
-              className="shrink-0 font-mono text-[0.6875rem] tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+              className="group/vp inline-flex shrink-0 items-center gap-1 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase transition-colors hover:text-flame"
             >
-              View profile →
+              Profile
+              <span aria-hidden="true" className="transition-transform group-hover/vp:translate-x-0.5">→</span>
             </Link>
           </div>
-        </>
+        </div>
       )}
     </div>
   )

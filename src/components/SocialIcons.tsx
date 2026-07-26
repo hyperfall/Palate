@@ -1,5 +1,18 @@
 import { SOCIAL_PLATFORMS, type SocialKey, type Socials } from '@/lib/socials'
 
+/**
+ * Brand tints for the `brand` variant. Instagram is drawn with its signature
+ * gradient (see ICONS below); X and TikTok are monochrome marks, so they use
+ * `--color-ink` and adapt to light/dark. The rest carry their house colour.
+ */
+const BRAND: Record<SocialKey, string> = {
+  instagram: 'var(--color-ink)', // overridden by the gradient icon
+  tiktok: 'var(--color-ink)',
+  youtube: '#ff0033',
+  x: 'var(--color-ink)',
+  website: 'var(--color-flame)',
+}
+
 /** Simple, recognizable glyphs for the curated platform set. */
 const ICONS: Record<SocialKey, React.ReactNode> = {
   instagram: (
@@ -32,11 +45,43 @@ const ICONS: Record<SocialKey, React.ReactNode> = {
   ),
 }
 
-/** A row of social-link icons; renders nothing when there are none. */
-export function SocialLinks({ socials, className = '' }: { socials: Socials | null | undefined; className?: string }) {
+/** Instagram in its signature gradient — the `brand` variant swaps it in. */
+const INSTAGRAM_BRAND = (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" strokeWidth="1.9" aria-hidden="true">
+    <defs>
+      <linearGradient id="ig-grad" x1="2" y1="22" x2="22" y2="2" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stopColor="#feda75" />
+        <stop offset="0.35" stopColor="#fa7e1e" />
+        <stop offset="0.65" stopColor="#d62976" />
+        <stop offset="1" stopColor="#962fbf" />
+      </linearGradient>
+    </defs>
+    <g stroke="url(#ig-grad)">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+    </g>
+    <circle cx="17.5" cy="6.5" r="1.1" fill="url(#ig-grad)" />
+  </svg>
+)
+
+/**
+ * A row of social-link icons; renders nothing when there are none.
+ * `variant="brand"` tints each mark with its house colour (Instagram gets its
+ * gradient); the default is a muted slate that warms to flame on hover.
+ */
+export function SocialLinks({
+  socials,
+  className = '',
+  variant = 'muted',
+}: {
+  socials: Socials | null | undefined
+  className?: string
+  variant?: 'muted' | 'brand'
+}) {
   if (!socials) return null
   const present = SOCIAL_PLATFORMS.filter((p) => socials[p.key])
   if (present.length === 0) return null
+  const brand = variant === 'brand'
 
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
@@ -48,9 +93,14 @@ export function SocialLinks({ socials, className = '' }: { socials: Socials | nu
           rel="me nofollow noopener"
           aria-label={p.label}
           title={p.label}
-          className="text-slate transition-colors hover:text-flame"
+          style={brand ? { color: BRAND[p.key] } : undefined}
+          className={
+            brand
+              ? 'opacity-90 transition-all hover:-translate-y-0.5 hover:opacity-100'
+              : 'text-slate transition-colors hover:text-flame'
+          }
         >
-          {ICONS[p.key]}
+          {brand && p.key === 'instagram' ? INSTAGRAM_BRAND : ICONS[p.key]}
         </a>
       ))}
     </div>

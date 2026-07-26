@@ -53,15 +53,17 @@ export async function getPlanEntries(): Promise<PlanEntry[]> {
   const supabase = await userScoped()
   if (!supabase) return []
   const householdId = await getActiveHouseholdId()
-  const { data } = await scopeToContext(
-    supabase
-      .from('meal_plan')
-      .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position,servings'),
-    householdId,
-  )
-    .order('day')
-    .order('position')
-  return (data ?? []).map((r) => ({
+
+  const base = 'id,day,meal,recipe_slug,recipe_title,recipe_image,position'
+  const run = (cols: string) =>
+    scopeToContext(supabase.from('meal_plan').select(cols), householdId).order('day').order('position')
+
+  // Prefer the servings column; if the migration hasn't run yet the select errors,
+  // so fall back to the base columns rather than blanking the whole board.
+  let res = await run(`${base},servings`)
+  if (res.error) res = await run(base)
+
+  return ((res.data ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({
     id: r.id as string,
     day: r.day as number,
     meal: (r.meal as string | null) ?? 'dinner',

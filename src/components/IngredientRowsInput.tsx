@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 
@@ -8,19 +8,130 @@ export type IngredientRow = { quantity: string; unit: string; item: string }
 
 export const emptyIngredientRow: IngredientRow = { quantity: '', unit: '', item: '' }
 
-// Datalist hints only — the box accepts anything typed. Both abbreviations and
-// spelled-out forms are listed so the filter matches whether the creator types
-// "lb" or "pound". Mirrors the aliases the paste parser recognises.
-const UNIT_SUGGESTIONS = [
-  // volume
-  'tsp', 'teaspoon', 'tbsp', 'tablespoon', 'cup', 'ml', 'milliliter', 'l', 'liter',
-  'fl oz', 'pint', 'quart', 'gallon',
-  // weight
-  'g', 'gram', 'kg', 'kilogram', 'oz', 'ounce', 'lb', 'pound',
-  // count / informal
-  'clove', 'can', 'tin', 'jar', 'slice', 'sprig', 'stick', 'bunch', 'piece',
-  'pinch', 'dash', 'handful', 'knob', 'splash', 'to taste',
+/**
+ * The canonical units the platform actually understands — every one of these is
+ * a unit the paste parser normalises AND the nutrition engine can turn into
+ * grams. Metric-first, because the site is. Grouped so the picker can show a
+ * heading; the creator can still type a free-form unit, but the list steers them
+ * onto the vocabulary the whole structured backbone is built on.
+ */
+const UNIT_GROUPS: Array<{ label: string; units: string[] }> = [
+  { label: 'Weight', units: ['g', 'kg', 'oz', 'lb'] },
+  { label: 'Volume', units: ['ml', 'l', 'tsp', 'tbsp', 'cup'] },
+  { label: 'Count', units: ['clove', 'slice', 'sprig', 'stick', 'bunch', 'can', 'tin', 'jar'] },
+  { label: 'Informal', units: ['pinch', 'dash', 'handful', 'knob', 'splash'] },
 ]
+export const CANONICAL_UNITS = UNIT_GROUPS.flatMap((g) => g.units)
+
+/** Substring filter over the canonical units; empty query returns them all. */
+export function filterUnits(query: string): string[] {
+  const q = query.trim().toLowerCase()
+  return q ? CANONICAL_UNITS.filter((u) => u.includes(q)) : CANONICAL_UNITS
+}
+
+/**
+ * A small on-brand unit combobox: styled like the rest of the form, filters the
+ * canonical list as you type, arrow-key + click selectable, and still accepts a
+ * free-form unit. Picking one advances the cursor to the ingredient name.
+ */
+function UnitCombobox({
+  value,
+  index,
+  cellCls,
+  onChange,
+  onAdvance,
+}: {
+  value: string
+  index: number
+  cellCls: string
+  onChange: (v: string) => void
+  onAdvance: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [hi, setHi] = useState(-1)
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const options = useMemo(() => filterUnits(value), [value])
+
+  const choose = (u: string) => {
+    onChange(u)
+    setOpen(false)
+    setHi(-1)
+    onAdvance()
+  }
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setOpen(true)
+      setHi((h) => Math.min(h + 1, options.length - 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHi((h) => Math.max(h - 1, 0))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (open && hi >= 0 && options[hi]) choose(options[hi])
+      else onAdvance()
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+      setHi(-1)
+    }
+  }
+
+  return (
+    <div className="relative w-20 shrink-0 sm:w-24">
+      <input
+        type="text"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={`units-${index}`}
+        aria-autocomplete="list"
+        autoComplete="off"
+        maxLength={24}
+        value={value}
+        aria-label={`Unit ${index + 1}`}
+        placeholder="unit"
+        onChange={(e) => {
+          onChange(e.target.value)
+          setOpen(true)
+          setHi(-1)
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => {
+          blurTimer.current = setTimeout(() => setOpen(false), 120)
+        }}
+        onKeyDown={onKeyDown}
+        className={`${cellCls} w-full`}
+      />
+      {open && options.length > 0 && (
+        <ul
+          id={`units-${index}`}
+          role="listbox"
+          // Keep input focus so the blur-close doesn't fire before the click.
+          onMouseDown={(e) => e.preventDefault()}
+          className="absolute top-full left-0 z-30 mt-1 max-h-56 w-28 overflow-auto rounded border border-rule bg-paper py-1 shadow-block"
+        >
+          {options.map((u, oi) => (
+            <li key={u}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={oi === hi}
+                onMouseEnter={() => setHi(oi)}
+                onClick={() => choose(u)}
+                className={`block w-full px-3 py-1 text-left font-mono text-[0.8125rem] transition-colors ${
+                  oi === hi ? 'bg-flame/10 text-flame' : 'text-ink hover:bg-wash'
+                }`}
+              >
+                {u}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 /**
  * Structured ingredient rows: quantity · unit · name, so nothing has to be
@@ -111,11 +222,6 @@ export function IngredientRowsInput({
 
   return (
     <div role="group" aria-label="Ingredients" className="grid grid-cols-1 gap-2">
-      <datalist id="ingredient-units">
-        {UNIT_SUGGESTIONS.map((u) => (
-          <option key={u} value={u} />
-        ))}
-      </datalist>
       {value.map((row, i) => (
         <div key={i} className="flex items-center gap-2">
           <input
@@ -129,16 +235,12 @@ export function IngredientRowsInput({
             onKeyDown={(e) => onCellEnter(e, i)}
             className={`${cellCls} w-14 shrink-0 text-center tabular-nums`}
           />
-          <input
-            type="text"
-            list="ingredient-units"
-            maxLength={24}
+          <UnitCombobox
             value={row.unit}
-            aria-label={`Unit ${i + 1}`}
-            placeholder="unit"
-            onChange={(e) => setAt(i, { unit: e.target.value })}
-            onKeyDown={(e) => onCellEnter(e, i)}
-            className={`${cellCls} w-20 shrink-0 sm:w-24`}
+            index={i}
+            cellCls={cellCls}
+            onChange={(v) => setAt(i, { unit: v })}
+            onAdvance={() => focusItem(i)}
           />
           <input
             ref={(el) => {

@@ -285,7 +285,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         */}
         <div
           id="method"
-          className="shell grid scroll-mt-20 gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,52rem)] 2xl:gap-x-20"
+          className="shell grid scroll-mt-20 gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,72rem)] 2xl:gap-x-20"
         >
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <IngredientsPanel
@@ -321,8 +321,10 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
             </div>
           </aside>
 
-          {/* The method — a reading column, not a page-wide river. */}
-          <div className="max-w-[70ch]">
+          {/* The method — a reading column, not a page-wide river. On xl the column
+              opens up so each step's photo can sit in the margin beside it; the
+              text and every prose block below re-cap themselves to a measure. */}
+          <div className="max-w-[70ch] 2xl:max-w-none">
             <div className="border-t-2 border-ink pt-4">
               <h2 className="text-[1.5rem]">Method</h2>
             </div>
@@ -334,7 +336,10 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 {/* Numbered because the order genuinely carries information here. */}
                 <ol className="list-none space-y-7 p-0">
                   {(recipe.steps ?? []).map((step, index) => (
-                    <li key={step.id ?? index} className="grid grid-cols-[3rem_1fr] gap-4">
+                    <li
+                      key={step.id ?? index}
+                      className="grid grid-cols-[3rem_1fr] gap-x-4 gap-y-4 2xl:grid-cols-[3rem_minmax(32rem,40rem)_minmax(0,22rem)] 2xl:gap-x-8"
+                    >
                       <span className="font-mono text-[1.375rem] leading-[1.3] font-semibold text-flame tabular-nums">
                         {String(index + 1).padStart(2, '0')}
                       </span>
@@ -345,24 +350,27 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                         {step.timerSeconds ? (
                           <p className="eyebrow mt-2">≈ {formatTimer(step.timerSeconds)}</p>
                         ) : null}
-                        {/* A step photo answers "does mine look right?" — the one
-                            question text can't. The field existed from the start
-                            and was never rendered. */}
-                        {(() => {
-                          const shot = imageFrom(step.image, 'card')
-                          if (!shot) return null
-                          return (
+                      </div>
+                      {/* A step photo answers "does mine look right?" — the one
+                          question text can't. It stacks under the step on narrow
+                          screens and moves into the right margin on xl, where it
+                          costs the reading column nothing. */}
+                      {(() => {
+                        const shot = imageFrom(step.image, 'card')
+                        if (!shot) return null
+                        return (
+                          <div className="col-start-2 2xl:col-start-3 2xl:row-start-1">
                             <Image
                               src={shot.url}
                               alt={shot.alt || `Step ${index + 1} of ${recipe.title}`}
                               width={shot.width ?? 800}
                               height={shot.height ?? 600}
-                              sizes="(min-width: 1024px) 40rem, 100vw"
-                              className="mt-4 w-full rounded-lg border border-rule object-cover"
+                              sizes="(min-width: 1536px) 22rem, (min-width: 1024px) 40rem, 100vw"
+                              className="w-full rounded-lg border border-rule object-cover"
                             />
-                          )
-                        })()}
-                      </div>
+                          </div>
+                        )
+                      })()}
                     </li>
                   ))}
                 </ol>
@@ -371,7 +379,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
 
             {/* The creator's own video — their reach is the reward for sharing. */}
             {recipe.videoUrl && (
-              <section className="mt-14 border-t border-rule pt-6">
+              <section className="mt-14 max-w-[70ch] border-t border-rule pt-6">
                 <p className="eyebrow m-0">
                   {author ? `Watch ${author.name} make it` : 'Watch it made'}
                 </p>
@@ -386,7 +394,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
 
             {/* The story lives here, after the cooking — never before it (§1). */}
             {story && (
-              <section className="mt-14 border-t border-rule pt-6">
+              <section className="mt-14 max-w-[70ch] border-t border-rule pt-6">
                 <p className="eyebrow m-0">Notes, if you feel like it</p>
                 <p className="mt-3 text-[1.0625rem] leading-relaxed text-slate">{story}</p>
               </section>

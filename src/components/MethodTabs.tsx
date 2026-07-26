@@ -36,7 +36,14 @@ export function MethodTabs({ story, children }: { story?: string | null; childre
         ))}
       </div>
 
-      {view === 'instructions' ? children : <MarkdownStory markdown={story!} />}
+      {view === 'instructions' ? (
+        children
+      ) : (
+        // The column is wide on xl for step photos; prose must not follow it out.
+        <div className="max-w-[70ch]">
+          <MarkdownStory markdown={story!} />
+        </div>
+      )}
     </div>
   )
 }

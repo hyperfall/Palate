@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { syncRecipeRating } from '../lib/ratingSync'
+
 /**
  * One community rating: a single user's 1–5 stars for one recipe. Rows are
  * written only through the authenticated `/recipe/rate` endpoint, which also
@@ -24,6 +26,18 @@ export const Ratings: CollectionConfig = {
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
+  },
+  hooks: {
+    // An admin deleting a row from /admin would otherwise leave the recipe's
+    // denormalised sum/count drifted from the rows forever — resync from source.
+    afterDelete: [
+      async ({ doc, req }) => {
+        const recipeId = typeof doc.recipe === 'object' && doc.recipe ? doc.recipe.id : doc.recipe
+        if (typeof recipeId === 'number') {
+          await syncRecipeRating(req.payload, recipeId).catch(() => {})
+        }
+      },
+    ],
   },
   // DB-level one-vote-per-user — the endpoint upserts, this makes a race a no-op.
   indexes: [{ fields: ['recipe', 'userId'], unique: true }],

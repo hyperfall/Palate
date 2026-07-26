@@ -23,19 +23,34 @@ export const Recipes: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      ({ data }) => {
+      ({ data, originalDoc }) => {
         deriveTotalMinutes(data)
         if (data?.status === 'published' && !data?.publishedAt) {
           data.publishedAt = new Date().toISOString()
         }
         // Denormalise the sortable/filterable rating into one column. Editorial
         // rating (a curator override) wins; otherwise it's the community average,
-        // or 0 when nothing has been rated yet. The rate endpoint bumps sum/count
-        // and re-saves, which re-runs this — so the score is never stale.
-        const count = typeof data.ratingCount === 'number' ? data.ratingCount : 0
-        const sum = typeof data.ratingSum === 'number' ? data.ratingSum : 0
+        // or 0 when nothing has been rated yet.
+        //
+        // Hooks receive the RAW partial update, not the merged doc — a
+        // `{ nutrition }`-only update would otherwise read count/sum/editorial as
+        // absent and stomp the score to 0 (or silently drop the curator
+        // override). Fall back to the stored doc for any field the update didn't
+        // touch. `editorialRating: null` is a deliberate clear and must NOT fall
+        // back — undefined means untouched, null means cleared.
+        const orig = (originalDoc ?? {}) as Record<string, unknown>
+        const pickNum = (k: string): number =>
+          typeof data[k] === 'number' ? (data[k] as number) : typeof orig[k] === 'number' ? (orig[k] as number) : 0
+        const count = pickNum('ratingCount')
+        const sum = pickNum('ratingSum')
         const editorial =
-          typeof data.editorialRating === 'number' ? data.editorialRating : null
+          data.editorialRating !== undefined
+            ? typeof data.editorialRating === 'number'
+              ? data.editorialRating
+              : null
+            : typeof orig.editorialRating === 'number'
+              ? (orig.editorialRating as number)
+              : null
         data.ratingScore =
           editorial ?? (count > 0 ? Math.round((sum / count) * 100) / 100 : 0)
         return data

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { getPayloadClient } from '@/lib/queries'
 import { limited } from '@/lib/rateLimit'
+import { syncRecipeRating } from '@/lib/ratingSync'
 import { serverUser } from '@/lib/supabase/server'
 
 /**
@@ -34,7 +35,9 @@ export async function GET(request: NextRequest) {
   const recipe = await payload
     .findByID({ collection: 'recipes', id: recipeId, depth: 0 })
     .catch(() => null)
-  if (!recipe) {
+  // Drafts must 404 exactly like nonexistent ids — otherwise this endpoint is
+  // an oracle for enumerating unpublished recipe ids and their tallies.
+  if (!recipe || recipe.status !== 'published') {
     return NextResponse.json({ error: 'Recipe not found.' }, { status: 404 })
   }
 
@@ -98,28 +101,20 @@ export async function POST(request: NextRequest) {
   })
   const prior = existing.docs[0]
 
-  let sum = recipe.ratingSum ?? 0
-  let count = recipe.ratingCount ?? 0
-
   if (prior) {
-    // Re-rating: shift the sum by the delta, count unchanged.
-    sum += stars - (prior.stars as number)
     await payload.update({ collection: 'ratings', id: prior.id, data: { stars } })
   } else {
-    sum += stars
-    count += 1
     await payload.create({
       collection: 'ratings',
       data: { recipe: recipeId, userId: user.id, stars },
     })
   }
 
-  // Re-saving sum/count re-runs the recipe hook, which recomputes ratingScore.
-  await payload.update({
-    collection: 'recipes',
-    id: recipeId,
-    data: { ratingSum: sum, ratingCount: count },
-  })
+  // Recompute the aggregate FROM the ratings rows rather than incrementing the
+  // recipe's copy in JS — the old read-modify-write lost concurrent votes
+  // permanently; recomputing converges to the source of truth on every vote.
+  // (The recipe hook re-derives ratingScore from the updated sum/count.)
+  const { sum, count } = await syncRecipeRating(payload, recipeId)
 
   return NextResponse.json({ average: average(sum, count), count, yourStars: stars })
 }

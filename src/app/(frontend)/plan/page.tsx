@@ -7,7 +7,7 @@ import { ShoppingModeLauncher } from '@/components/ShoppingMode'
 import { getHouseholdContext } from '@/lib/household'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
-import { buildDishShoppingList, buildWeekSnapshot, scaleIngredients, weeklyCost } from '@/lib/mealPlan'
+import { buildDishShoppingList, buildWeekSnapshot, formatWeekOf, scaleIngredients, weeklyCost } from '@/lib/mealPlan'
 import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/planData'
 import { serverUser } from '@/lib/supabase/server'
 
@@ -55,12 +55,17 @@ export default async function PlanPage() {
 
   // A single ingredient-carrying snapshot drives the share, the shopping list,
   // and (once shared) the card + exports — ingredients scaled to planned servings.
+  const displayName = typeof user.user_metadata?.display_name === 'string' ? user.user_metadata.display_name : null
   const week = buildWeekSnapshot(
     withServings.map(({ entry, planned, factor, recipe }) => ({
       ...entry,
       servings: planned,
       ingredients: scaleIngredients(recipe?.ingredients ?? [], factor),
     })),
+    {
+      title: household ? household.name : displayName ? `${displayName}’s week` : 'My week',
+      weekOf: formatWeekOf(new Date()),
+    },
   )
   const shopping = buildDishShoppingList(week, pantry)
   const cost = weeklyCost(

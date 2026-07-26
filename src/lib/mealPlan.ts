@@ -169,6 +169,13 @@ export function buildWeekSnapshot(
 export const weekDishCount = (w: WeekSnapshot): number =>
   w.days.reduce((n, d) => n + d.meals.reduce((k, m) => k + m.dishes.length, 0), 0)
 
+/** "Week of 21 Jul" — the Monday of the week containing `d`. */
+export function formatWeekOf(d: Date): string {
+  const monday = new Date(d)
+  monday.setDate(d.getDate() - ((d.getDay() + 6) % 7)) // back up to Monday
+  return `Week of ${monday.getDate()} ${monday.toLocaleString('en-GB', { month: 'short' })}`
+}
+
 // --- Per-serving scaling ----------------------------------------------------
 //
 // A dish planned for 6 when the recipe serves 2 needs 3× the ingredients. We

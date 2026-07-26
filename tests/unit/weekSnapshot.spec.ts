@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildWeekSnapshot, scaleIngredients, scaleQuantity, weekDishCount } from '@/lib/mealPlan'
+import { buildWeekSnapshot, formatWeekOf, scaleIngredients, scaleQuantity, weekDishCount } from '@/lib/mealPlan'
 
 describe('buildWeekSnapshot', () => {
   it('groups entries by day → meal → dishes, all ordered', () => {
@@ -50,5 +50,14 @@ describe('scaleQuantity / scaleIngredients', () => {
     )
     expect(out[0].quantity).toBe('800')
     expect(out[1].quantity).toBe('a pinch')
+  })
+})
+
+describe('formatWeekOf', () => {
+  it("labels the week by its Monday's date", () => {
+    // 2024-01-01 is a Monday; 2024-01-03 is that week's Wednesday.
+    expect(formatWeekOf(new Date(2024, 0, 1))).toBe('Week of 1 Jan')
+    expect(formatWeekOf(new Date(2024, 0, 3))).toBe('Week of 1 Jan')
+    expect(formatWeekOf(new Date(2024, 0, 7))).toBe('Week of 1 Jan') // Sunday still maps back
   })
 })

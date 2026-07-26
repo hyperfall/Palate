@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const media = await payload.create({
     collection: 'media',
     data: {
-      alt: 'Story image',
+      alt: typeof form.get('alt') === 'string' && String(form.get('alt')).trim() ? String(form.get('alt')).trim().slice(0, 80) : 'Story image',
       credit: user.user_metadata?.display_name ?? user.email ?? 'Creator submission',
       license: 'original',
     },

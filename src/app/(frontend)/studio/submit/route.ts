@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
 
-type StepIn = { text: string; timerSeconds?: number | null }
+type StepIn = { text: string; timerSeconds?: number | null; image?: number | null }
 type IngredientIn = { quantity?: string; unit?: string; item: string; note?: string }
 
 export async function POST(request: NextRequest) {
@@ -179,7 +179,12 @@ export async function POST(request: NextRequest) {
             ...(ing.note ? { note: ing.note } : {}),
           }
         }),
-        steps: recipe.steps,
+        // Sanitised: only a whole-number media id is carried through, never an
+        // arbitrary shape a client might post.
+        steps: recipe.steps.map((st) => ({
+          text: st.text,
+          ...(Number.isInteger(st.image) ? { image: st.image } : {}),
+        })),
         cuisine: recipe.cuisine,
         course: recipe.course,
         mainIngredient: recipe.mainIngredient,

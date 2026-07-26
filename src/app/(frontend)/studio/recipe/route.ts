@@ -61,7 +61,11 @@ export async function GET(request: NextRequest) {
       unit: (i.unit as string | null) ?? '',
       item: i.item ?? '',
     })),
-    steps: (recipe.steps ?? []).map((s) => s.text ?? ''),
+    steps: (recipe.steps ?? []).map((s) => ({
+      text: s.text ?? '',
+      imageId: relId(s.image),
+      imageUrl: imageFrom(s.image, 'card')?.url ?? null,
+    })),
     heroImageId: relId(recipe.heroImage),
     heroImageUrl: hero?.url ?? null,
   })

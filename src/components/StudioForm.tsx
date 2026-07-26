@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { ImagePicker } from '@/components/ImagePicker'
 import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
 import { LineListInput } from '@/components/LineListInput'
+import { StepRowsInput, emptyStepRow, type StepRow } from '@/components/StepRowsInput'
 import { foldIngredientRows } from '@/lib/ingredients/rows'
 import { StoryEditor } from '@/components/StoryEditor'
 import { Select, Stepper } from '@/components/controls'
@@ -90,7 +91,11 @@ export function StudioForm({
     { ...emptyIngredientRow },
     { ...emptyIngredientRow },
   ])
-  const [stepRows, setStepRows] = useState<string[]>(['', '', ''])
+  const [stepRows, setStepRows] = useState<StepRow[]>([
+    { ...emptyStepRow },
+    { ...emptyStepRow },
+    { ...emptyStepRow },
+  ])
 
   // Edit mode: ?edit=<recipeId> pre-fills the form with the creator's own recipe.
   // Resubmitting sends it back through review before it replaces the live version.
@@ -121,7 +126,15 @@ export function StudioForm({
         setDiets(Array.isArray(d.dietaryTags) ? d.dietaryTags : [])
         setVideoUrl(d.videoUrl ?? '')
         setIngredientRows(d.ingredients?.length ? d.ingredients : [{ ...emptyIngredientRow }, { ...emptyIngredientRow }])
-        setStepRows(d.steps?.length ? d.steps : ['', '', ''])
+        setStepRows(
+          d.steps?.length
+            ? d.steps.map((st: string | { text?: string; imageId?: number | null; imageUrl?: string | null }) =>
+                typeof st === 'string'
+                  ? { text: st, imageId: null, imageUrl: null }
+                  : { text: st.text ?? '', imageId: st.imageId ?? null, imageUrl: st.imageUrl ?? null },
+              )
+            : [{ ...emptyStepRow }, { ...emptyStepRow }, { ...emptyStepRow }],
+        )
       })
       .catch(() => {})
     return () => {
@@ -248,9 +261,9 @@ export function StudioForm({
       ...(r.heading ? { heading: true } : {}),
     }))
     const steps = stepRows
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .map((text) => ({ text }))
+      .map((r) => ({ ...r, text: r.text.trim() }))
+      .filter((r) => r.text)
+      .map((r) => ({ text: r.text, ...(r.imageId ? { image: r.imageId } : {}) }))
 
     const missing = [
       !title.trim() && 'a title',
@@ -326,7 +339,7 @@ export function StudioForm({
       setPhotoUrl(null)
       setPickerKey((k) => k + 1)
       setIngredientRows([{ ...emptyIngredientRow }, { ...emptyIngredientRow }, { ...emptyIngredientRow }])
-      setStepRows(['', '', ''])
+      setStepRows([{ ...emptyStepRow }, { ...emptyStepRow }, { ...emptyStepRow }])
       setVideoUrl('')
       setVideoPreview('')
       setStory('')
@@ -363,7 +376,7 @@ export function StudioForm({
       measure: [r.quantity.trim(), r.unit.trim()].filter(Boolean).join(' '),
     }))
     .filter((r) => r.item)
-  const previewSteps = stepRows.map((l) => l.trim()).filter(Boolean)
+  const previewSteps = stepRows.map((r) => r.text.trim()).filter(Boolean)
 
   return (
     <>
@@ -562,16 +575,7 @@ export function StudioForm({
 
       <div className={labelCls}>
         <span className="eyebrow">Steps — one per row</span>
-        <LineListInput
-          value={stepRows}
-          onChange={setStepRows}
-          numbered
-          ariaLabel="Step"
-          addLabel="Add step"
-          placeholder={(i) =>
-            i === 0 ? 'Marinate the chicken in the gochujang for 20 minutes.' : 'then…'
-          }
-        />
+        <StepRowsInput value={stepRows} onChange={setStepRows} />
       </div>
 
       {notice && (

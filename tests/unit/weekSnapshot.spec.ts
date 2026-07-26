@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildWeekSnapshot, weekDishCount } from '@/lib/mealPlan'
+import { buildWeekSnapshot, scaleIngredients, scaleQuantity, weekDishCount } from '@/lib/mealPlan'
 
 describe('buildWeekSnapshot', () => {
   it('groups entries by day → meal → dishes, all ordered', () => {
@@ -27,5 +27,28 @@ describe('buildWeekSnapshot', () => {
   it('drops out-of-range days', () => {
     const w = buildWeekSnapshot([{ day: 9, meal: 'dinner', slug: 'x', title: 'X', image: null, position: 0 }])
     expect(weekDishCount(w)).toBe(0)
+  })
+})
+
+describe('scaleQuantity / scaleIngredients', () => {
+  it('scales numeric quantities, leaves non-numeric and factor 1 alone', () => {
+    expect(scaleQuantity('400', 3)).toBe('1200')
+    expect(scaleQuantity('1/2', 2)).toBe('1')
+    expect(scaleQuantity('2', 1.5)).toBe('3')
+    expect(scaleQuantity('a pinch', 3)).toBe('a pinch')
+    expect(scaleQuantity('400', 1)).toBe('400')
+    expect(scaleQuantity(null, 2)).toBeNull()
+  })
+
+  it('scales an ingredient list by the servings factor', () => {
+    const out = scaleIngredients(
+      [
+        { quantity: '400', unit: 'g', item: 'flour' },
+        { quantity: 'a pinch', item: 'salt' },
+      ],
+      2,
+    )
+    expect(out[0].quantity).toBe('800')
+    expect(out[1].quantity).toBe('a pinch')
   })
 })

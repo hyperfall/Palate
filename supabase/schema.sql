@@ -128,6 +128,9 @@ create table if not exists public.meal_plan (
 create index if not exists meal_plan_user_idx on public.meal_plan (user_id, day, position);
 -- Meal slot within a day (breakfast/lunch/dinner). Existing rows become dinner.
 alter table public.meal_plan add column if not exists meal text not null default 'dinner';
+-- Servings this dish is planned for. NULL = use the recipe's own default; a value
+-- scales the shopping list and cost for that night.
+alter table public.meal_plan add column if not exists servings int;
 
 alter table public.pantry enable row level security;
 alter table public.taste_profile enable row level security;

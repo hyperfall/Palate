@@ -22,7 +22,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { MEAL_LABELS, MEAL_ORDER, normalizeMeal, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
 
-type BoardEntry = { id: string; day: number; meal: string; slug: string; title: string; image: string | null }
+type BoardEntry = {
+  id: string
+  day: number
+  meal: string
+  slug: string
+  title: string
+  image: string | null
+  servings: number
+  baseServings: number
+}
 
 const slotId = (day: number, meal: MealType) => `slot-${day}-${meal}`
 /** Parse `slot-<day>-<meal>` (meal may itself be a single token). */
@@ -79,6 +88,15 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     } finally {
       setBusy(null)
     }
+  }
+
+  // Set the planned servings for a dish (clamped, persisted optimistically).
+  const setServings = async (id: string, next: number) => {
+    const v = Math.max(1, Math.min(99, Math.round(next)))
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, servings: v } : e)))
+    if (!supabase) return
+    const { error } = await supabase.from('meal_plan').update({ servings: v }).eq('id', id)
+    if (error) router.refresh()
   }
 
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id))
@@ -174,6 +192,7 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
                   busy={busy}
                   dragging={activeId !== null}
                   onRemove={remove}
+                  onServings={setServings}
                 />
               ))}
             </div>
@@ -192,6 +211,7 @@ function MealSlot({
   busy,
   dragging,
   onRemove,
+  onServings,
 }: {
   day: number
   meal: MealType
@@ -199,6 +219,7 @@ function MealSlot({
   busy: string | null
   dragging: boolean
   onRemove: (id: string) => void
+  onServings: (id: string, next: number) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: slotId(day, meal) })
   const empty = dishes.length === 0
@@ -227,7 +248,9 @@ function MealSlot({
               {isOver ? 'Drop' : '·'}
             </span>
           ) : (
-            dishes.map((d) => <DishItem key={d.id} entry={d} busy={busy === d.id} onRemove={onRemove} />)
+            dishes.map((d) => (
+              <DishItem key={d.id} entry={d} busy={busy === d.id} onRemove={onRemove} onServings={onServings} />
+            ))
           )}
         </div>
       </SortableContext>
@@ -235,7 +258,17 @@ function MealSlot({
   )
 }
 
-function DishItem({ entry, busy, onRemove }: { entry: BoardEntry; busy: boolean; onRemove: (id: string) => void }) {
+function DishItem({
+  entry,
+  busy,
+  onRemove,
+  onServings,
+}: {
+  entry: BoardEntry
+  busy: boolean
+  onRemove: (id: string) => void
+  onServings: (id: string, next: number) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: entry.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
 
@@ -269,6 +302,31 @@ function DishItem({ entry, busy, onRemove }: { entry: BoardEntry; busy: boolean;
       <Link href={`/recipes/${entry.slug}`} className="min-w-0 flex-1 truncate text-[0.9375rem] leading-tight text-ink no-underline group-hover:text-flame">
         {entry.title}
       </Link>
+      <div
+        className="flex shrink-0 items-center gap-0.5 font-mono text-[0.75rem]"
+        title="Servings planned for this day"
+      >
+        <button
+          type="button"
+          onClick={() => onServings(entry.id, entry.servings - 1)}
+          disabled={entry.servings <= 1}
+          aria-label="Fewer servings"
+          className="grid h-5 w-5 cursor-pointer place-items-center rounded border border-rule text-slate transition-colors hover:border-flame hover:text-flame disabled:opacity-40"
+        >
+          −
+        </button>
+        <span className="min-w-[1.1rem] text-center tabular-nums text-ink" aria-label={`${entry.servings} servings`}>
+          {entry.servings}
+        </span>
+        <button
+          type="button"
+          onClick={() => onServings(entry.id, entry.servings + 1)}
+          aria-label="More servings"
+          className="grid h-5 w-5 cursor-pointer place-items-center rounded border border-rule text-slate transition-colors hover:border-flame hover:text-flame"
+        >
+          +
+        </button>
+      </div>
       <button
         type="button"
         disabled={busy}

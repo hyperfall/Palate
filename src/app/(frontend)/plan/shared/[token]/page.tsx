@@ -52,6 +52,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         title: recipe.title,
         image: imageFrom(recipe.heroImage, 'card')?.url ?? null,
         position: i,
+        servings: recipe.servings ?? null,
         ingredients: planned.get(s.slug)?.ingredients ?? [],
       })
     }

@@ -83,8 +83,15 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
                                 ◵
                               </span>
                             )}
-                            <span className="font-display text-[1.1875rem] leading-tight text-ink">
-                              {dish.title}
+                            <span className="min-w-0">
+                              <span className="font-display text-[1.1875rem] leading-tight text-ink">
+                                {dish.title}
+                              </span>
+                              {dish.servings != null && (
+                                <span className="ml-2 font-mono text-[0.625rem] tracking-[0.1em] text-slate uppercase">
+                                  serves {dish.servings}
+                                </span>
+                              )}
                             </span>
                           </div>
                         ))}

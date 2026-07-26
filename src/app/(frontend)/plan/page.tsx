@@ -7,7 +7,7 @@ import { ShoppingModeLauncher } from '@/components/ShoppingMode'
 import { getHouseholdContext } from '@/lib/household'
 import { SharePlan } from '@/components/SharePlan'
 import { ShoppingList } from '@/components/ShoppingList'
-import { buildDishShoppingList, buildWeekSnapshot, weeklyCost } from '@/lib/mealPlan'
+import { buildDishShoppingList, buildWeekSnapshot, scaleIngredients, weeklyCost } from '@/lib/mealPlan'
 import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/planData'
 import { serverUser } from '@/lib/supabase/server'
 
@@ -44,15 +44,27 @@ export default async function PlanPage() {
   const pantry = await getPantryStaples()
   const household = await getHouseholdContext()
 
+  // Effective servings per entry (planned, else the recipe's own default), and
+  // the factor that scales its ingredients + cost.
+  const withServings = entries.map((e) => {
+    const r = recipes.get(e.slug)
+    const base = r?.servings ?? 1
+    const planned = e.servings ?? base
+    return { entry: e, base, planned, factor: base > 0 ? planned / base : 1, recipe: r }
+  })
+
   // A single ingredient-carrying snapshot drives the share, the shopping list,
-  // and (once shared) the card + exports.
-  const week = buildWeekSnapshot(entries.map((e) => ({ ...e, ingredients: recipes.get(e.slug)?.ingredients ?? [] })))
+  // and (once shared) the card + exports — ingredients scaled to planned servings.
+  const week = buildWeekSnapshot(
+    withServings.map(({ entry, planned, factor, recipe }) => ({
+      ...entry,
+      servings: planned,
+      ingredients: scaleIngredients(recipe?.ingredients ?? [], factor),
+    })),
+  )
   const shopping = buildDishShoppingList(week, pantry)
   const cost = weeklyCost(
-    entries.map((e) => {
-      const r = recipes.get(e.slug)
-      return { costPerServing: r?.costPerServing ?? null, servings: r?.servings ?? 1 }
-    }),
+    withServings.map(({ recipe, planned }) => ({ costPerServing: recipe?.costPerServing ?? null, servings: planned })),
   )
   // One leftover hint per distinct planned recipe that has one.
   const leftovers = [...new Map(entries.map((e) => [e.slug, { title: e.title, idea: recipes.get(e.slug)?.leftoverIdeas }])).values()].filter(
@@ -84,7 +96,9 @@ export default async function PlanPage() {
       </header>
 
       <div className="mt-8">
-        <MealBoard entries={entries} />
+        <MealBoard
+          entries={withServings.map(({ entry, base, planned }) => ({ ...entry, servings: planned, baseServings: base }))}
+        />
       </div>
 
       <div className="mt-14 grid gap-10 border-t-2 border-ink pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)]">

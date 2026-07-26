@@ -30,6 +30,8 @@ export type PlanEntry = {
   title: string
   image: string | null
   position: number
+  /** Planned servings; null means "use the recipe's own default". */
+  servings: number | null
 }
 
 export type PlannedRecipe = {
@@ -54,7 +56,7 @@ export async function getPlanEntries(): Promise<PlanEntry[]> {
   const { data } = await scopeToContext(
     supabase
       .from('meal_plan')
-      .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position'),
+      .select('id,day,meal,recipe_slug,recipe_title,recipe_image,position,servings'),
     householdId,
   )
     .order('day')
@@ -67,6 +69,7 @@ export async function getPlanEntries(): Promise<PlanEntry[]> {
     title: r.recipe_title as string,
     image: (r.recipe_image as string | null) ?? null,
     position: r.position as number,
+    servings: (r.servings as number | null) ?? null,
   }))
 }
 

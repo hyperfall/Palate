@@ -1,3 +1,4 @@
+import { parseQuantity } from './nutrition'
 import { humanizeQuantity } from './units'
 
 /**
@@ -104,7 +105,14 @@ export const MEAL_LABELS: Record<MealType, string> = {
 export const normalizeMeal = (m?: string | null): MealType =>
   (MEAL_ORDER as readonly string[]).includes(m ?? '') ? (m as MealType) : 'dinner'
 
-export type WeekDish = { slug: string; title: string; image: string | null; ingredients: PlanIngredient[] }
+export type WeekDish = {
+  slug: string
+  title: string
+  image: string | null
+  /** Servings this dish is planned for (scales ingredients + cost). */
+  servings?: number | null
+  ingredients: PlanIngredient[]
+}
 export type WeekMeal = { meal: MealType; dishes: WeekDish[] }
 /** A day carries only the meals that actually have dishes, in MEAL_ORDER. */
 export type WeekDaySlot = { day: number; meals: WeekMeal[] }
@@ -125,6 +133,7 @@ export function buildWeekSnapshot(
     title: string
     image: string | null
     position: number
+    servings?: number | null
     ingredients?: PlanIngredient[]
   }>,
   meta: { title?: string | null; weekOf?: string | null } = {},
@@ -136,7 +145,13 @@ export function buildWeekSnapshot(
     if (!byDay.has(e.day)) byDay.set(e.day, new Map())
     const meals = byDay.get(e.day)!
     if (!meals.has(meal)) meals.set(meal, [])
-    meals.get(meal)!.push({ slug: e.slug, title: e.title, image: e.image, ingredients: e.ingredients ?? [] })
+    meals.get(meal)!.push({
+      slug: e.slug,
+      title: e.title,
+      image: e.image,
+      servings: e.servings ?? null,
+      ingredients: e.ingredients ?? [],
+    })
   }
   return {
     title: meta.title ?? null,
@@ -153,6 +168,28 @@ export function buildWeekSnapshot(
 
 export const weekDishCount = (w: WeekSnapshot): number =>
   w.days.reduce((n, d) => n + d.meals.reduce((k, m) => k + m.dishes.length, 0), 0)
+
+// --- Per-serving scaling ----------------------------------------------------
+//
+// A dish planned for 6 when the recipe serves 2 needs 3× the ingredients. We
+// scale the numeric part of each quantity string; non-numeric amounts ("a
+// pinch", "to taste") pass through untouched.
+
+/** Compact string for a scaled amount: 1.5, 0.5, 400, 1200 — no trailing zeros. */
+const formatScaled = (n: number): string => String(Number(n.toFixed(2)))
+
+export function scaleQuantity(quantity: string | null | undefined, factor: number): string | null | undefined {
+  if (factor === 1 || quantity == null) return quantity
+  const n = parseQuantity(quantity)
+  if (n == null) return quantity
+  return formatScaled(n * factor)
+}
+
+/** Scale every ingredient's quantity by `factor` (planned servings ÷ base servings). */
+export function scaleIngredients(ingredients: PlanIngredient[], factor: number): PlanIngredient[] {
+  if (!(factor > 0) || factor === 1) return ingredients
+  return ingredients.map((ing) => ({ ...ing, quantity: scaleQuantity(ing.quantity, factor) }))
+}
 
 // --- Dish-grouped shopping list --------------------------------------------
 //

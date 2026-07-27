@@ -203,16 +203,21 @@ export function countActiveFilters(filters: CatalogFilters): number {
   )
 }
 
-/** Payload sort expression. Payload uses `-field` for descending. */
-export function sortExpression(sort: SortKey): string {
-  if (sort === 'quickest') return 'totalMinutes'
-  if (sort === 'newest') return '-publishedAt'
-  if (sort === 'top') return '-ratingScore'
+/** Payload sort expression. Payload uses `-field` for descending.
+ *
+ *  Every expression carries `-id` as a tiebreaker: without one, rows that tie
+ *  on the sort field (seeded recipes sharing a publishedAt, unrated recipes all
+ *  at ratingScore 0) come back in whatever order Postgres feels like — and
+ *  page 2 of a paginated query can re-serve rows page 1 already showed. */
+export function sortExpression(sort: SortKey): string[] {
+  if (sort === 'quickest') return ['totalMinutes', '-id']
+  if (sort === 'newest') return ['-publishedAt', '-id']
+  if (sort === 'top') return ['-ratingScore', '-id']
   // 'foryou' is a distance sort computed in findRecipes; fall back to newest for
   // the DB query it can't express.
-  if (sort === 'foryou') return '-publishedAt'
+  if (sort === 'foryou') return ['-publishedAt', '-id']
   // Sorting *by* an axis means "most of it first" — the interesting direction.
-  return `-${sort}`
+  return [`-${sort}`, '-id']
 }
 
 /**

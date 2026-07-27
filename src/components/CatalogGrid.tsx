@@ -50,7 +50,12 @@ export function CatalogGrid({
       fetch(`/recipes/feed?${qs}`)
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
         .then((data: { recipes: Recipe[] }) => {
-          setRecipes((prev) => [...prev, ...data.recipes])
+          // Defence in depth against overlapping pages (e.g. a recipe published
+          // mid-scroll shifting the offsets): never append a card twice.
+          setRecipes((prev) => {
+            const seen = new Set(prev.map((r) => r.id))
+            return [...prev, ...data.recipes.filter((r) => !seen.has(r.id))]
+          })
           setNextPage((n) => n + 1)
         })
         .catch(() => setFailed(true))

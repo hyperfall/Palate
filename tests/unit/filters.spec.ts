@@ -149,19 +149,25 @@ describe('buildWhere', () => {
 
 describe('sortExpression', () => {
   it('sorts newest by descending publish date', () => {
-    expect(sortExpression('newest')).toBe('-publishedAt')
+    expect(sortExpression('newest')).toEqual(['-publishedAt', '-id'])
   })
 
   it('sorts quickest by ascending total time', () => {
-    expect(sortExpression('quickest')).toBe('totalMinutes')
+    expect(sortExpression('quickest')).toEqual(['totalMinutes', '-id'])
   })
 
   it('sorts a taste axis by most-of-it-first', () => {
-    expect(sortExpression('spiciness')).toBe('-spiciness')
+    expect(sortExpression('spiciness')).toEqual(['-spiciness', '-id'])
+  })
+
+  it('always carries the id tiebreaker (ties break pagination without one)', () => {
+    for (const key of ['newest', 'top', 'foryou', 'richness'] as const) {
+      expect(sortExpression(key).at(-1)).toBe('-id')
+    }
   })
 
   it('sorts top-rated by descending rating score', () => {
-    expect(sortExpression('top')).toBe('-ratingScore')
+    expect(sortExpression('top')).toEqual(['-ratingScore', '-id'])
   })
 })
 

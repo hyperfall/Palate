@@ -26,8 +26,16 @@
   html {
     -webkit-font-smoothing: antialiased;
     scroll-behavior: smooth;
+    /* Anchor jumps land clear of the sticky header, not under it. */
+    scroll-padding-top: 4.5rem;
     /* No data-theme = follow the OS; the light-dark() tokens do the rest. */
     color-scheme: light dark;
+  }
+  /* scroll-behavior is per scrolling box, not inherited — without this, inner
+     overflow containers (cook mode, modals, boards) still jump while the page
+     glides. */
+  * {
+    scroll-behavior: inherit;
   }
   html[data-theme='light'] {
     color-scheme: light;
@@ -59,7 +67,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    html {
+    html,
+    * {
       scroll-behavior: auto;
     }
     *,

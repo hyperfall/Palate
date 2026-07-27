@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { CatalogGrid } from '@/components/CatalogGrid'
 import { FilterPanel, SortSelect } from '@/components/FilterPanel'
 import { Pagination } from '@/components/Pagination'
-import { RecipeCard } from '@/components/RecipeCard'
 import { hasActiveFilters, parseFilters, type RawSearchParams } from '@/lib/filters'
 import {
   countRecipesByCuisine,
@@ -33,6 +33,13 @@ export default async function CatalogPage({
 }) {
   const params = await searchParams
   const filters = parseFilters(params)
+  // The feed re-parses the same grammar server-side; page is appended per fetch.
+  const feedPairs = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (key === 'page' || value == null) continue
+    for (const v of Array.isArray(value) ? value : [value]) feedPairs.append(key, v)
+  }
+  const feedQuery = feedPairs.toString()
 
   const [{ recipes, totalDocs, totalPages, page }, cuisines, cuisineCounts, dietCounts] =
     await Promise.all([
@@ -112,12 +119,17 @@ export default async function CatalogPage({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3 min-[110rem]:grid-cols-4">
-                {recipes.map((recipe) => (
-                  <RecipeCard key={recipe.id} recipe={recipe} />
-                ))}
-              </div>
-              <Pagination filters={filters} page={page} totalPages={totalPages} />
+              <CatalogGrid
+                key={`${feedQuery}|${page}`}
+                initial={recipes}
+                page={page}
+                totalPages={totalPages}
+                feedQuery={feedQuery}
+              />
+              {/* Crawlers and no-JS readers still get walkable pages. */}
+              <noscript>
+                <Pagination filters={filters} page={page} totalPages={totalPages} />
+              </noscript>
             </>
           )}
         </section>

@@ -567,10 +567,10 @@ export function StudioForm({
         </div>
       </div>
     )}
-    {/* One column, sharing the page's left edge — the header, step strip and
-        footer all start there, so a centred column would align with nothing.
-        The preview is a deliberate look instead of pinned furniture. */}
-    <div className="grid max-w-[52rem] gap-10">
+    {/* The form holds a 52rem document measure on the page's left edge; at xl
+        the freed right side docks the live preview. Below xl the pill opens it
+        as a modal instead. */}
+    <div className="grid gap-10 xl:grid-cols-[minmax(0,52rem)_minmax(0,26rem)] xl:items-start">
     <form
       onSubmit={submit}
       onChange={() => {
@@ -821,32 +821,46 @@ export function StudioForm({
       </div>
     </form>
 
-    {/* Live preview — the published card in a modal, not a viewport takeover.
-        The card previews at card width; a full-screen sheet just meant a wall
-        of empty hero. Backdrop click and Escape both close. */}
+    {/* Live preview — docked and sticky beside the form at xl, where the page
+        has free width; below xl the pill opens the same card as a modal at
+        card width, never a viewport takeover. Backdrop click and Escape close. */}
     <aside
       aria-label="Recipe preview"
       role={previewOpen ? 'dialog' : undefined}
       aria-modal={previewOpen ? true : undefined}
-      className={previewOpen ? 'fixed inset-0 z-50 grid place-items-center p-4 sm:p-8' : 'hidden'}
+      className={
+        previewOpen
+          ? 'fixed inset-0 z-50 grid place-items-center p-4 sm:p-8'
+          : 'hidden min-w-0 xl:sticky xl:top-24 xl:block'
+      }
     >
-      <button
-        type="button"
-        aria-label="Close preview"
-        onClick={() => setPreviewOpen(false)}
-        className="absolute inset-0 cursor-default border-none bg-ink/45 backdrop-blur-[2px]"
-      />
-      <div className="relative max-h-full w-full max-w-[26rem] overflow-y-auto rounded-lg bg-paper p-4 shadow-2xl">
-      <div className="flex items-center justify-between gap-3">
-        <p className="eyebrow m-0">Live preview — how it will look</p>
+      {previewOpen && (
         <button
           type="button"
-          onClick={() => setPreviewOpen(false)}
           aria-label="Close preview"
-          className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
-        >
-          ✕
-        </button>
+          onClick={() => setPreviewOpen(false)}
+          className="absolute inset-0 cursor-default border-none bg-ink/45 backdrop-blur-[2px]"
+        />
+      )}
+      <div
+        className={
+          previewOpen
+            ? 'relative max-h-full w-full max-w-[26rem] overflow-y-auto rounded-lg bg-paper p-4 shadow-2xl'
+            : undefined
+        }
+      >
+      <div className="flex items-center justify-between gap-3">
+        <p className="eyebrow m-0">Live preview — how it will look</p>
+        {previewOpen && (
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(false)}
+            aria-label="Close preview"
+            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
+          >
+            ✕
+          </button>
+        )}
       </div>
       <div className="ticket-card is-static mt-3 overflow-hidden">
         <div className="relative bg-pan text-milk">
@@ -976,7 +990,7 @@ export function StudioForm({
           aria-haspopup="dialog"
           // Clear the fixed bottom nav on phones (it's ~3.25rem tall, sm:hidden);
           // on tablets there's no bottom bar, so sit closer to the edge.
-          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6"
+          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
         >
           <span aria-hidden="true">◉</span> Live preview
         </button>

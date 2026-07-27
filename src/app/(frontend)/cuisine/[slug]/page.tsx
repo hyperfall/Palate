@@ -103,7 +103,7 @@ export default async function CuisinePage({ params }: { params: Promise<{ slug: 
               The {cuisine.name} kitchen is waiting for its first cook.
             </h2>
             <p className="mt-3 text-slate">
-              Someone's name is going to open this station — the founding cook, first on the pass,
+              Someone’s name is going to open this station — the founding cook, first on the pass,
               on every {cuisine.name} card that follows. Your recipe gets the full treatment: set
               beautifully, cookable step by step, plannable, shoppable, filtered by how it actually
               tastes.

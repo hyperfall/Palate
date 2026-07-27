@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 
 import { ImagePicker } from '@/components/ImagePicker'
 import { IngredientRowsInput, emptyIngredientRow, type IngredientRow } from '@/components/IngredientRowsInput'
-import { LineListInput } from '@/components/LineListInput'
 import { StepRowsInput, emptyStepRow, type StepRow } from '@/components/StepRowsInput'
 import { foldIngredientRows } from '@/lib/ingredients/rows'
 import { StoryEditor } from '@/components/StoryEditor'

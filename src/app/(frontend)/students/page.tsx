@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { StudentBudgetBoard } from '@/components/StudentBudgetBoard'
 import { imageFrom } from '@/lib/media'
 
-import { RecipeCard } from '@/components/RecipeCard'
 import { parseFilters } from '@/lib/filters'
 import { findRecipes } from '@/lib/queries'
 import type { Recipe } from '@/payload-types'

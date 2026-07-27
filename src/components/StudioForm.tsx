@@ -13,6 +13,7 @@ import { Select, Stepper } from '@/components/controls'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
+import { clearDraft, draftAge, loadDraft, saveDraft, type StudioDraft } from '@/lib/studioDraft'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import {
   COURSES,
@@ -65,6 +66,10 @@ export function StudioForm({
   // inside it — and programmatic prefill (editing an existing recipe) doesn't
   // fire one, so opening an edit and leaving straight away won't nag.
   const [touched, setTouched] = useState(false)
+  // A draft found on arrival is OFFERED, never silently applied — restoring
+  // over a form someone has started typing in would be its own kind of loss.
+  const [foundDraft, setFoundDraft] = useState<StudioDraft | null>(null)
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null)
   // Below xl the preview isn't pinned beside the form; a floating button opens it
   // as a dismissible overlay so it never crowds the editing space.
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -245,6 +250,83 @@ export function StudioForm({
     )
   }
 
+  // Offer any saved draft once, on arrival — but never over an edit-in-progress,
+  // where the form is already prefilled with the live recipe.
+  useEffect(() => {
+    if (editRecipeId) return
+    const d = loadDraft()
+    if (d) setFoundDraft(d)
+  }, [editRecipeId])
+
+  // Autosave, debounced. Editing an existing recipe is excluded: its draft would
+  // collide with the new-recipe draft and neither would be trustworthy.
+  useEffect(() => {
+    if (editRecipeId || !touched) return
+    const t = setTimeout(() => {
+      saveDraft({
+        title,
+        videoUrl,
+        story,
+        storyMarkdown,
+        storyImageIds,
+        cuisine,
+        course,
+        mainIngredient,
+        difficulty,
+        servings,
+        prepMinutes,
+        cookMinutes,
+        diets,
+        taste,
+        ingredientRows,
+        stepRows,
+      })
+      setDraftSavedAt(Date.now())
+    }, 800)
+    return () => clearTimeout(t)
+  }, [
+    editRecipeId,
+    touched,
+    title,
+    videoUrl,
+    story,
+    storyMarkdown,
+    storyImageIds,
+    cuisine,
+    course,
+    mainIngredient,
+    difficulty,
+    servings,
+    prepMinutes,
+    cookMinutes,
+    diets,
+    taste,
+    ingredientRows,
+    stepRows,
+  ])
+
+  const restoreDraft = (d: StudioDraft) => {
+    setTitle(d.title)
+    setVideoUrl(d.videoUrl)
+    setStory(d.story)
+    setStoryMarkdown(d.storyMarkdown)
+    setStoryImageIds(d.storyImageIds ?? [])
+    setCuisine(d.cuisine)
+    setCourse(d.course)
+    setMainIngredient(d.mainIngredient)
+    setDifficulty(d.difficulty)
+    setServings(d.servings)
+    setPrepMinutes(d.prepMinutes)
+    setCookMinutes(d.cookMinutes)
+    setDiets(d.diets ?? [])
+    setTaste({ ...INITIAL_TASTE, ...(d.taste as Record<TasteAxis, number>) })
+    if (d.ingredientRows?.length) setIngredientRows(d.ingredientRows)
+    if (d.stepRows?.length) setStepRows(d.stepRows)
+    setDraftSavedAt(d.savedAt)
+    setFoundDraft(null)
+    setTouched(true)
+  }
+
   // A studio recipe is 20 minutes of work: photo, ingredients, steps, uploads.
   // Losing it to a stray refresh or back-button is unacceptable, so warn while
   // there's unsaved work (browsers show their own wording).
@@ -378,6 +460,8 @@ export function StudioForm({
       setDiets([])
       setTaste({ ...INITIAL_TASTE })
       setTouched(false)
+      clearDraft()
+      setDraftSavedAt(null)
     } catch (error) {
       setNotice({
         kind: 'error',
@@ -424,6 +508,29 @@ export function StudioForm({
         </Link>
         .
       </p>
+    )}
+    {foundDraft && (
+      <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
+        <p className="m-0 text-[0.9375rem] text-ink">
+          You have an unfinished recipe from {draftAge(foundDraft.savedAt)}
+          {foundDraft.title.trim() ? ` — “${foundDraft.title.trim()}”` : ''}.
+        </p>
+        <div className="ml-auto flex items-center gap-2">
+          <button type="button" onClick={() => restoreDraft(foundDraft)} className="chip">
+            Pick up where you left off
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft()
+              setFoundDraft(null)
+            }}
+            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
+          >
+            Discard
+          </button>
+        </div>
+      </div>
     )}
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
     <form
@@ -628,9 +735,16 @@ export function StudioForm({
         </p>
       )}
 
-      <button type="submit" disabled={busy} className="btn-primary justify-self-start disabled:opacity-60">
-        {busy ? 'Sending…' : editRecipeId ? 'Submit changes for review' : 'Submit for review'}
-      </button>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button type="submit" disabled={busy} className="btn-primary disabled:opacity-60">
+          {busy ? 'Sending…' : editRecipeId ? 'Submit changes for review' : 'Submit for review'}
+        </button>
+        {!editRecipeId && draftSavedAt && (
+          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+            Draft saved in this browser
+          </span>
+        )}
+      </div>
     </form>
 
     {/* Live preview — the recipe page, forming as they type. On xl it pins beside

@@ -67,10 +67,15 @@ function Ticker({ kitchenCount }: { kitchenCount: number }) {
   )
 
   return (
-    <div className="ticker border-t border-milk/10 bg-pan py-3" role="presentation">
-      <div className="ticker__inner">
-        {run(false)}
-        {run(true)}
+    // The pan surface lives on the wrapper, outside the mask's reach — so the
+    // edge fade dissolves the text into the surface, not the surface into the
+    // page behind it.
+    <div className="border-t border-milk/10 bg-pan" role="presentation">
+      <div className="ticker py-3">
+        <div className="ticker__inner">
+          {run(false)}
+          {run(true)}
+        </div>
       </div>
     </div>
   )

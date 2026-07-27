@@ -5,6 +5,8 @@ import { RecipeCard } from '@/components/RecipeCard'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { formatMinutes } from '@/lib/format'
 import { imageFrom } from '@/lib/media'
+import { AutoplayVideo } from '@/components/AutoplayVideo'
+import { animatedUrlFor } from '@/lib/animated'
 import { countRecipesByCuisine, findCuisines, findFeaturedRecipes } from '@/lib/queries'
 import { TASTE_AXES, TASTE_AXIS_LABELS, tasteLabel, type TasteAxis } from '@/lib/taxonomy'
 
@@ -283,6 +285,21 @@ export default async function HomePage() {
               const image = imageFrom(cuisine.heroImage, 'card')
               const count = counts.get(String(cuisine.id)) ?? 0
               const lead = index < 2
+              // Motion is spent where it directs the eye: the two lead stations
+              // animate (when their video exists); the six supporting stay
+              // stills. Eight autoplaying videos on the front door would cost
+              // ~13MB before a visitor sees a single recipe.
+              const video = lead ? animatedUrlFor(String(cuisine.slug)) : null
+
+              const still = image && (
+                <Image
+                  src={image.url}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                />
+              )
 
               return (
                 <Link
@@ -291,14 +308,16 @@ export default async function HomePage() {
                   className={`ticket-card group block no-underline ${lead ? 'sm:col-span-2' : ''}`}
                 >
                   <div className={`relative overflow-hidden bg-rule ${lead ? 'aspect-[21/10]' : 'aspect-[16/9]'}`}>
-                    {image && (
-                      <Image
-                        src={image.url}
-                        alt={image.alt}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 20vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    {video ? (
+                      <AutoplayVideo
+                        src={video}
+                        poster={image?.url}
+                        ariaLabel={`${cuisine.name} cuisine animation`}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                        fallback={still}
                       />
+                    ) : (
+                      still
                     )}
                   </div>
                   <div className="flex items-baseline justify-between gap-3 p-4">

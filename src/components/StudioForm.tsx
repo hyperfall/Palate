@@ -14,6 +14,8 @@ import { AXIS_COLOR } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { clearDraft, draftAge, loadDraft, saveDraft, type StudioDraft } from '@/lib/studioDraft'
+import { QuickPaste } from '@/components/QuickPaste'
+import type { ParsedRecipe } from '@/lib/recipeParse'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import {
   COURSES,
@@ -68,6 +70,9 @@ export function StudioForm({
   const [touched, setTouched] = useState(false)
   // A draft found on arrival is OFFERED, never silently applied — restoring
   // over a form someone has started typing in would be its own kind of loss.
+  // Quick mode: paste-to-parse. Off by default — the editor is the home
+  // surface; this is the shortcut for creators who already wrote it down.
+  const [quick, setQuick] = useState(false)
   const [foundDraft, setFoundDraft] = useState<StudioDraft | null>(null)
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null)
   // Below xl the preview isn't pinned beside the form; a floating button opens it
@@ -250,6 +255,29 @@ export function StudioForm({
     ingredientRows,
     stepRows,
   ])
+
+  /** Paste results land in the editor — filling only what the paste supplied,
+   *  never clearing a field the creator has already set. */
+  const applyParsed = (p: ParsedRecipe) => {
+    if (p.title && !title.trim()) setTitle(p.title)
+    if (p.servings) setServings(p.servings)
+    if (p.prepMinutes) setPrepMinutes(p.prepMinutes)
+    if (p.cookMinutes) setCookMinutes(p.cookMinutes)
+    if (p.ingredientRows.length) {
+      setIngredientRows(
+        p.ingredientRows.map((r) => ({ quantity: r.quantity, unit: r.unit, item: r.item })),
+      )
+    }
+    if (p.stepRows.length) {
+      setStepRows(p.stepRows.map((text) => ({ text, imageId: null, imageUrl: null })))
+    }
+    setQuick(false)
+    setTouched(true)
+    setNotice({
+      kind: 'ok',
+      text: 'Filled from your paste — check the rows, then add a photo and a cuisine.',
+    })
+  }
 
   const restoreDraft = (d: StudioDraft) => {
     setTitle(d.title)
@@ -511,6 +539,11 @@ export function StudioForm({
         .
       </p>
     )}
+    {quick && (
+      <div className="mb-8">
+        <QuickPaste onApply={applyParsed} onCancel={() => setQuick(false)} />
+      </div>
+    )}
     {foundDraft && (
       <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
         <p className="m-0 text-[0.9375rem] text-ink">
@@ -544,10 +577,31 @@ export function StudioForm({
       }}
       className="grid min-w-0 grid-cols-1 gap-6"
     >
-      <label className={labelCls}>
-        <span className="eyebrow">Recipe title</span>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputCls} />
-      </label>
+      {/* Document-style opening: the title is typed as a title, not as a form
+          field — the page reads as the recipe forming, and the shortcut to
+          quick mode sits where someone would look before starting to type. */}
+      <div className="grid gap-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <span className="eyebrow">Recipe title</span>
+          {!quick && (
+            <button
+              type="button"
+              onClick={() => setQuick(true)}
+              className="font-mono text-[0.6875rem] tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+            >
+              Already written it? Paste it in →
+            </button>
+          )}
+        </div>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          placeholder="Birria Tacos"
+          aria-label="Recipe title"
+          className="w-full border-0 border-b-2 border-rule bg-transparent px-0 pb-2 font-display text-[clamp(1.5rem,3.5vw,2.25rem)] leading-tight text-ink placeholder:text-slate/40 focus:border-flame focus:outline-none"
+        />
+      </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className={labelCls}>

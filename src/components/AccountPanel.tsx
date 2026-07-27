@@ -179,7 +179,7 @@ function BioField() {
           <textarea
             value={bio}
             maxLength={BIO_MAX}
-            rows={2}
+            rows={3}
             placeholder="A line about you and your cooking."
             onChange={(e) => {
               setBio(e.target.value)
@@ -369,7 +369,7 @@ export function AccountPanel() {
 
   if (!supabase) {
     return (
-      <div className="ticket-card max-w-[36rem] p-6">
+      <div className="ticket-card is-static max-w-[36rem] p-6">
         <p className="eyebrow m-0 text-flame">Not connected yet</p>
         <p className="mt-2 text-[0.9375rem] leading-relaxed text-slate">
           Accounts run on Supabase. Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
@@ -385,7 +385,8 @@ export function AccountPanel() {
   // ---- Signed-in profile ---------------------------------------------------
   if (session && mode !== 'recovery') {
     return (
-      <div className="ticket-card max-w-[36rem] p-6 sm:p-7">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,36rem)_minmax(0,20rem)] lg:items-start">
+      <div className="ticket-card is-static p-6 sm:p-7">
         <div className="flex items-center gap-4">
           {session.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- account avatar from media API
@@ -444,8 +445,13 @@ export function AccountPanel() {
           </div>
         </div>
         <BioField />
+      </div>
 
-        <dl className="m-0 mt-5 grid max-w-[24rem] gap-2">
+      {/* The account rail: facts and actions, docked beside the profile where
+          the page previously ran empty. Sticky so it rides along on lg. */}
+      <aside className="ticket-card is-static p-5 sm:p-6 lg:sticky lg:top-24">
+        <p className="eyebrow m-0">Your account</p>
+        <dl className="m-0 mt-4 grid gap-2">
           <div className="leader">
             <dt className="eyebrow">Email</dt>
             <span className="leader__dots" aria-hidden="true" />
@@ -471,8 +477,9 @@ export function AccountPanel() {
             </div>
           )}
         </dl>
-        <div className="mt-7 flex flex-wrap items-center gap-4">
-          <Link href="/collections" className="btn-primary">
+
+        <div className="mt-5 grid gap-3 border-t border-rule pt-5">
+          <Link href="/collections" className="btn-primary text-center">
             My collections →
           </Link>
           <Link
@@ -481,23 +488,26 @@ export function AccountPanel() {
           >
             Your feed →
           </Link>
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                await supabase.auth.signOut()
-              } catch {
-                // Local session state still clears below even if the network
-                // call to revoke it server-side failed.
-              }
-              setSession(null)
-              setSavedCount(null)
-            }}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
-          >
-            Sign out
-          </button>
         </div>
+
+        {/* Leaving is quiet and set apart — never adjacent to the primary CTA. */}
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await supabase.auth.signOut()
+            } catch {
+              // Local session state still clears below even if the network
+              // call to revoke it server-side failed.
+            }
+            setSession(null)
+            setSavedCount(null)
+          }}
+          className="mt-6 w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
+        >
+          Sign out
+        </button>
+      </aside>
       </div>
     )
   }
@@ -629,7 +639,7 @@ export function AccountPanel() {
   )
 
   return (
-    <div className="ticket-card max-w-[36rem] p-6 sm:p-7">
+    <div className="ticket-card is-static max-w-[36rem] p-6 sm:p-7">
       {mode !== 'recovery' && (
         <div className="flex flex-wrap gap-2">
           {(['sign-in', 'sign-up'] as const).map((m) => (

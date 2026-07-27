@@ -102,9 +102,9 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
   return (
     <div className="mt-4 border-t border-rule">
       {error && <p className="mt-2 font-mono text-[0.75rem] text-heat">{error}</p>}
-      {/* Netted buy-list — open by default */}
+      {/* Netted buy-list — collapsed by default: the per-dish sections are the
+          working view while planning; this expands when it's shopping time. */}
       <Disclosure
-        defaultOpen
         title={<span className="font-display text-[1.0625rem] text-ink">Everything to buy</span>}
         meta={`${visibleNetted.length} ${visibleNetted.length === 1 ? 'item' : 'items'}`}
       >

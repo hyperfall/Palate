@@ -95,7 +95,9 @@ export function StudentBudgetBoard({
                 const v = Number.parseFloat(e.target.value)
                 setCustomPence(Number.isNaN(v) || v <= 0 ? null : Math.round(v * 100))
               }}
-              className="w-16 rounded border border-rule bg-transparent px-2 py-1 text-ink tabular-nums focus:border-flame focus:outline-none"
+              // Native spinners are useless for a budget (nobody nudges by 0.1p)
+              // and they crowd the value out of the field. Strip them.
+              className="w-20 rounded border border-rule bg-transparent px-2 py-1 text-ink tabular-nums [appearance:textfield] focus:border-flame focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
             <span className="text-slate">a plate</span>
           </label>

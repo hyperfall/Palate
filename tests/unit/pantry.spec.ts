@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { STAPLES, scoreRecipe, bandRecipes } from '@/lib/pantry'
+import { STAPLES, scoreRecipe, bandRecipes, namesEquivalent } from '@/lib/pantry'
 
 const req = (id: number, name: string, substitutions?: any) => ({ id, name, substitutions })
 
@@ -75,5 +75,34 @@ describe('bandRecipes', () => {
       scored('near', ['a', 'b', 'c'], 3), // used 3, missing 3
     ])
     expect(b.gettingThere.map((r) => r.recipe)).toEqual(['near', 'far'])
+  })
+})
+
+describe('accuracy: variants, staples, normalization', () => {
+  it('holding the generic covers a colour/size variant, both directions', () => {
+    expect(namesEquivalent('onion', 'white onion')).toBe(true)
+    expect(namesEquivalent('red bell pepper', 'bell pepper')).toBe(true)
+  })
+
+  it('never collapses genuinely different ingredients', () => {
+    expect(namesEquivalent('spring onion', 'onion')).toBe(false) // spring ≠ a colour
+    expect(namesEquivalent('coconut milk', 'milk')).toBe(false)
+    expect(namesEquivalent('red wine vinegar', 'vinegar')).toBe(false)
+  })
+
+  it('scores a variant as covered without an id match', () => {
+    const s = scoreRecipe(
+      'r',
+      [{ id: 9, name: 'white onion' }],
+      [{ id: 1, name: 'onion' }],
+    )
+    expect(s.missing).toEqual([])
+    expect(s.usedCount).toBe(1)
+  })
+
+  it('recognises staples through the normalizer', () => {
+    // "sea salt flakes" normalizes to "sea salt flake" — a staple, not a gap.
+    const s = scoreRecipe('r', [{ id: 3, name: 'sea salt flakes' }], [{ id: 1, name: 'egg' }])
+    expect(s.requiredCount).toBe(0)
   })
 })

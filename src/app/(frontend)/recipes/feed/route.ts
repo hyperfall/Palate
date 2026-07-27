@@ -11,7 +11,7 @@ import { findRecipes } from '@/lib/queries'
  */
 export const dynamic = 'force-dynamic'
 
-const PAGE_SIZE = 24
+const PAGE_SIZE = 12
 
 export async function GET(request: NextRequest) {
   const raw: RawSearchParams = {}

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'Filter by how a dish actually tastes — heat, sweetness, richness, and how much effort it will cost you.',
 }
 
-const PAGE_SIZE = 24
+const PAGE_SIZE = 12
 
 /**
  * The catalog is a workspace, not a landing page: a slim title rail, a sticky

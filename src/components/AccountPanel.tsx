@@ -552,7 +552,7 @@ function SecuritySection({ currentEmail }: { currentEmail: string }) {
           value={password}
           minLength={8}
           autoComplete="new-password"
-          placeholder="Leave empty to keep your current one"
+          placeholder="New password"
           onChange={(e) => {
             setPassword(e.target.value)
             setPwStatus('idle')
@@ -778,8 +778,10 @@ export function AccountPanel() {
   // ---- Signed-in profile ---------------------------------------------------
   if (session && mode !== 'recovery') {
     return (
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] xl:items-start">
-      <div className="ticket-card is-static max-w-[60rem] p-6 sm:p-8">
+      // Both tracks capped: with a greedy 1fr the rail gets flung to the
+      // shell's far edge, leaving a canyon between it and the card.
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,60rem)_minmax(0,20rem)] xl:items-start">
+      <div className="ticket-card is-static p-6 sm:p-8">
         <div className="flex items-center gap-4">
           {session.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- account avatar from media API

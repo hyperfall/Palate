@@ -98,14 +98,22 @@ export default async function CuisinePage({ params }: { params: Promise<{ slug: 
       <section className="shell py-10">
         {recipes.length === 0 ? (
           <div className="ticket-card max-w-[38rem] p-6">
-            <p className="eyebrow m-0 text-flame">This station is empty</p>
+            <p className="eyebrow m-0 text-flame">An unopened kitchen</p>
+            <h2 className="mt-2 text-[clamp(1.35rem,3.5vw,1.75rem)] leading-tight">
+              The {cuisine.name} kitchen is waiting for its first cook.
+            </h2>
+            <p className="mt-3 text-slate">
+              Someone's name is going to open this station — the founding cook, first on the pass,
+              on every {cuisine.name} card that follows. Your recipe gets the full treatment: set
+              beautifully, cookable step by step, plannable, shoppable, filtered by how it actually
+              tastes.
+            </p>
             <p className="mt-2 text-slate">
-              No {cuisine.name} recipes on the pass yet. If you cook it, you could be the first —
-              creators keep their name, their photo, and their voice.
+              You keep your name, your photo, your voice, and your recipes — always.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-4">
               <Link href="/studio" className="btn-primary">
-                Add the first one →
+                Open the {cuisine.name} kitchen →
               </Link>
               <Link
                 href="/recipes"

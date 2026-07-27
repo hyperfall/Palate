@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 import { ImagePicker } from '@/components/ImagePicker'
 import { scorePassword } from '@/lib/passwordStrength'
@@ -175,10 +175,13 @@ function BioField() {
   }
 
   return (
-    <div className="mt-5 grid gap-1 border-t border-rule pt-4">
-      <span className="eyebrow">Creator bio</span>
+    <SettingsSection
+      title="Creator profile"
+      desc="Your public byline — the bio and links shown wherever your recipes appear."
+    >
       {state.hasProfile ? (
-        <>
+        <div className="grid gap-1">
+          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Bio</span>
           <textarea
             value={bio}
             maxLength={BIO_MAX}
@@ -205,13 +208,13 @@ function BioField() {
           </div>
           {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
           <SocialLinksField />
-        </>
+        </div>
       ) : (
         <p className="m-0 text-[0.8125rem] text-slate">
           Publish your first recipe to open your creator profile, then add a bio here.
         </p>
       )}
-    </div>
+    </SettingsSection>
   )
 }
 
@@ -266,8 +269,8 @@ function SocialLinksField() {
   }
 
   return (
-    <div className="mt-4 grid gap-2 border-t border-rule pt-4">
-      <span className="eyebrow">Social links</span>
+    <div className="mt-3 grid gap-2">
+      <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Social links</span>
       <div className="grid gap-2 sm:grid-cols-2">
         {SOCIAL_PLATFORMS.map((p) => (
           <label key={p.key} className="grid gap-1">
@@ -293,6 +296,37 @@ function SocialLinksField() {
         </button>
         {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
       </div>
+    </div>
+  )
+}
+
+/**
+ * A settings row: the section's name and purpose in a left label column,
+ * controls to the right — so the page reads as a ledger at desktop widths
+ * instead of a single narrow stack. Collapses back to stacked below lg.
+ */
+function SettingsSection({
+  title,
+  desc,
+  tone = 'default',
+  children,
+}: {
+  title: string
+  desc?: string
+  tone?: 'default' | 'danger'
+  children: ReactNode
+}) {
+  return (
+    <div
+      className={`mt-6 grid gap-4 border-t pt-5 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10 ${
+        tone === 'danger' ? 'border-heat/40' : 'border-rule'
+      }`}
+    >
+      <div>
+        <p className={`eyebrow m-0 ${tone === 'danger' ? 'text-heat' : ''}`}>{title}</p>
+        {desc && <p className="mt-1.5 text-[0.8125rem] leading-snug text-slate lg:max-w-[22ch]">{desc}</p>}
+      </div>
+      <div className="grid min-w-0 content-start gap-4">{children}</div>
     </div>
   )
 }
@@ -379,8 +413,11 @@ function PreferencesSection() {
   }
 
   return (
-    <div className="mt-5 grid gap-4 border-t border-rule pt-4">
-      <p className="eyebrow m-0">Cooking preferences</p>
+    <SettingsSection
+      title="Cooking preferences"
+      desc="How recipes read to you — here and on your other devices."
+    >
+      <div className="grid items-start gap-4 sm:grid-cols-2">
       <div className="grid gap-1.5">
         <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Measures</span>
         <div className="flex gap-2">
@@ -397,6 +434,7 @@ function PreferencesSection() {
         <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Theme</span>
         <ThemeToggle colorClass="border-rule text-ink" />
       </div>
+      </div>
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         <Link
           href="/taste"
@@ -411,7 +449,7 @@ function PreferencesSection() {
           Manage your pantry →
         </Link>
       </div>
-    </div>
+    </SettingsSection>
   )
 }
 
@@ -464,9 +502,11 @@ function SecuritySection({ currentEmail }: { currentEmail: string }) {
   }
 
   return (
-    <div className="mt-5 grid gap-4 border-t border-rule pt-4">
-      <p className="eyebrow m-0">Security</p>
-
+    <SettingsSection
+      title="Security"
+      desc="Email changes confirm at both addresses before they apply."
+    >
+      <div className="grid items-start gap-4 lg:grid-cols-2">
       <label className="grid gap-1">
         <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Email</span>
         <input
@@ -541,13 +581,14 @@ function SecuritySection({ currentEmail }: { currentEmail: string }) {
           </div>
         )}
       </label>
+      </div>
 
       {error && (
         <p className="m-0 font-mono text-[0.75rem] text-heat" role="alert">
           {error}
         </p>
       )}
-    </div>
+    </SettingsSection>
   )
 }
 
@@ -583,8 +624,7 @@ function DangerZone() {
   }
 
   return (
-    <div className="mt-5 grid gap-2 border-t border-heat/40 pt-4">
-      <p className="eyebrow m-0 text-heat">Danger zone</p>
+    <SettingsSection tone="danger" title="Danger zone" desc="The way out — deliberate, never accidental.">
       {!arming ? (
         <div className="grid gap-1.5">
           <button
@@ -642,7 +682,7 @@ function DangerZone() {
           )}
         </div>
       )}
-    </div>
+    </SettingsSection>
   )
 }
 
@@ -738,8 +778,8 @@ export function AccountPanel() {
   // ---- Signed-in profile ---------------------------------------------------
   if (session && mode !== 'recovery') {
     return (
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,36rem)_minmax(0,20rem)] lg:items-start">
-      <div className="ticket-card is-static p-6 sm:p-7">
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] xl:items-start">
+      <div className="ticket-card is-static max-w-[60rem] p-6 sm:p-8">
         <div className="flex items-center gap-4">
           {session.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- account avatar from media API
@@ -758,14 +798,13 @@ export function AccountPanel() {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 border-t border-rule pt-4">
+        <SettingsSection title="Profile" desc="Your name and handle, as every byline reads them.">
           <DisplayNameField
             initial={session.name}
             onSaved={(name) => setSession((prev) => (prev ? { ...prev, name } : prev))}
           />
-        </div>
 
-        <div className="mt-5 grid gap-3 border-t border-rule pt-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <UsernameField
             initial={session.username ?? null}
             onSave={async (username) => {
@@ -804,6 +843,8 @@ export function AccountPanel() {
             />
           </div>
         </div>
+        </SettingsSection>
+
         <BioField />
         <PreferencesSection />
         <SecuritySection currentEmail={session.email} />
@@ -812,7 +853,7 @@ export function AccountPanel() {
 
       {/* The account rail: facts and actions, docked beside the profile where
           the page previously ran empty. Sticky so it rides along on lg. */}
-      <aside className="ticket-card is-static p-5 sm:p-6 lg:sticky lg:top-24">
+      <aside className="ticket-card is-static p-5 sm:p-6 xl:sticky xl:top-24">
         <p className="eyebrow m-0">Your account</p>
         <dl className="m-0 mt-4 grid gap-2">
           <div className="leader">

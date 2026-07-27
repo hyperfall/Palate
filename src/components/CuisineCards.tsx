@@ -28,7 +28,18 @@ export type CuisineCardData = {
  */
 export function CuisineCards({ items }: { items: CuisineCardData[] }) {
   const [sound, setSound] = useState(false)
-  const hasVideos = items.some((c) => c.videoUrl)
+  // Eight autoplaying videos are exactly what prefers-reduced-motion exists
+  // for — honour it by rendering the stills instead. Default false on the
+  // server; the effect corrects before videos would have buffered.
+  const [reducedMotion, setReducedMotion] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mq.matches)
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  const hasVideos = !reducedMotion && items.some((c) => c.videoUrl)
 
   return (
     <>
@@ -56,7 +67,11 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
 
       <div className={`${hasVideos ? 'mt-4' : 'mt-8'} grid grid-cols-1 gap-7 sm:grid-cols-2 xl:grid-cols-3 min-[100rem]:grid-cols-4`}>
         {items.map((cuisine) => (
-          <CuisineCard key={cuisine.slug} cuisine={cuisine} sound={sound} />
+          <CuisineCard
+            key={cuisine.slug}
+            cuisine={reducedMotion ? { ...cuisine, videoUrl: null } : cuisine}
+            sound={sound}
+          />
         ))}
       </div>
     </>
@@ -150,10 +165,10 @@ function CuisineCard({ cuisine, sound }: { cuisine: CuisineCardData; sound: bool
           <>
             <div
               aria-hidden="true"
-              className="absolute -inset-6 scale-110 bg-cover bg-center blur-xl saturate-[1.2]"
+              className="absolute -inset-6 scale-110 bg-cover bg-center blur-xl"
               style={{ backgroundImage: `url(${cuisine.imageUrl})` }}
             />
-            <div aria-hidden="true" className="absolute inset-0 bg-card/80" />
+            <div aria-hidden="true" className="absolute inset-0 bg-card/85" />
           </>
         )}
         <div className="relative p-5">

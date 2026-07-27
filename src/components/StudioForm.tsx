@@ -60,6 +60,11 @@ export function StudioForm({
   const [pickerKey, setPickerKey] = useState(0)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'error' | 'ok'; text: string } | null>(null)
+  // Any real edit marks the form dirty. React change events bubble, so one
+  // handler on <form> covers every input, textarea, select and file picker
+  // inside it — and programmatic prefill (editing an existing recipe) doesn't
+  // fire one, so opening an edit and leaving straight away won't nag.
+  const [touched, setTouched] = useState(false)
   // Below xl the preview isn't pinned beside the form; a floating button opens it
   // as a dismissible overlay so it never crowds the editing space.
   const [previewOpen, setPreviewOpen] = useState(false)
@@ -240,6 +245,19 @@ export function StudioForm({
     )
   }
 
+  // A studio recipe is 20 minutes of work: photo, ingredients, steps, uploads.
+  // Losing it to a stray refresh or back-button is unacceptable, so warn while
+  // there's unsaved work (browsers show their own wording).
+  useEffect(() => {
+    if (!touched) return
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [touched])
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setNotice(null)
@@ -336,7 +354,12 @@ export function StudioForm({
       // diet, taste, story…) silently rides into the creator's next recipe.
       setTitle('')
       setPhoto(null)
-      setPhotoUrl(null)
+      // Revoke before dropping the reference — the cropped blob would otherwise
+      // be held for the life of the tab (the picker's own clear does revoke).
+      setPhotoUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev)
+        return null
+      })
       setPickerKey((k) => k + 1)
       setIngredientRows([{ ...emptyIngredientRow }, { ...emptyIngredientRow }, { ...emptyIngredientRow }])
       setStepRows([{ ...emptyStepRow }, { ...emptyStepRow }, { ...emptyStepRow }])
@@ -354,6 +377,7 @@ export function StudioForm({
       setCookMinutes(20)
       setDiets([])
       setTaste({ ...INITIAL_TASTE })
+      setTouched(false)
     } catch (error) {
       setNotice({
         kind: 'error',
@@ -402,7 +426,15 @@ export function StudioForm({
       </p>
     )}
     <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
-    <form onSubmit={submit} className="grid min-w-0 grid-cols-1 gap-6">
+    <form
+      onSubmit={submit}
+      onChange={() => {
+        setTouched(true)
+        // A lingering "Submitted" while they type the next recipe is a lie.
+        setNotice((n) => (n?.kind === 'ok' ? null : n))
+      }}
+      className="grid min-w-0 grid-cols-1 gap-6"
+    >
       <label className={labelCls}>
         <span className="eyebrow">Recipe title</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputCls} />
@@ -573,13 +605,17 @@ export function StudioForm({
       <div className={labelCls}>
         <span className="eyebrow">Ingredients</span>
         <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
-          Quantity, unit, then name — paste a whole list to fill rows fast.
+          Quantity, unit, then name — paste a whole list to fill rows fast. At least{' '}
+          {MIN_INGREDIENTS}.
         </span>
         <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
       </div>
 
       <div className={labelCls}>
         <span className="eyebrow">Steps — one per row</span>
+        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+          One action per step, in order. At least {MIN_STEPS}.
+        </span>
         <StepRowsInput value={stepRows} onChange={setStepRows} />
       </div>
 

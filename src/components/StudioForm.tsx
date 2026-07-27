@@ -567,7 +567,11 @@ export function StudioForm({
         </div>
       </div>
     )}
-    <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
+    {/* One column. The editor now reads like the recipe itself, so a preview
+        pinned permanently beside it duplicated the page and left a tall empty
+        gutter with a small card floating in it. Preview is a deliberate look
+        instead — the same sheet, at every width. */}
+    <div className="mx-auto grid max-w-[52rem] gap-10">
     <form
       onSubmit={submit}
       onChange={() => {
@@ -825,8 +829,8 @@ export function StudioForm({
       aria-label="Recipe preview"
       role={previewOpen ? 'dialog' : undefined}
       aria-modal={previewOpen ? true : undefined}
-      className={`min-w-0 xl:sticky xl:top-24 ${
-        previewOpen ? 'fixed inset-0 z-50 overflow-y-auto bg-paper p-5' : 'hidden xl:block'
+      className={`min-w-0 ${
+        previewOpen ? 'fixed inset-0 z-50 overflow-y-auto bg-paper p-5' : 'hidden'
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -836,7 +840,7 @@ export function StudioForm({
             type="button"
             onClick={() => setPreviewOpen(false)}
             aria-label="Close preview"
-            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat xl:hidden"
+            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
           >
             ✕
           </button>
@@ -969,7 +973,7 @@ export function StudioForm({
           aria-haspopup="dialog"
           // Clear the fixed bottom nav on phones (it's ~3.25rem tall, sm:hidden);
           // on tablets there's no bottom bar, so sit closer to the edge.
-          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
+          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6"
         >
           <span aria-hidden="true">◉</span> Live preview
         </button>

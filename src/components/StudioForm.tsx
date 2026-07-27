@@ -194,62 +194,8 @@ export function StudioForm({
     }
   }, [previewOpen])
 
-  if (gate === 'checking') return null
-
-  if (gate === 'anonymous') {
-    return (
-      <div className="ticket-card max-w-[34rem] p-6">
-        <p className="eyebrow m-0 text-flame">Creator studio</p>
-        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Sign in to publish</p>
-        <p className="mt-2 text-slate">
-          Create an account (pick “I’m a creator” at sign-up) and come straight back here.
-        </p>
-        <Link href="/account" className="btn-primary mt-5">
-          Sign in →
-        </Link>
-      </div>
-    )
-  }
-
-  if (gate === 'cook') {
-    return (
-      <div className="ticket-card max-w-[34rem] p-6">
-        <p className="eyebrow m-0 text-flame">Signed in as a cook</p>
-        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Switch on creator mode</p>
-        <p className="mt-2 text-slate">
-          Switch this account to a creator account to publish recipes — everything you’ve saved
-          stays exactly as it is.
-        </p>
-        <button
-          type="button"
-          disabled={creatorBusy}
-          className="btn-primary mt-5 disabled:opacity-60"
-          onClick={async () => {
-            if (!supabase || creatorBusy) return
-            setNotice(null)
-            setCreatorBusy(true)
-            const { error } = await supabase.auth.updateUser({
-              data: { account_type: 'creator' },
-            })
-            setCreatorBusy(false)
-            if (error) {
-              setNotice({ kind: 'error', text: 'Could not switch your account — try again in a moment.' })
-              return
-            }
-            setGate('creator')
-          }}
-        >
-          {creatorBusy ? 'Switching…' : 'Become a creator'}
-        </button>
-        {notice?.kind === 'error' && (
-          <p role="alert" className="mt-3 m-0 text-[0.9375rem] text-heat">
-            {notice.text}
-          </p>
-        )}
-      </div>
-    )
-  }
-
+  // NOTE: everything above the gate's early returns — hooks must run on every
+  // render, and the gate below returns before the form exists.
   // Offer any saved draft once, on arrival — but never over an edit-in-progress,
   // where the form is already prefilled with the live recipe.
   useEffect(() => {
@@ -339,6 +285,62 @@ export function StudioForm({
     window.addEventListener('beforeunload', onBeforeUnload)
     return () => window.removeEventListener('beforeunload', onBeforeUnload)
   }, [touched])
+
+  if (gate === 'checking') return null
+
+  if (gate === 'anonymous') {
+    return (
+      <div className="ticket-card max-w-[34rem] p-6">
+        <p className="eyebrow m-0 text-flame">Creator studio</p>
+        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Sign in to publish</p>
+        <p className="mt-2 text-slate">
+          Create an account (pick “I’m a creator” at sign-up) and come straight back here.
+        </p>
+        <Link href="/account" className="btn-primary mt-5">
+          Sign in →
+        </Link>
+      </div>
+    )
+  }
+
+  if (gate === 'cook') {
+    return (
+      <div className="ticket-card max-w-[34rem] p-6">
+        <p className="eyebrow m-0 text-flame">Signed in as a cook</p>
+        <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Switch on creator mode</p>
+        <p className="mt-2 text-slate">
+          Switch this account to a creator account to publish recipes — everything you’ve saved
+          stays exactly as it is.
+        </p>
+        <button
+          type="button"
+          disabled={creatorBusy}
+          className="btn-primary mt-5 disabled:opacity-60"
+          onClick={async () => {
+            if (!supabase || creatorBusy) return
+            setNotice(null)
+            setCreatorBusy(true)
+            const { error } = await supabase.auth.updateUser({
+              data: { account_type: 'creator' },
+            })
+            setCreatorBusy(false)
+            if (error) {
+              setNotice({ kind: 'error', text: 'Could not switch your account — try again in a moment.' })
+              return
+            }
+            setGate('creator')
+          }}
+        >
+          {creatorBusy ? 'Switching…' : 'Become a creator'}
+        </button>
+        {notice?.kind === 'error' && (
+          <p role="alert" className="mt-3 m-0 text-[0.9375rem] text-heat">
+            {notice.text}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()

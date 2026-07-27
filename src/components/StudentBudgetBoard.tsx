@@ -39,10 +39,14 @@ export function StudentBudgetBoard({
   servingsHint?: number
 }) {
   const [cap, setCap] = useState<number | null>(null)
+  // Custom cap: pounds in the box, pence in the state, active when set.
+  const [custom, setCustom] = useState(false)
+  const [customPence, setCustomPence] = useState<number | null>(null)
+  const activeCap = custom ? customPence : cap
 
   const shown = useMemo(
-    () => (cap == null ? picks : picks.filter((p) => p.cost != null && p.cost <= cap)),
-    [picks, cap],
+    () => (activeCap == null ? picks : picks.filter((p) => p.cost != null && p.cost <= activeCap)),
+    [picks, activeCap],
   )
   const priced = shown.filter((p) => p.cost != null) as Array<StudentPick & { cost: number }>
   const cheapest = priced.length ? Math.min(...priced.map((p) => p.cost)) : null
@@ -55,14 +59,47 @@ export function StudentBudgetBoard({
           <button
             key={c.label}
             type="button"
-            aria-pressed={cap === c.cap}
-            data-active={cap === c.cap}
-            onClick={() => setCap(c.cap)}
+            aria-pressed={!custom && cap === c.cap}
+            data-active={!custom && cap === c.cap}
+            onClick={() => {
+              setCustom(false)
+              setCap(c.cap)
+            }}
             className="chip"
           >
             {c.label}
           </button>
         ))}
+        <button
+          type="button"
+          aria-pressed={custom}
+          data-active={custom}
+          onClick={() => setCustom(true)}
+          className="chip"
+        >
+          Custom
+        </button>
+        {custom && (
+          <label className="flex items-center gap-1 font-mono text-[0.8125rem] text-ink">
+            <span aria-hidden="true">≤ £</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              min={0.5}
+              max={20}
+              step={0.1}
+              autoFocus
+              aria-label="Custom budget per plate, pounds"
+              placeholder="2.00"
+              onChange={(e) => {
+                const v = Number.parseFloat(e.target.value)
+                setCustomPence(Number.isNaN(v) || v <= 0 ? null : Math.round(v * 100))
+              }}
+              className="w-16 rounded border border-rule bg-transparent px-2 py-1 text-ink tabular-nums focus:border-flame focus:outline-none"
+            />
+            <span className="text-slate">a plate</span>
+          </label>
+        )}
         {cheapest != null && (
           <span className="ml-auto font-mono text-[0.75rem] tracking-[0.06em] text-slate">
             cheapest plate {gbp(cheapest)}

@@ -30,18 +30,37 @@ export type CuisineCardData = {
  */
 export function CuisineCards({ items }: { items: CuisineCardData[] }) {
   const [sound, setSound] = useState(false)
+  const [autoplay, setAutoplay] = useState(false)
   const reducedMotion = usePrefersReducedMotion()
   const hasVideos = !reducedMotion && items.some((c) => c.videoUrl)
 
   return (
     <>
       {hasVideos && (
-        <div className="mt-6 hidden justify-end [@media(hover:hover)]:flex">
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            aria-pressed={autoplay}
+            onClick={() => setAutoplay((a) => !a)}
+            className={`chip ${autoplay ? '' : 'text-slate'}`}
+            title={autoplay ? 'Every kitchen plays continuously' : 'Kitchens play while hovered'}
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {autoplay ? (
+                <>
+                  <path d="M9 5v14M15 5v14" />
+                </>
+              ) : (
+                <path d="m7 5 12 7-12 7z" />
+              )}
+            </svg>
+            {autoplay ? 'Autoplay on' : 'Autoplay off'}
+          </button>
           <button
             type="button"
             aria-pressed={sound}
             onClick={() => setSound((s) => !s)}
-            className={`chip ${sound ? '' : 'text-slate'}`}
+            className={`chip hidden [@media(hover:hover)]:inline-flex ${sound ? '' : 'text-slate'}`}
             title={sound ? 'Hovered cards play with sound' : 'Hovered cards play silently'}
           >
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -63,6 +82,7 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
             key={cuisine.slug}
             cuisine={reducedMotion ? { ...cuisine, videoUrl: null } : cuisine}
             sound={sound}
+            autoplay={autoplay}
           />
         ))}
       </div>
@@ -70,7 +90,7 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
   )
 }
 
-function CuisineCard({ cuisine, sound }: { cuisine: CuisineCardData; sound: boolean }) {
+function CuisineCard({ cuisine, sound, autoplay }: { cuisine: CuisineCardData; sound: boolean; autoplay: boolean }) {
   const still = cuisine.imageUrl ? (
     <Image
       src={cuisine.imageUrl}
@@ -88,6 +108,7 @@ function CuisineCard({ cuisine, sound }: { cuisine: CuisineCardData; sound: bool
           <HoverVideo
             src={cuisine.videoUrl}
             sound={sound}
+            autoplay={autoplay}
             ariaLabel={`${cuisine.name} cuisine animation`}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             fallback={still}

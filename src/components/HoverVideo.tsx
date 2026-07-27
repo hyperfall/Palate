@@ -36,6 +36,7 @@ export function HoverVideo({
   className,
   ariaLabel,
   sound = false,
+  autoplay = false,
   fallback = null,
 }: {
   src: string
@@ -43,13 +44,30 @@ export function HoverVideo({
   ariaLabel?: string
   /** When true, hover playback is unmuted (mutes again on leave). */
   sound?: boolean
+  /** When true, plays continuously (muted); hover then only governs sound. */
+  autoplay?: boolean
   /** Rendered instead of the video under prefers-reduced-motion. */
   fallback?: ReactNode
 }) {
   const ref = useRef<HTMLVideoElement>(null)
   const soundRef = useRef(sound)
   soundRef.current = sound
+  const autoplayRef = useRef(autoplay)
+  autoplayRef.current = autoplay
   const reduced = usePrefersReducedMotion()
+
+  // Armed/disarmed from the toggle — a click gesture, so play() is reliable.
+  useEffect(() => {
+    const v = ref.current
+    if (!v || reduced) return
+    if (autoplay) {
+      v.muted = true
+      void v.play().catch(() => {})
+    } else {
+      v.pause()
+      v.muted = true
+    }
+  }, [autoplay, reduced])
 
   useEffect(() => {
     const v = ref.current
@@ -67,8 +85,10 @@ export function HoverVideo({
       })
     }
     const leave = () => {
-      v.pause()
       v.muted = true
+      // Under autoplay the card keeps moving after the cursor leaves — hover
+      // only governed the sound.
+      if (!autoplayRef.current) v.pause()
     }
 
     host.addEventListener('pointerenter', enter)

@@ -63,14 +63,23 @@ export async function GET(request: NextRequest) {
           score += Math.abs(gap)
         }
       }
+      // A well-rated dish edges out an equally-matched unknown — real votes,
+      // small thumb on the scale (at most half a point of taste distance).
+      score -= Math.min(5, recipe.ratingScore ?? 0) * 0.1
       return { recipe, score }
     })
     .sort((a, b) => a.score - b.score)
 
-  const best = scored[0]
-  if (!best) {
+  if (scored.length === 0) {
     return NextResponse.json({ pick: null, remaining: 0 })
   }
+
+  // Confidence with variety: every dish within half a point of the best answers
+  // the brief equally well, so choose among that tier at random — the same five
+  // taps shouldn't serve yesterday's rerun when a peer exists. The reroll's
+  // exclude list keeps "another one" moving forward regardless.
+  const tier = scored.filter((s) => s.score - scored[0].score <= 0.5)
+  const best = tier[Math.floor(Math.random() * tier.length)]
 
   const recipe = best.recipe
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null

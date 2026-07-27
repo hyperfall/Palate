@@ -5,7 +5,7 @@ import { RecipeCard } from '@/components/RecipeCard'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { formatMinutes } from '@/lib/format'
 import { imageFrom } from '@/lib/media'
-import { AutoplayVideo } from '@/components/AutoplayVideo'
+import { HoverVideo } from '@/components/HoverVideo'
 import { animatedUrlFor } from '@/lib/animated'
 import { countRecipesByCuisine, findCuisines, findFeaturedRecipes } from '@/lib/queries'
 import { TASTE_AXES, TASTE_AXIS_LABELS, tasteLabel, type TasteAxis } from '@/lib/taxonomy'
@@ -285,11 +285,10 @@ export default async function HomePage() {
               const image = imageFrom(cuisine.heroImage, 'card')
               const count = counts.get(String(cuisine.id)) ?? 0
               const lead = index < 2
-              // Motion is spent where it directs the eye: the two lead stations
-              // animate (when their video exists); the six supporting stay
-              // stills. Eight autoplaying videos on the front door would cost
-              // ~13MB before a visitor sees a single recipe.
-              const video = lead ? animatedUrlFor(String(cuisine.slug)) : null
+              // Every station carries its animation, but hover-only: the grid
+              // rests as first frames (a few hundred KB of metadata), and a
+              // card only spends bandwidth when someone shows interest.
+              const video = animatedUrlFor(String(cuisine.slug))
 
               const still = image && (
                 <Image
@@ -309,9 +308,8 @@ export default async function HomePage() {
                 >
                   <div className={`relative overflow-hidden bg-rule ${lead ? 'aspect-[21/10]' : 'aspect-[16/9]'}`}>
                     {video ? (
-                      <AutoplayVideo
+                      <HoverVideo
                         src={video}
-                        poster={image?.url}
                         ariaLabel={`${cuisine.name} cuisine animation`}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         fallback={still}

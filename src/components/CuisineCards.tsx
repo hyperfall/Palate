@@ -2,7 +2,9 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+
+import { HoverVideo, usePrefersReducedMotion } from '@/components/HoverVideo'
+import { useState } from 'react'
 
 export type CuisineCardData = {
   slug: string
@@ -28,17 +30,7 @@ export type CuisineCardData = {
  */
 export function CuisineCards({ items }: { items: CuisineCardData[] }) {
   const [sound, setSound] = useState(false)
-  // Eight autoplaying videos are exactly what prefers-reduced-motion exists
-  // for — honour it by rendering the stills instead. Default false on the
-  // server; the effect corrects before videos would have buffered.
-  const [reducedMotion, setReducedMotion] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mq.matches)
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
+  const reducedMotion = usePrefersReducedMotion()
   const hasVideos = !reducedMotion && items.some((c) => c.videoUrl)
 
   return (
@@ -50,7 +42,7 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
             aria-pressed={sound}
             onClick={() => setSound((s) => !s)}
             className={`chip ${sound ? '' : 'text-slate'}`}
-            title={sound ? 'Sound plays for the card under your cursor' : 'Videos stay silent'}
+            title={sound ? 'Hovered cards play with sound' : 'Hovered cards play silently'}
           >
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M11 5 6.5 8.5H3v7h3.5L11 19z" />
@@ -79,82 +71,30 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
 }
 
 function CuisineCard({ cuisine, sound }: { cuisine: CuisineCardData; sound: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  // Two real-world autoplay traps, both hit here:
-  // 1. React doesn't serialize `muted` into SSR HTML, so the browser parses
-  //    <video autoplay> without it and refuses unmuted autoplay.
-  // 2. Hydration re-loads the src, aborting any play() already in flight
-  //    (AbortError) — a swallowed rejection leaves the card frozen forever.
-  // The mount kick covers (1); retrying on canplay covers (2), because the
-  // event refires after every load.
-  const ensurePlaying = () => {
-    const v = videoRef.current
-    if (v && v.paused) {
-      v.muted = v.muted && true
-      void v.play().catch(() => {})
-    }
-  }
-  useEffect(ensurePlaying, [])
-
-  const unmute = () => {
-    const v = videoRef.current
-    if (!v || !sound) return
-    try {
-      v.muted = false
-      // Some browsers pause an autoplaying video when it's unmuted without a
-      // fresh gesture — if that happens, fall back to muted playback rather
-      // than a frozen card.
-      if (v.paused) {
-        void v.play().catch(() => {
-          v.muted = true
-          void v.play().catch(() => {})
-        })
-      }
-    } catch {
-      /* keep playing muted */
-    }
-  }
-  const mute = () => {
-    const v = videoRef.current
-    if (v) {
-      v.muted = true
-      if (v.paused) void v.play().catch(() => {})
-    }
-  }
+  const still = cuisine.imageUrl ? (
+    <Image
+      src={cuisine.imageUrl}
+      alt={cuisine.imageAlt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+    />
+  ) : null
 
   return (
-    <Link
-      href={`/cuisine/${cuisine.slug}`}
-      className="ticket-card group block no-underline"
-      onMouseEnter={unmute}
-      onMouseLeave={mute}
-    >
+    <Link href={`/cuisine/${cuisine.slug}`} className="ticket-card group block no-underline">
       <div className="relative aspect-[16/9] overflow-hidden bg-wash">
         {cuisine.videoUrl ? (
-          <video
-            ref={videoRef}
+          <HoverVideo
             src={cuisine.videoUrl}
-            poster={cuisine.imageUrl ?? undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onLoadedMetadata={ensurePlaying}
-            onCanPlay={ensurePlaying}
-            aria-label={`${cuisine.name} cuisine animation`}
+            sound={sound}
+            ariaLabel={`${cuisine.name} cuisine animation`}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            fallback={still}
           />
-        ) : cuisine.imageUrl ? (
-          <Image
-            src={cuisine.imageUrl}
-            alt={cuisine.imageAlt}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-        ) : null}
+        ) : (
+          still
+        )}
       </div>
       {/* Ambient text panel — the same trick as the recipe hero's blur-up: the
           scene's poster frame, blurred into a wash behind the copy, under a

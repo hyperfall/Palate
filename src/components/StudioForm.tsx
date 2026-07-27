@@ -13,6 +13,7 @@ import { AXIS_COLOR } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { clearDraft, draftAge, loadDraft, saveDraft, type StudioDraft } from '@/lib/studioDraft'
+import { Disclosure } from '@/components/Disclosure'
 import { QuickPaste } from '@/components/QuickPaste'
 import type { ParsedRecipe } from '@/lib/recipeParse'
 import { supabaseBrowser } from '@/lib/supabase/client'
@@ -637,23 +638,25 @@ export function StudioForm({
         </label>
       </div>
 
-      <label className={labelCls}>
-        <span className="eyebrow">Notes (optional)</span>
-        <textarea
-          value={story}
-          onChange={(e) => setStory(e.target.value)}
-          rows={3}
-          placeholder="A short note — a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
-          className={`${inputCls} resize-y`}
-        />
-      </label>
 
-      <StoryEditor
-        value={storyMarkdown}
-        onChange={setStoryMarkdown}
-        imageIds={storyImageIds}
-        onImageIdsChange={setStoryImageIds}
-      />
+      {/* The recipe itself leads — what a cook came here to write. The
+          classification below it, and the optional depth folded under that. */}
+      <div className={labelCls}>
+        <span className="eyebrow">Ingredients</span>
+        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+          Quantity, unit, then name — paste a whole list to fill rows fast. At least{' '}
+          {MIN_INGREDIENTS}.
+        </span>
+        <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
+      </div>
+
+      <div className={labelCls}>
+        <span className="eyebrow">Steps — one per row</span>
+        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+          One action per step, in order. At least {MIN_STEPS}.
+        </span>
+        <StepRowsInput value={stepRows} onChange={setStepRows} />
+      </div>
 
       <div className="grid gap-6 sm:grid-cols-3">
         <label className={labelCls}>
@@ -764,21 +767,34 @@ export function StudioForm({
         ))}
       </div>
 
-      <div className={labelCls}>
-        <span className="eyebrow">Ingredients</span>
-        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
-          Quantity, unit, then name — paste a whole list to fill rows fast. At least{' '}
-          {MIN_INGREDIENTS}.
-        </span>
-        <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
-      </div>
 
-      <div className={labelCls}>
-        <span className="eyebrow">Steps — one per row</span>
-        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
-          One action per step, in order. At least {MIN_STEPS}.
-        </span>
-        <StepRowsInput value={stepRows} onChange={setStepRows} />
+      {/* Optional depth: nothing here is required to publish, so it stays
+          folded until a creator wants it. */}
+      <div className="border-t border-rule pt-2">
+        <Disclosure
+          title={<span className="eyebrow m-0">Story &amp; notes — optional</span>}
+          meta={storyMarkdown.trim() || story.trim() ? 'written' : 'add depth'}
+        >
+          <div className="grid gap-6 pt-2">
+      <label className={labelCls}>
+        <span className="eyebrow">Notes (optional)</span>
+        <textarea
+          value={story}
+          onChange={(e) => setStory(e.target.value)}
+          rows={3}
+          placeholder="A short note — a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
+          className={`${inputCls} resize-y`}
+        />
+      </label>
+
+      <StoryEditor
+        value={storyMarkdown}
+        onChange={setStoryMarkdown}
+        imageIds={storyImageIds}
+        onImageIdsChange={setStoryImageIds}
+      />
+          </div>
+        </Disclosure>
       </div>
 
       {notice && (

@@ -39,13 +39,17 @@ function heroTickLabel(axis: TasteAxis, level: number): string {
     : `Recipes at least ${word?.toLowerCase()}`
 }
 
-/** The service ticker — the site's one ambient motion. */
-function Ticker({ recipeCount }: { recipeCount: number }) {
+/**
+ * The service ticker — the pass's order rail, and the site's one ambient
+ * motion. It rides the hero's own surface rather than interrupting the page
+ * as a coloured band; every line on it is a promise the product keeps today.
+ */
+function Ticker({ kitchenCount }: { kitchenCount: number }) {
   const items = [
-    'No life stories',
-    `${recipeCount} recipes on the board`,
+    'The recipe at the top, always',
     'Every dish measured on four axes',
-    'Kitchen-tested before publish',
+    `${kitchenCount} kitchens behind the pass`,
+    'Reviewed by a person, never a bot',
     'Partners marked, recipes untouched',
   ]
   const run = (hidden: boolean) => (
@@ -53,17 +57,17 @@ function Ticker({ recipeCount }: { recipeCount: number }) {
       {items.map((item) => (
         <span
           key={item}
-          className="inline-flex items-baseline font-mono text-[0.875rem] font-medium tracking-[0.16em] text-ink uppercase"
+          className="inline-flex items-baseline font-mono text-[0.8125rem] tracking-[0.14em] text-milk/70 uppercase"
         >
-          <span className="px-6">{item}</span>
-          <span aria-hidden="true">✳</span>
+          <span className="px-7">{item}</span>
+          <span aria-hidden="true" className="text-flame">✳</span>
         </span>
       ))}
     </span>
   )
 
   return (
-    <div className="ticker border-y border-ink/20 bg-butter py-2.5" role="presentation">
+    <div className="ticker border-t border-milk/10 bg-pan py-3" role="presentation">
       <div className="ticker__inner">
         {run(false)}
         {run(true)}
@@ -83,7 +87,6 @@ export default async function HomePage() {
 
   const [lead, ...rest] = featured.slice(0, 5)
   const passRail = featured.slice(5, 8)
-  const recipeCount = [...counts.values()].reduce((sum, n) => sum + n, 0)
 
   return (
     <div>
@@ -230,7 +233,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Ticker recipeCount={recipeCount} />
+      <Ticker kitchenCount={cuisines.length} />
 
       {/* The board. Lead recipe runs 2×2; the mosaic fills the screen. */}
       <section className="shell py-14">

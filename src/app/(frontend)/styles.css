@@ -498,13 +498,20 @@
   .ticker {
     overflow: hidden;
     white-space: nowrap;
+    /* Items dissolve at the edges instead of hard-clipping mid-letter. */
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
   }
 
   .ticker__inner {
     display: inline-flex;
     align-items: baseline;
     width: max-content;
-    animation: ticker-roll 36s linear infinite;
+    animation: ticker-roll 48s linear infinite;
+  }
+
+  /* Readable on demand — the strip stills under the cursor. */
+  .ticker:hover .ticker__inner {
+    animation-play-state: paused;
   }
 
   @keyframes ticker-roll {

@@ -141,22 +141,38 @@ function CuisineCard({ cuisine, sound }: { cuisine: CuisineCardData; sound: bool
           />
         ) : null}
       </div>
-      <div className="p-5">
-        <div className="leader">
-          <h2 className="text-[1.25rem] text-ink group-hover:underline">
-            {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
-            {cuisine.name}
-          </h2>
-          <span className="leader__dots" aria-hidden="true" />
-          <span className="eyebrow shrink-0">
-            {cuisine.count} {cuisine.count === 1 ? 'recipe' : 'recipes'}
-          </span>
-        </div>
-        {cuisine.description && (
-          <p className="mt-2 max-w-[46ch] text-[0.9375rem] leading-snug text-slate">
-            {cuisine.description}
-          </p>
+      {/* Ambient text panel — the same trick as the recipe hero's blur-up: the
+          scene's poster frame, blurred into a wash behind the copy, under a
+          translucent layer of the card colour so ink/slate text keeps its
+          contrast in both themes. Each card glows in its own palette. */}
+      <div className="relative overflow-hidden">
+        {cuisine.imageUrl && (
+          <>
+            <div
+              aria-hidden="true"
+              className="absolute -inset-6 scale-110 bg-cover bg-center blur-xl saturate-[1.2]"
+              style={{ backgroundImage: `url(${cuisine.imageUrl})` }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 bg-card/80" />
+          </>
         )}
+        <div className="relative p-5">
+          <div className="leader">
+            <h2 className="text-[1.25rem] text-ink group-hover:underline">
+              {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
+              {cuisine.name}
+            </h2>
+            <span className="leader__dots" aria-hidden="true" />
+            <span className="eyebrow shrink-0">
+              {cuisine.count} {cuisine.count === 1 ? 'recipe' : 'recipes'}
+            </span>
+          </div>
+          {cuisine.description && (
+            <p className="mt-2 max-w-[46ch] text-[0.9375rem] leading-snug text-slate">
+              {cuisine.description}
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   )

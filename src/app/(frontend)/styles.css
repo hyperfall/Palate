@@ -288,6 +288,15 @@
     }
   }
 
+  /* A card that presents rather than invites. The studio's live preview wears
+     the same chrome but isn't clickable, so it never lifts — a hover that
+     grows a non-link promises an interaction that doesn't exist. */
+  .ticket-card.is-static:hover,
+  .ticket-card.is-static:focus-within {
+    transform: none;
+    box-shadow: none;
+  }
+
   /* A crisp keyboard focus ring the card's own overflow:hidden can't clip
      (the global outline-offset ring gets cut off by the rounded corners). */
   .ticket-focus:focus-visible {

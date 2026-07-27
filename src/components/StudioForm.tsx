@@ -567,11 +567,10 @@ export function StudioForm({
         </div>
       </div>
     )}
-    {/* One column. The editor now reads like the recipe itself, so a preview
-        pinned permanently beside it duplicated the page and left a tall empty
-        gutter with a small card floating in it. Preview is a deliberate look
-        instead — the same sheet, at every width. */}
-    <div className="mx-auto grid max-w-[52rem] gap-10">
+    {/* One column, sharing the page's left edge — the header, step strip and
+        footer all start there, so a centred column would align with nothing.
+        The preview is a deliberate look instead of pinned furniture. */}
+    <div className="grid max-w-[52rem] gap-10">
     <form
       onSubmit={submit}
       onChange={() => {
@@ -822,31 +821,34 @@ export function StudioForm({
       </div>
     </form>
 
-    {/* Live preview — the recipe page, forming as they type. On xl it pins beside
-        the form; below xl it's hidden until the floating button opens it as a
-        full-screen sheet, so it never crowds the editing space. */}
+    {/* Live preview — the published card in a modal, not a viewport takeover.
+        The card previews at card width; a full-screen sheet just meant a wall
+        of empty hero. Backdrop click and Escape both close. */}
     <aside
       aria-label="Recipe preview"
       role={previewOpen ? 'dialog' : undefined}
       aria-modal={previewOpen ? true : undefined}
-      className={`min-w-0 ${
-        previewOpen ? 'fixed inset-0 z-50 overflow-y-auto bg-paper p-5' : 'hidden'
-      }`}
+      className={previewOpen ? 'fixed inset-0 z-50 grid place-items-center p-4 sm:p-8' : 'hidden'}
     >
+      <button
+        type="button"
+        aria-label="Close preview"
+        onClick={() => setPreviewOpen(false)}
+        className="absolute inset-0 cursor-default border-none bg-ink/45 backdrop-blur-[2px]"
+      />
+      <div className="relative max-h-full w-full max-w-[26rem] overflow-y-auto rounded-lg bg-paper p-4 shadow-2xl">
       <div className="flex items-center justify-between gap-3">
         <p className="eyebrow m-0">Live preview — how it will look</p>
-        {previewOpen && (
-          <button
-            type="button"
-            onClick={() => setPreviewOpen(false)}
-            aria-label="Close preview"
-            className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
-          >
-            ✕
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setPreviewOpen(false)}
+          aria-label="Close preview"
+          className="grid h-8 w-8 shrink-0 cursor-pointer place-items-center rounded border border-rule bg-transparent font-mono text-ink hover:border-heat hover:text-heat"
+        >
+          ✕
+        </button>
       </div>
-      <div className="ticket-card mt-3 overflow-hidden">
+      <div className="ticket-card is-static mt-3 overflow-hidden">
         <div className="relative bg-pan text-milk">
           {photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
@@ -961,6 +963,7 @@ export function StudioForm({
             </div>
           )}
         </div>
+      </div>
       </div>
     </aside>
 

@@ -18,6 +18,22 @@ function read(): UnitSystem {
 }
 
 /**
+ * Adopt a preference saved on the account (user_metadata.unit_system) on a
+ * device that has never chosen locally. An explicit local choice always wins —
+ * this only fills silence, so signing in on a new phone starts you where you
+ * left off without ever overriding what you picked here.
+ */
+export function adoptRemoteUnitSystem(next: UnitSystem) {
+  try {
+    if (window.localStorage.getItem(KEY) !== null) return
+    window.localStorage.setItem(KEY, next)
+    window.dispatchEvent(new Event(EVENT))
+  } catch {
+    // Storage unavailable — nothing to adopt into.
+  }
+}
+
+/**
  * The reader's US/metric preference, shared across every component that shows
  * measures or step text. Backed by localStorage; a custom event keeps all
  * mounted instances in lockstep (the native `storage` event only fires across

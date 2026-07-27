@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { adoptRemoteUnitSystem } from '@/lib/useUnitSystem'
 
 /**
  * Session-aware account corner: signed out it's a "Sign in" link; signed in it's
@@ -50,6 +51,11 @@ export function NavAccount() {
         avatarUrl: (user?.user_metadata?.avatar_url as string | undefined) ?? null,
         creator: user?.user_metadata?.account_type === 'creator',
       })
+      // A units choice saved on the account follows the person to devices that
+      // haven't chosen locally yet. NavAccount mounts on every page, so this
+      // happens wherever they land, not only on /account.
+      const units = user?.user_metadata?.unit_system
+      if (units === 'us' || units === 'metric') adoptRemoteUnitSystem(units)
     }
     supabase.auth
       .getUser()

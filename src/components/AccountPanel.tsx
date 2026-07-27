@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react'
 import { ImagePicker } from '@/components/ImagePicker'
 import { scorePassword } from '@/lib/passwordStrength'
 import { isValidSocial, SOCIAL_PLATFORMS } from '@/lib/socials'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { useUnitSystem } from '@/lib/useUnitSystem'
 import { normalizeUsername, validateUsername } from '@/lib/username'
 
 type Mode = 'sign-in' | 'sign-up' | 'forgot' | 'recovery'
@@ -17,6 +19,7 @@ type SessionInfo = {
   since: string | null
   username: string | null
   avatarUrl: string | null
+  creator: boolean
 }
 
 /**
@@ -294,6 +297,355 @@ function SocialLinksField() {
   )
 }
 
+/** Shared look for a save chip that reports its own lifecycle. */
+function SaveChip({
+  status,
+  label,
+  onClick,
+}: {
+  status: 'idle' | 'saving' | 'saved'
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button type="button" onClick={onClick} disabled={status === 'saving'} className="chip w-fit disabled:opacity-60">
+      {status === 'saved' ? '✓ Saved' : status === 'saving' ? 'Saving…' : label}
+    </button>
+  )
+}
+
+/**
+ * Display name — shown on every byline and greeting, previously set once at
+ * sign-up and then frozen. Saves to auth metadata; the header above updates
+ * through the onSaved callback so the page never shows two different names.
+ */
+function DisplayNameField({ initial, onSaved }: { initial: string | null; onSaved: (name: string) => void }) {
+  const supabase = supabaseBrowser()
+  const [value, setValue] = useState(initial ?? '')
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [error, setError] = useState<string | null>(null)
+  const dirty = value.trim() !== (initial ?? '') && value.trim() !== ''
+
+  const save = async () => {
+    if (!supabase || !dirty) return
+    setStatus('saving')
+    setError(null)
+    const name = value.trim()
+    const { error: err } = await supabase.auth.updateUser({ data: { display_name: name } })
+    if (err) {
+      setError('Couldn’t save your name — try again.')
+      setStatus('idle')
+    } else {
+      setStatus('saved')
+      onSaved(name)
+    }
+  }
+
+  return (
+    <label className="grid gap-1">
+      <span className="eyebrow">Display name</span>
+      <input
+        type="text"
+        value={value}
+        maxLength={60}
+        autoComplete="name"
+        placeholder="What should we call you at the pass?"
+        onChange={(e) => {
+          setValue(e.target.value)
+          setStatus('idle')
+        }}
+        className="rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+      />
+      {dirty && <SaveChip status={status} label="Save name" onClick={() => void save()} />}
+      {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
+    </label>
+  )
+}
+
+/**
+ * How the kitchen reads to you: measures, theme, and the two personalisation
+ * surfaces (taste quiz, pantry) that live on their own pages. The units choice
+ * also saves to the account so a new device starts where this one left off.
+ */
+function PreferencesSection() {
+  const supabase = supabaseBrowser()
+  const [units, setUnits] = useUnitSystem()
+
+  const pick = (next: 'metric' | 'us') => {
+    setUnits(next)
+    // Fire-and-forget: localStorage is the source of truth for this device;
+    // the account copy only seeds devices that haven't chosen yet.
+    void supabase?.auth.updateUser({ data: { unit_system: next } }).catch(() => {})
+  }
+
+  return (
+    <div className="mt-5 grid gap-4 border-t border-rule pt-4">
+      <p className="eyebrow m-0">Cooking preferences</p>
+      <div className="grid gap-1.5">
+        <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Measures</span>
+        <div className="flex gap-2">
+          <button type="button" className="chip" data-active={units === 'metric'} onClick={() => pick('metric')}>
+            Metric
+          </button>
+          <button type="button" className="chip" data-active={units === 'us'} onClick={() => pick('us')}>
+            US cups
+          </button>
+        </div>
+        <span className="text-[0.8125rem] text-slate">Applies to every recipe, on this and future devices.</span>
+      </div>
+      <div className="grid gap-1.5">
+        <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Theme</span>
+        <ThemeToggle colorClass="border-rule text-ink" />
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        <Link
+          href="/taste"
+          className="font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+        >
+          Retake the taste quiz →
+        </Link>
+        <Link
+          href="/cook-from"
+          className="font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+        >
+          Manage your pantry →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Email and password changes, signed in — previously the only path to either
+ * was the sign-out-and-recover loop. Email change goes through Supabase's
+ * double confirmation; password reuses the same strength gate as sign-up.
+ */
+function SecuritySection({ currentEmail }: { currentEmail: string }) {
+  const supabase = supabaseBrowser()
+  const [email, setEmail] = useState(currentEmail)
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'saving' | 'sent'>('idle')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [pwStatus, setPwStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [error, setError] = useState<string | null>(null)
+
+  const strength = scorePassword(password, { email })
+  const emailDirty = email.trim() !== currentEmail && /.+@.+\..+/.test(email.trim())
+
+  const saveEmail = async () => {
+    if (!supabase || !emailDirty) return
+    setEmailStatus('saving')
+    setError(null)
+    const { error: err } = await supabase.auth.updateUser({ email: email.trim() })
+    if (err) {
+      setError(err.message || 'Couldn’t start the email change.')
+      setEmailStatus('idle')
+    } else {
+      setEmailStatus('sent')
+    }
+  }
+
+  const savePassword = async () => {
+    if (!supabase) return
+    if (!strength.acceptable) {
+      setError(strength.suggestions[0] ?? 'Choose a stronger password.')
+      return
+    }
+    setPwStatus('saving')
+    setError(null)
+    const { error: err } = await supabase.auth.updateUser({ password })
+    if (err) {
+      setError(err.message || 'Couldn’t change the password.')
+      setPwStatus('idle')
+    } else {
+      setPwStatus('saved')
+      setPassword('')
+    }
+  }
+
+  return (
+    <div className="mt-5 grid gap-4 border-t border-rule pt-4">
+      <p className="eyebrow m-0">Security</p>
+
+      <label className="grid gap-1">
+        <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Email</span>
+        <input
+          type="email"
+          value={email}
+          autoComplete="email"
+          onChange={(e) => {
+            setEmail(e.target.value)
+            setEmailStatus('idle')
+          }}
+          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
+        />
+        {emailStatus === 'sent' ? (
+          <span className="font-mono text-[0.75rem] text-richness" role="status">
+            Confirmation links sent to both addresses — the change applies once confirmed.
+          </span>
+        ) : (
+          emailDirty && (
+            <SaveChip
+              status={emailStatus === 'saving' ? 'saving' : 'idle'}
+              label="Change email"
+              onClick={() => void saveEmail()}
+            />
+          )
+        )}
+      </label>
+
+      <label className="grid gap-1">
+        <span className="flex items-baseline justify-between">
+          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">New password</span>
+          {password && (
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase hover:text-ink"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          )}
+        </span>
+        <input
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          minLength={8}
+          autoComplete="new-password"
+          placeholder="Leave empty to keep your current one"
+          onChange={(e) => {
+            setPassword(e.target.value)
+            setPwStatus('idle')
+          }}
+          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+        />
+        {password && (
+          <div className="grid gap-1.5">
+            <div className="flex gap-1" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className={`h-1 flex-1 rounded-full transition-colors ${
+                    i < strength.score
+                      ? strength.score <= 1
+                        ? 'bg-heat'
+                        : strength.score === 2
+                          ? 'bg-flame/60'
+                          : 'bg-flame'
+                      : 'bg-rule'
+                  }`}
+                />
+              ))}
+            </div>
+            <SaveChip status={pwStatus} label="Change password" onClick={() => void savePassword()} />
+          </div>
+        )}
+      </label>
+
+      {error && (
+        <p className="m-0 font-mono text-[0.75rem] text-heat" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Deletion, armed in two steps: the first click only reveals the confirmation,
+ * and nothing happens until the word is typed. Cascades in the schema take the
+ * person's data with the auth user; the endpoint says so honestly when the
+ * server isn't configured for it yet.
+ */
+function DangerZone() {
+  const supabase = supabaseBrowser()
+  const [arming, setArming] = useState(false)
+  const [confirm, setConfirm] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const destroy = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await fetch('/account/delete', { method: 'POST' })
+      if (res.ok) {
+        await supabase?.auth.signOut().catch(() => {})
+        window.location.assign('/')
+        return
+      }
+      const d = (await res.json().catch(() => ({}))) as { error?: string }
+      setError(d.error ?? 'Couldn’t delete the account — try again.')
+    } catch {
+      setError('Couldn’t reach the server — check your connection.')
+    }
+    setBusy(false)
+  }
+
+  return (
+    <div className="mt-5 grid gap-2 border-t border-heat/40 pt-4">
+      <p className="eyebrow m-0 text-heat">Danger zone</p>
+      {!arming ? (
+        <div className="grid gap-1.5">
+          <button
+            type="button"
+            onClick={() => setArming(true)}
+            className="w-fit cursor-pointer rounded border border-heat/50 bg-transparent px-3 py-1.5 font-mono text-[0.75rem] tracking-[0.1em] text-heat uppercase hover:bg-heat/10"
+          >
+            Delete my account
+          </button>
+          <span className="text-[0.8125rem] text-slate">
+            Removes your account, saved recipes, plans, pantry and taste profile. Published recipes
+            stay live under your byline unless you unpublish them first.
+          </span>
+        </div>
+      ) : (
+        <div className="grid gap-2">
+          <label className="grid gap-1">
+            <span className="text-[0.8125rem] text-slate">
+              This can’t be undone. Type <strong className="font-mono text-ink">DELETE</strong> to confirm.
+            </span>
+            <input
+              type="text"
+              value={confirm}
+              autoComplete="off"
+              spellCheck={false}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="w-40 rounded border border-heat/50 bg-transparent px-3 py-1.5 font-mono text-[0.875rem] text-ink focus:border-heat focus:outline-none"
+            />
+          </label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              disabled={confirm !== 'DELETE' || busy}
+              onClick={() => void destroy()}
+              className="w-fit cursor-pointer rounded border border-heat bg-heat px-3 py-1.5 font-mono text-[0.75rem] tracking-[0.1em] text-paper uppercase disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {busy ? 'Deleting…' : 'Delete forever'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setArming(false)
+                setConfirm('')
+                setError(null)
+              }}
+              className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:underline"
+            >
+              Keep my account
+            </button>
+          </div>
+          {error && (
+            <p className="m-0 font-mono text-[0.75rem] text-heat" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /**
  * The full account flow, still on one card: sign in, create account (with a
  * display name), show/hide password, forgot-password email, the recovery
@@ -335,6 +687,7 @@ export function AccountPanel() {
                 since: user.created_at ?? null,
                 username: (user.user_metadata?.username as string | undefined) ?? null,
                 avatarUrl: (user.user_metadata?.avatar_url as string | undefined) ?? null,
+                creator: user.user_metadata?.account_type === 'creator',
               }
             : null,
         )
@@ -405,6 +758,13 @@ export function AccountPanel() {
           </div>
         </div>
 
+        <div className="mt-5 grid gap-3 border-t border-rule pt-4">
+          <DisplayNameField
+            initial={session.name}
+            onSaved={(name) => setSession((prev) => (prev ? { ...prev, name } : prev))}
+          />
+        </div>
+
         <div className="mt-5 grid gap-3 border-t border-rule pt-4 sm:grid-cols-2">
           <UsernameField
             initial={session.username ?? null}
@@ -445,6 +805,9 @@ export function AccountPanel() {
           </div>
         </div>
         <BioField />
+        <PreferencesSection />
+        <SecuritySection currentEmail={session.email} />
+        <DangerZone />
       </div>
 
       {/* The account rail: facts and actions, docked beside the profile where
@@ -476,7 +839,31 @@ export function AccountPanel() {
               <dd className="datum m-0">{savedCount}</dd>
             </div>
           )}
+          <div className="leader">
+            <dt className="eyebrow">Account</dt>
+            <span className="leader__dots" aria-hidden="true" />
+            <dd className="datum m-0">{session.creator ? 'Creator' : 'Cook'}</dd>
+          </div>
         </dl>
+
+        {!session.creator && (
+          <div className="mt-4 grid gap-1.5 rounded border border-flame/40 bg-flame/5 p-3">
+            <p className="m-0 text-[0.875rem] font-semibold text-ink">Cooking things worth sharing?</p>
+            <p className="m-0 text-[0.8125rem] leading-snug text-slate">
+              Creator accounts publish recipes under their own byline.
+            </p>
+            <button
+              type="button"
+              onClick={async () => {
+                const { error } = await supabase.auth.updateUser({ data: { account_type: 'creator' } })
+                if (!error) setSession((prev) => (prev ? { ...prev, creator: true } : prev))
+              }}
+              className="chip mt-1 w-fit"
+            >
+              Become a creator →
+            </button>
+          </div>
+        )}
 
         <div className="mt-5 grid gap-3 border-t border-rule pt-5">
           <Link href="/collections" className="btn-primary text-center">

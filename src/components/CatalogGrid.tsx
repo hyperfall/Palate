@@ -33,9 +33,26 @@ export function CatalogGrid({
   const [nextPage, setNextPage] = useState(page + 1)
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
+  // The frosted band answers "is there more below me?" — which is true while
+  // pages remain unloaded OR the reader simply isn't at the bottom yet. Tied
+  // only to unloaded pages, a small catalog auto-fills instantly and the band
+  // vanishes before anyone sees it.
+  const [atBottom, setAtBottom] = useState(false)
   const hasMore = nextPage <= totalPages
   const sentinelRef = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
+
+  useEffect(() => {
+    const check = () =>
+      setAtBottom(window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 60)
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+    }
+  }, [recipes.length])
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -124,7 +141,7 @@ export function CatalogGrid({
       {/* The frosted edge: pinned to the viewport bottom while more remains,
           blurring the last row away so the page visibly continues. Gone the
           moment the catalog is fully on the page. */}
-      {hasMore && (
+      {(hasMore || !atBottom) && (
         <div
           aria-hidden="true"
           className="pointer-events-none sticky bottom-0 -mt-28 flex h-28 items-end justify-center bg-gradient-to-t from-paper via-paper/70 to-transparent pb-3 backdrop-blur-[2px] [mask-image:linear-gradient(to_top,black_55%,transparent)]"

@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { StudentBudgetBoard } from '@/components/StudentBudgetBoard'
+import { imageFrom } from '@/lib/media'
+
 import { RecipeCard } from '@/components/RecipeCard'
 import { parseFilters } from '@/lib/filters'
 import { findRecipes } from '@/lib/queries'
@@ -120,11 +123,18 @@ export default async function StudentsPage({
             .
           </p>
         ) : (
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {picks.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} servingsHint={mode.servingsHint} />
-            ))}
-          </div>
+          <StudentBudgetBoard
+            servingsHint={mode.servingsHint}
+            picks={picks.map((r) => ({
+              id: r.id,
+              slug: String(r.slug),
+              title: r.title,
+              imageUrl: imageFrom(r.heroImage, 'card')?.url ?? null,
+              cost: r.costPerServing ?? null,
+              minutes: r.totalMinutes ?? null,
+              servings: r.servings,
+            }))}
+          />
         )}
       </section>
 
@@ -163,9 +173,6 @@ export default async function StudentsPage({
         </div>
       </section>
 
-      <p className="eyebrow mt-14">
-        Cost-per-serving badges land with the next catalog import — budget filters follow.
-      </p>
     </div>
   )
 }

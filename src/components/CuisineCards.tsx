@@ -41,6 +41,7 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
           <button
             type="button"
             aria-pressed={autoplay}
+            aria-label={autoplay ? 'Turn autoplay off' : 'Turn autoplay on'}
             onClick={() => setAutoplay((a) => !a)}
             className={`chip ${autoplay ? '' : 'text-slate'}`}
             title={autoplay ? 'Every kitchen plays continuously' : 'Kitchens play while hovered'}
@@ -59,6 +60,7 @@ export function CuisineCards({ items }: { items: CuisineCardData[] }) {
           <button
             type="button"
             aria-pressed={sound}
+            aria-label={sound ? 'Turn hover sound off' : 'Turn hover sound on'}
             onClick={() => setSound((s) => !s)}
             className={`chip hidden [@media(hover:hover)]:inline-flex ${sound ? '' : 'text-slate'}`}
             title={sound ? 'Hovered cards play with sound' : 'Hovered cards play silently'}

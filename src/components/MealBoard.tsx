@@ -17,7 +17,7 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalList
 import { CSS } from '@dnd-kit/utilities'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { MEAL_LABELS, MEAL_ORDER, normalizeMeal, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
@@ -56,6 +56,18 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
   const [entries, setEntries] = useState<BoardEntry[]>(initial)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  // Writes are optimistic; when one fails the board must SAY so — silently
+  // re-syncing looks like the app ate the change.
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const errorTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const flagSaveError = () => {
+    setSaveError('Couldn\u2019t save that \u2014 check your connection and try again.')
+    if (errorTimer.current) clearTimeout(errorTimer.current)
+    errorTimer.current = setTimeout(() => setSaveError(null), 5000)
+  }
+  useEffect(() => () => {
+    if (errorTimer.current) clearTimeout(errorTimer.current)
+  }, [])
 
   useEffect(() => setEntries(initial), [initial])
 
@@ -85,6 +97,7 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     try {
       const { error } = await supabase.from('meal_plan').delete().eq('id', id)
       if (!error) setEntries((prev) => prev.filter((e) => e.id !== id))
+      else flagSaveError()
     } finally {
       setBusy(null)
     }
@@ -96,7 +109,10 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, servings: v } : e)))
     if (!supabase) return
     const { error } = await supabase.from('meal_plan').update({ servings: v }).eq('id', id)
-    if (error) router.refresh()
+    if (error) {
+      flagSaveError()
+      router.refresh()
+    }
   }
 
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id))
@@ -153,7 +169,10 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
       const results = await Promise.all(
         [...updates.entries()].map(([id, u]) => supabase.from('meal_plan').update(u).eq('id', id)),
       )
-      if (results.some((r) => r.error)) router.refresh()
+      if (results.some((r) => r.error)) {
+        flagSaveError()
+        router.refresh()
+      }
     } finally {
       setBusy(null)
     }
@@ -163,6 +182,14 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      {saveError && (
+        <p
+          role="alert"
+          className="mb-3 rounded border border-heat/40 bg-heat/10 px-3 py-2 font-mono text-[0.75rem] tracking-[0.06em] text-heat"
+        >
+          {saveError}
+        </p>
+      )}
       <div className="grid gap-x-4 gap-y-0 xl:grid-cols-7">
         {WEEKDAYS.map((label, day) => (
           <section

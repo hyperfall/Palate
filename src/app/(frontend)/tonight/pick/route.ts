@@ -26,7 +26,13 @@ function clampLevel(raw: string | null): number {
 export async function GET(request: NextRequest) {
   // Public and database-backed. Each call scores the catalog. Re-rolling a suggestion is normal; scripted
   // re-rolling is not.
-  const rl = limited(request, { name: 'tonight-pick', limit: 60, windowMs: 60000 })
+  //
+  // Generous on purpose: this keys on IP, and a university hall, an office or
+  // any carrier-grade NAT puts hundreds of readers behind one address — this
+  // site is aimed partly at students. Throttling a whole campus to protect a
+  // read-only endpoint whose contents are already in the sitemap would be the
+  // worse trade. The cap exists to stop a scraper, not to meter readers.
+  const rl = limited(request, { name: 'tonight-pick', limit: 200, windowMs: 60000 })
   if (rl) return rl
 
   const params = request.nextUrl.searchParams

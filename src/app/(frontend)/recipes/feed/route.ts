@@ -17,7 +17,13 @@ const PAGE_SIZE = 12
 export async function GET(request: NextRequest) {
   // Public and database-backed. Scroll-loading fires this legitimately several times a minute; the cap only
   // catches a script paging the whole catalog.
-  const rl = limited(request, { name: 'recipes-feed', limit: 60, windowMs: 60000 })
+  //
+  // Generous on purpose: this keys on IP, and a university hall, an office or
+  // any carrier-grade NAT puts hundreds of readers behind one address — this
+  // site is aimed partly at students. Throttling a whole campus to protect a
+  // read-only endpoint whose contents are already in the sitemap would be the
+  // worse trade. The cap exists to stop a scraper, not to meter readers.
+  const rl = limited(request, { name: 'recipes-feed', limit: 300, windowMs: 60000 })
   if (rl) return rl
 
   const raw: RawSearchParams = {}

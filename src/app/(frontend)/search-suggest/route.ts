@@ -145,7 +145,13 @@ async function ensureIndex(): Promise<void> {
 export async function GET(request: NextRequest) {
   // Public and database-backed. Typed per keystroke behind a debounce, so a real searcher stays well under
   // this; it only stops a script hammering the matcher.
-  const rl = limited(request, { name: 'search-suggest', limit: 120, windowMs: 60000 })
+  //
+  // Generous on purpose: this keys on IP, and a university hall, an office or
+  // any carrier-grade NAT puts hundreds of readers behind one address — this
+  // site is aimed partly at students. Throttling a whole campus to protect a
+  // read-only endpoint whose contents are already in the sitemap would be the
+  // worse trade. The cap exists to stop a scraper, not to meter readers.
+  const rl = limited(request, { name: 'search-suggest', limit: 400, windowMs: 60000 })
   if (rl) return rl
 
   const q = (request.nextUrl.searchParams.get('q') ?? '').trim().slice(0, 80).toLowerCase()

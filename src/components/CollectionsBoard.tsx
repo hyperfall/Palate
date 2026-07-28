@@ -164,7 +164,9 @@ export function CollectionsBoard() {
               </div>
             </div>
             {collectionItems.length === 0 ? (
-              <p className="mt-4 text-[0.875rem] text-slate">Nothing in here yet.</p>
+              <p className="mt-4 text-[0.875rem] text-slate">
+                Nothing plated here yet — open a recipe and hit + Save to fill it.
+              </p>
             ) : (
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-4">
                 {collectionItems.map((item) => (

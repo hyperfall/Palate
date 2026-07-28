@@ -48,7 +48,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
       </header>
 
       {recipes.length === 0 ? (
-        <p className="mt-10 text-slate">Nothing here yet — check back as the catalog grows.</p>
+        <p className="mt-10 text-slate">
+          Nothing here yet — check back as the board fills up, or{' '}
+          <Link href="/recipes" className="text-flame underline underline-offset-4">
+            browse everything
+          </Link>
+          .
+        </p>
       ) : (
         <div className="mt-10 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {recipes.map((recipe) => (

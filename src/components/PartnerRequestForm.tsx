@@ -73,7 +73,7 @@ export function PartnerRequestForm() {
       setBudgetRange('')
       setMessage('')
     } catch (err) {
-      setNotice({ kind: 'error', text: err instanceof Error ? err.message : 'Something went wrong.' })
+      setNotice({ kind: 'error', text: err instanceof Error ? err.message : 'Couldn’t send that — try again in a moment.' })
     } finally {
       setBusy(false)
     }

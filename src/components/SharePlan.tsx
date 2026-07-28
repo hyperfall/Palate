@@ -16,6 +16,7 @@ export function SharePlan({ week }: { week: WeekSnapshot }) {
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [copied, setCopied] = useState(false)
   const empty = weekDishCount(week) === 0
 
   const share = async () => {
@@ -47,8 +48,22 @@ export function SharePlan({ week }: { week: WeekSnapshot }) {
             onFocus={(e) => e.currentTarget.select()}
             className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink"
           />
-          <button type="button" onClick={() => void navigator.clipboard?.writeText(url)} className="chip">
-            Copy
+          <button
+            type="button"
+            onClick={async () => {
+              // Same confirmation the household invite and shopping list give —
+              // a copy button that reports nothing looks broken.
+              try {
+                await navigator.clipboard?.writeText(url)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1600)
+              } catch {
+                /* clipboard blocked */
+              }
+            }}
+            className="chip"
+          >
+            {copied ? 'Copied ✓' : 'Copy'}
           </button>
         </div>
       </div>

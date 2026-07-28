@@ -73,7 +73,7 @@ export default async function CatalogPage({
     <div className="shell py-8">
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-5">
         <div>
-          <p className="eyebrow m-0">The catalog</p>
+          <p className="eyebrow m-0">The board</p>
           <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">
             Filter by taste, not just by ingredient.
           </h1>

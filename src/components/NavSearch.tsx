@@ -322,7 +322,7 @@ export function NavSearch() {
                 }}
                 className="mt-2 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-flame uppercase hover:underline"
               >
-                Search the full catalog anyway →
+                Search the whole board anyway →
               </button>
             </div>
           ) : (

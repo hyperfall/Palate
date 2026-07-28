@@ -22,6 +22,31 @@ async function savedCount(): Promise<number> {
   return count ?? 0
 }
 
+/** The last few things actually cooked — the record "I cooked this" builds. */
+async function recentCooks(): Promise<Array<{ slug: string; title: string; image: string | null; at: string; note: string | null }>> {
+  const supabase = await supabaseServer()
+  if (!supabase) return []
+  const { data } = await supabase
+    .from('cook_log')
+    .select('recipe_slug,recipe_title,recipe_image,note,cooked_at')
+    .order('cooked_at', { ascending: false })
+    .limit(6)
+  return (data ?? []).map((r) => ({
+    slug: r.recipe_slug as string,
+    title: r.recipe_title as string,
+    image: (r.recipe_image as string | null) ?? null,
+    at: r.cooked_at as string,
+    note: (r.note as string | null) ?? null,
+  }))
+}
+
+async function cookCount(): Promise<number> {
+  const supabase = await supabaseServer()
+  if (!supabase) return 0
+  const { count } = await supabase.from('cook_log').select('id', { count: 'exact', head: true })
+  return count ?? 0
+}
+
 async function pantryCount(): Promise<number> {
   const supabase = await supabaseServer()
   if (!supabase) return 0
@@ -70,12 +95,14 @@ export default async function DashboardPage() {
   }
 
   const creator = isCreator(user)
-  const [saved, planEntries, household, pantry, recent] = await Promise.all([
+  const [saved, planEntries, household, pantry, recent, cooks, cooked] = await Promise.all([
     savedCount(),
     getPlanEntries(),
     getHouseholdContext(),
     pantryCount(),
     recentSaves(),
+    cookCount(),
+    recentCooks(),
   ])
 
   return (
@@ -105,6 +132,12 @@ export default async function DashboardPage() {
           value={String(pantry)}
           hint={pantry === 1 ? 'ingredient in the house' : 'ingredients in the house'}
         />
+        <OverviewCard
+          href="/recipes"
+          label="Cooked"
+          value={String(cooks)}
+          hint={cooks === 1 ? 'dish actually made' : 'dishes actually made'}
+        />
       </div>
 
       {/* The dashboard is a hub — the doors into the kitchen belong on it. */}
@@ -124,6 +157,28 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {cooked.length > 0 && (
+        <div className="mt-12 border-t border-rule pt-8">
+          <h2 className="m-0 text-[1.25rem]">You cooked</h2>
+          <ul className="mt-5 grid list-none gap-0 p-0">
+            {cooked.map((c, i) => (
+              <li key={`${c.slug}-${c.at}-${i}`} className="border-b border-rule py-3 last:border-b-0">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <Link href={`/recipes/${c.slug}`} className="text-[1.0625rem] text-ink no-underline hover:text-flame">
+                    {c.title}
+                  </Link>
+                  <span className="font-mono text-[0.75rem] tracking-[0.06em] text-slate">
+                    {new Date(c.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+                {/* Their own note back to them — never leaves this page. */}
+                {c.note && <p className="mt-1 m-0 text-[0.875rem] leading-snug text-slate">“{c.note}”</p>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {recent.length > 0 && (
         <div className="mt-12 border-t border-rule pt-8">

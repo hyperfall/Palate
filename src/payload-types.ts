@@ -998,6 +998,10 @@ export interface Submission {
   editsRecipe?: (number | null) | Recipe;
   moderationStatus: 'pending' | 'approved' | 'rejected';
   /**
+   * Sent to the creator verbatim when you reject. Say what would fix it — this is the human part of "reviewed by a person".
+   */
+  moderationNote?: string | null;
+  /**
    * Legacy Payload-admin submitter link — unused for creator submissions. The real submitter is in Creator name / handle / email above (Supabase account).
    */
   submittedBy?: (number | null) | User;
@@ -1641,6 +1645,7 @@ export interface SubmissionsSelect<T extends boolean = true> {
   promotedRecipe?: T;
   editsRecipe?: T;
   moderationStatus?: T;
+  moderationNote?: T;
   submittedBy?: T;
   submitterEmail?: T;
   reviewNotes?: T;

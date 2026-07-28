@@ -393,3 +393,63 @@ begin
     alter publication supabase_realtime add table public.shopping_checks;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Cook log: what you actually made, and when.
+--
+-- Saving a recipe records intent; this records the act. It drives "cook it
+-- again", and it is the only honest source for the "cooked" figure a creator
+-- sees on their dashboard.
+--
+-- Deliberately NOT household-scoped, unlike the pantry and the plan: a shared
+-- kitchen still has two people with different cooking records, and merging them
+-- would make "you last cooked this in March" a lie for one of them.
+-- ---------------------------------------------------------------------------
+create table if not exists public.cook_log (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  recipe_slug text not null check (char_length(recipe_slug) between 1 and 200),
+  recipe_title text not null check (char_length(recipe_title) between 1 and 200),
+  recipe_image text check (recipe_image is null or char_length(recipe_image) <= 500),
+  -- A private note to your future self: "half the chilli", "needed 10 more min".
+  note text check (note is null or char_length(note) <= 500),
+  cooked_at timestamptz not null default now()
+);
+
+-- Repeat cooks are the point, so no unique constraint on (user, recipe): the
+-- rows ARE the history. Indexed for "my recent cooks" and for the per-recipe
+-- count the stats function aggregates.
+create index if not exists cook_log_user_time on public.cook_log (user_id, cooked_at desc);
+create index if not exists cook_log_slug on public.cook_log (recipe_slug);
+
+alter table public.cook_log enable row level security;
+drop policy if exists "own cook log" on public.cook_log;
+create policy "own cook log" on public.cook_log
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------------------------------------------------------------------------
+-- Aggregate reach per recipe, for the creator dashboard.
+--
+-- Security definer because a creator cannot read other people's collection or
+-- cook rows — and must not be able to. This returns COUNTS ONLY: never a
+-- user id, never a note, nothing that says who cooked what. Callers pass the
+-- slugs they care about, so it can't be used to enumerate the catalog's
+-- performance wholesale.
+-- ---------------------------------------------------------------------------
+create or replace function public.recipe_stats(slugs text[])
+returns table (recipe_slug text, saves bigint, cooks bigint)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select
+    s.slug as recipe_slug,
+    (select count(*) from public.collection_items ci where ci.recipe_slug = s.slug) as saves,
+    (select count(*) from public.cook_log cl where cl.recipe_slug = s.slug) as cooks
+  from unnest(slugs) as s(slug)
+$$;
+
+-- Any signed-in creator may ask for counts; the function itself is the guard.
+revoke all on function public.recipe_stats(text[]) from public;
+grant execute on function public.recipe_stats(text[]) to authenticated;

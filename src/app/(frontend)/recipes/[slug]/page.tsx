@@ -180,6 +180,8 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               <div className="pointer-events-auto mt-7 flex flex-wrap items-center gap-3">
                 <CookModeLauncher
                   title={recipe.title}
+                  slug={recipe.slug}
+                  image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
                   steps={buildCookSteps(
                     (recipe.steps ?? []).map((step) => ({
                       text: step.text,

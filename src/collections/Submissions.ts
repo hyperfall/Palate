@@ -4,6 +4,7 @@ import { deriveTotalMinutes, recipeBodyFields, recipeFacetFields } from '../fiel
 import { slugify } from '../fields/slug'
 import { computeRecipeNutrition } from '../lib/recipeNutrition'
 import { validateUsername } from '@/lib/username'
+import { recipeApproved, recipeRejected, sendEmail } from '@/lib/email'
 
 /**
  * Design spec §5 `submissions` — DESIGNED, NOT BUILT in Phase 1.
@@ -184,6 +185,42 @@ export const Submissions: CollectionConfig = {
           data: { promotedRecipe: recipe.id },
           req,
         })
+
+        // Tell them. The studio promises a person reads every recipe within a
+        // few days; until now approval published it and said nothing, so the
+        // only way to find out was to keep reopening the dashboard. Sent from
+        // here because this is where the live slug exists. Never allowed to
+        // throw — the recipe is already published, and a mail failure must not
+        // roll that back or surface as an admin error.
+        if (typeof doc.creatorEmail === 'string' && doc.creatorEmail.includes('@')) {
+          await sendEmail({
+            to: doc.creatorEmail,
+            subject: `“${doc.title}” is live on Palate`,
+            text: recipeApproved({
+              name: typeof doc.creatorName === 'string' ? doc.creatorName : null,
+              title: String(doc.title),
+              slug: String((recipe as { slug?: string }).slug ?? ''),
+            }),
+          }).catch(() => undefined)
+        }
+        return doc
+      },
+
+      // Rejection is its own transition — and its own message. Separate hook so
+      // the promotion path's early returns can't swallow it.
+      async ({ doc, previousDoc }) => {
+        if (doc.moderationStatus !== 'rejected') return doc
+        if (previousDoc?.moderationStatus === 'rejected') return doc
+        if (typeof doc.creatorEmail !== 'string' || !doc.creatorEmail.includes('@')) return doc
+        await sendEmail({
+          to: doc.creatorEmail,
+          subject: `About “${doc.title}”`,
+          text: recipeRejected({
+            name: typeof doc.creatorName === 'string' ? doc.creatorName : null,
+            title: String(doc.title),
+            reason: typeof doc.moderationNote === 'string' ? doc.moderationNote : null,
+          }),
+        }).catch(() => undefined)
         return doc
       },
     ],
@@ -238,6 +275,15 @@ export const Submissions: CollectionConfig = {
         { label: 'Rejected', value: 'rejected' },
       ],
       admin: { position: 'sidebar' },
+    },
+    {
+      name: 'moderationNote',
+      type: 'textarea',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Sent to the creator verbatim when you reject. Say what would fix it — this is the human part of "reviewed by a person".',
+      },
     },
     {
       name: 'submittedBy',

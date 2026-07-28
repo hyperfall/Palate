@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { CookedIt } from '@/components/CookedIt'
+
 import { useDialogFocus } from '@/lib/useDialogFocus'
 import type { CookStep } from '@/lib/stepIngredients'
 import { parseIngredientLine } from '@/lib/ingredients/parse'
@@ -64,11 +66,15 @@ const RESCUES: Array<{ problem: string; fix: string }> = [
  */
 export function CookMode({
   title,
+  slug,
+  image = null,
   steps,
   finish = null,
   onClose,
 }: {
   title: string
+  slug: string
+  image?: string | null
   steps: CookStep[]
   finish?: Finish
   onClose: () => void
@@ -272,6 +278,11 @@ export function CookMode({
               <p className="mt-4 font-display text-[clamp(1.75rem,4vw,3rem)] leading-tight">
                 Plates up. Taste once more before it leaves the pass.
               </p>
+              {/* The one moment we know for certain it was cooked, not just
+                  read — so this is where the record gets made. */}
+              <div className="mt-6">
+                <CookedIt slug={slug} title={title} image={image} tone="dark" />
+              </div>
               {finish?.storageDays || finish?.reheat || finish?.leftoverIdeas ? (
                 <dl className="m-0 mt-6 grid max-w-[34rem] gap-2.5">
                   {finish.storageDays ? (
@@ -405,10 +416,14 @@ export function CookMode({
 /** The hero CTA: opens cooking mode, with a quiet fallback to read the method. */
 export function CookModeLauncher({
   title,
+  slug,
+  image = null,
   steps,
   finish = null,
 }: {
   title: string
+  slug: string
+  image?: string | null
   steps: CookStep[]
   finish?: Finish
 }) {
@@ -425,7 +440,16 @@ export function CookModeLauncher({
       >
         Read it first ↓
       </a>
-      {open && <CookMode title={title} steps={steps} finish={finish} onClose={() => setOpen(false)} />}
+      {open && (
+        <CookMode
+          title={title}
+          slug={slug}
+          image={image}
+          steps={steps}
+          finish={finish}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   )
 }

@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+import { supabaseBrowser } from '@/lib/supabase/client'
+
 type Submission = {
   id: number | string
   title: string
@@ -13,6 +15,9 @@ type Submission = {
 }
 
 type Page = { submissions: Submission[]; total: number; page: number; totalPages: number }
+
+/** Reach per published recipe. Counts only — never who. */
+type Stat = { saves: number; cooks: number }
 
 /** Creator-facing status: honest, plain labels rather than the admin enum. */
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -87,6 +92,30 @@ export function CreatorRecipes() {
     }
   }, [page, debouncedQ, status])
 
+  // Reach for the recipes on this page. Goes through the recipe_stats
+  // security-definer function because a creator cannot read other people's
+  // collection or cook rows — and must not be able to. It returns counts only.
+  const [stats, setStats] = useState<Record<string, Stat>>({})
+  useEffect(() => {
+    const supabase = supabaseBrowser()
+    const slugs = (data?.submissions ?? []).map((s) => s.recipeSlug).filter((x): x is string => Boolean(x))
+    if (!supabase || slugs.length === 0) return
+    let cancelled = false
+    void supabase
+      .rpc('recipe_stats', { slugs })
+      .then(({ data: rows, error }) => {
+        if (cancelled || error || !rows) return
+        const next: Record<string, Stat> = {}
+        for (const r of rows as Array<{ recipe_slug: string; saves: number; cooks: number }>) {
+          next[r.recipe_slug] = { saves: Number(r.saves), cooks: Number(r.cooks) }
+        }
+        setStats(next)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [data])
+
   const isFiltering = Boolean(debouncedQ || status)
   const total = data?.total ?? 0
 
@@ -160,7 +189,20 @@ export function CreatorRecipes() {
                         s.title
                       )}
                     </span>
-                    <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-slate">{fmtDate(s.createdAt)}</span>
+                    <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-slate">
+                      {fmtDate(s.createdAt)}
+                      {/* Only once it's live and someone has actually done
+                          something — a row of zeroes on a day-old recipe reads
+                          as failure rather than as "too early to tell". */}
+                      {s.recipeSlug && (stats[s.recipeSlug]?.saves || stats[s.recipeSlug]?.cooks) ? (
+                        <>
+                          {' · '}
+                          <span className="text-ink">{stats[s.recipeSlug].saves}</span> saved
+                          {' · '}
+                          <span className="text-ink">{stats[s.recipeSlug].cooks}</span> cooked
+                        </>
+                      ) : null}
+                    </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-3">
                     {s.recipeId && (

@@ -10,8 +10,14 @@ type RecipeHit = {
   image: { url: string; alt: string } | null
 }
 type CuisineHit = { slug: string; name: string; flag: string | null; count: number }
+type IngredientHit = { slug: string; name: string; count: number }
 type PageHit = { href: string; title: string }
-type Payload = { results: RecipeHit[]; cuisines: CuisineHit[]; pages: PageHit[] }
+type Payload = {
+  results: RecipeHit[]
+  cuisines: CuisineHit[]
+  ingredients: IngredientHit[]
+  pages: PageHit[]
+}
 
 /** One keyboard-navigable row, whatever section it renders in. */
 type Option = { key: string; href: string; query?: string }
@@ -147,6 +153,8 @@ export function NavSearch() {
     if (idle || !data) return []
     const list: Option[] = []
     for (const c of data.cuisines) list.push({ key: `c-${c.slug}`, href: `/cuisine/${c.slug}` })
+    for (const i of data.ingredients ?? [])
+      list.push({ key: `i-${i.slug}`, href: `/ingredients/${i.slug}` })
     for (const r of data.results) list.push({ key: `r-${r.slug}`, href: `/recipes/${r.slug}` })
     for (const p of data.pages) list.push({ key: `p-${p.href}`, href: p.href })
     list.push({ key: 'all', href: `/recipes?q=${encodeURIComponent(q)}`, query: q })
@@ -200,7 +208,11 @@ export function NavSearch() {
   const showIdlePanel = open && focused && idle && (recents.length > 0 || true)
   const showResults = open && !idle && data !== null
   const empty =
-    showResults && data.results.length === 0 && data.cuisines.length === 0 && data.pages.length === 0
+    showResults &&
+    data.results.length === 0 &&
+    data.cuisines.length === 0 &&
+    (data.ingredients?.length ?? 0) === 0 &&
+    data.pages.length === 0
 
   const sectionLabel = (text: string) => (
     <li
@@ -230,8 +242,8 @@ export function NavSearch() {
           aria-controls="nav-search-listbox"
           aria-autocomplete="list"
           aria-activedescendant={highlight >= 0 ? `nav-search-option-${highlight}` : undefined}
-          aria-label="Search recipes, cuisines, and pages"
-          placeholder="Search recipes, cuisines…"
+          aria-label="Search recipes, ingredients, cuisines, and pages"
+          placeholder="Search recipes, ingredients…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
@@ -352,6 +364,29 @@ export function NavSearch() {
                   </li>
                 ))}
 
+                {(data.ingredients?.length ?? 0) > 0 && sectionLabel('Ingredients')}
+                {(data.ingredients ?? []).map((ing) => (
+                  <li
+                    key={`i-${ing.slug}`}
+                    className={rowClass(`i-${ing.slug}`)}
+                    {...rowProps(`i-${ing.slug}`, {
+                      key: `i-${ing.slug}`,
+                      href: `/ingredients/${ing.slug}`,
+                    })}
+                  >
+                    <span className="grid h-[33px] w-[44px] shrink-0 place-items-center rounded-sm bg-wash font-mono text-[0.9375rem] text-slate">
+                      ◍
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-body text-[0.9375rem] font-medium">
+                        <Highlight text={ing.name} q={q} />
+                      </span>
+                      <span className="mt-0.5 block font-mono text-[0.8125rem] tracking-[0.06em] text-slate uppercase">
+                        {ing.count} {ing.count === 1 ? 'recipe' : 'recipes'} · what to cook with it
+                      </span>
+                    </span>
+                  </li>
+                ))}
                 {data.results.length > 0 && sectionLabel('Recipes')}
                 {data.results.map((recipe) => (
                   <li

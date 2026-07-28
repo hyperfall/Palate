@@ -33,6 +33,13 @@ type IndexedRecipe = {
   image: { url: string; alt: string } | null
 }
 
+type IndexedIngredient = {
+  slug: string
+  name: string
+  nameLower: string
+  count: number
+}
+
 type IndexedCuisine = {
   slug: string
   name: string
@@ -53,6 +60,7 @@ const INDEX_TTL_MS = 5 * 60 * 1000
 
 let index: IndexedRecipe[] = []
 let cuisineIndex: IndexedCuisine[] = []
+let ingredientIndex: IndexedIngredient[] = []
 let indexBuiltAt = 0
 let building: Promise<void> | null = null
 
@@ -79,6 +87,28 @@ async function rebuildIndex(): Promise<void> {
       count: counts.get(String(cuisine.id)) ?? 0,
     }))
     .filter((cuisine) => cuisine.count > 0)
+
+  // Built from the recipes already fetched above — no extra query. Only
+  // ingredients something actually cooks with, matching the rule the
+  // /ingredients/[slug] route uses, so a suggestion can never lead to a 404.
+  const ingredientTally = new Map<string, IndexedIngredient>()
+  for (const recipe of result.docs) {
+    const seen = new Set<string>()
+    for (const row of recipe.ingredients ?? []) {
+      const ing = typeof row.ingredient === 'object' ? row.ingredient : null
+      if (!ing?.slug || seen.has(ing.slug)) continue
+      seen.add(ing.slug)
+      const entry = ingredientTally.get(ing.slug) ?? {
+        slug: ing.slug,
+        name: String(ing.name),
+        nameLower: String(ing.name).toLowerCase(),
+        count: 0,
+      }
+      entry.count += 1
+      ingredientTally.set(ing.slug, entry)
+    }
+  }
+  ingredientIndex = [...ingredientTally.values()]
 
   index = result.docs.map((recipe) => {
     const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
@@ -140,12 +170,25 @@ export async function GET(request: NextRequest) {
     .slice(0, 2)
     .map(({ slug, name, flag, count }) => ({ slug, name, flag, count }))
 
+  // Ranked by how many recipes use it, so "chilli" offers the one that actually
+  // appears in the catalog rather than an alphabetical accident.
+  const ingredients = ingredientIndex
+    .filter((i) => i.nameLower.includes(q))
+    .sort(
+      (a, b) =>
+        Number(b.nameLower.startsWith(q)) - Number(a.nameLower.startsWith(q)) ||
+        b.count - a.count ||
+        a.name.localeCompare(b.name),
+    )
+    .slice(0, 3)
+    .map(({ slug, name, count }) => ({ slug, name, count }))
+
   const pages = PAGES.filter(
     (page) => page.title.toLowerCase().includes(q) || page.keywords.includes(q),
   ).slice(0, 2)
 
   return NextResponse.json(
-    { results, cuisines, pages },
+    { results, cuisines, ingredients, pages },
     { headers: { 'Cache-Control': 'public, max-age=60' } },
   )
 }

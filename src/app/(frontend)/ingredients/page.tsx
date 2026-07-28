@@ -6,6 +6,8 @@ import { absoluteUrl } from '@/lib/site'
 
 export const revalidate = 3600
 
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+
 export const metadata: Metadata = {
   title: 'Ingredients',
   description:
@@ -55,6 +57,45 @@ export default async function IngredientsPage() {
         </p>
       </header>
 
+      {/* An A–Z rail: 110 chips is a lot of scrolling to reach "yoghurt". Plain
+          anchors, so it works with no JavaScript, and the site-wide smooth
+          scroll makes the jump glide rather than teleport. Letters with nothing
+          under them are rendered as dimmed text, not dead links. */}
+      {groups.length > 1 && (
+        <nav
+          aria-label="Jump to letter"
+          // scroll-mt on the sections is deliberately small: html already
+          // carries scroll-padding-top for the sticky header, and the two add
+          // up — 32 sent every heading 90px past the rail.
+          className="sticky top-[3.75rem] z-20 -mx-4 mt-8 border-y border-rule bg-paper/95 px-4 py-2.5 backdrop-blur"
+        >
+          <ul className="m-0 flex list-none flex-wrap gap-x-1 gap-y-1 p-0">
+            {ALPHABET.map((letter) => {
+              const has = byLetter.has(letter)
+              return (
+                <li key={letter}>
+                  {has ? (
+                    <a
+                      href={`#letter-${letter}`}
+                      className="grid h-7 w-7 place-items-center rounded font-mono text-[0.8125rem] text-ink no-underline transition-colors hover:bg-flame hover:text-paper"
+                    >
+                      {letter}
+                    </a>
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="grid h-7 w-7 place-items-center font-mono text-[0.8125rem] text-slate/30"
+                    >
+                      {letter}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      )}
+
       {cooked.length === 0 ? (
         <p className="mt-10 text-slate">
           Nothing linked yet —{' '}
@@ -66,7 +107,7 @@ export default async function IngredientsPage() {
       ) : (
         <div className="mt-10 grid gap-9">
           {groups.map(([letter, items]) => (
-            <section key={letter}>
+            <section key={letter} id={`letter-${letter}`} className="scroll-mt-12">
               <h2 className="m-0 font-display text-[1.5rem] leading-none text-flame">{letter}</h2>
               <ul className="mt-3 flex list-none flex-wrap gap-2 p-0">
                 {items.map((ing) => (

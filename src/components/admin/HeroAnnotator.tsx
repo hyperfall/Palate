@@ -51,13 +51,40 @@ export function HeroAnnotator() {
     if (selected != null && selected >= pins.length) setSelected(null)
   }, [pins.length, selected])
 
+  const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)))
+
+  const setPoint = (x: number, y: number) => {
+    if (selected == null) return
+    dispatchFields({ type: 'UPDATE', path: `heroAnnotations.${selected}.x`, value: clamp(x) })
+    dispatchFields({ type: 'UPDATE', path: `heroAnnotations.${selected}.y`, value: clamp(y) })
+  }
+
   const placeAt = (e: React.MouseEvent<HTMLDivElement>) => {
     if (selected == null) return
     const r = e.currentTarget.getBoundingClientRect()
-    const x = Math.min(100, Math.max(0, Math.round(((e.clientX - r.left) / r.width) * 100)))
-    const y = Math.min(100, Math.max(0, Math.round(((e.clientY - r.top) / r.height) * 100)))
-    dispatchFields({ type: 'UPDATE', path: `heroAnnotations.${selected}.x`, value: x })
-    dispatchFields({ type: 'UPDATE', path: `heroAnnotations.${selected}.y`, value: y })
+    setPoint(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100)
+  }
+
+  /**
+   * Arrow keys nudge the selected pin, so placement doesn't require a mouse.
+   * Shift takes bigger steps; the picker is a real focusable control rather
+   * than a div that only answers to clicks.
+   */
+  const nudge = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (selected == null) return
+    const step = e.shiftKey ? 10 : 1
+    const p = pins[selected]
+    if (!p) return
+    const moves: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0],
+      ArrowRight: [step, 0],
+      ArrowUp: [0, -step],
+      ArrowDown: [0, step],
+    }
+    const move = moves[e.key]
+    if (!move) return
+    e.preventDefault()
+    setPoint((p.x ?? 50) + move[0], (p.y ?? 50) + move[1])
   }
 
   const label = { fontSize: 12, color: 'var(--theme-elevation-500)', margin: '0 0 8px' } as const
@@ -78,10 +105,18 @@ export function HeroAnnotator() {
       <p style={label}>
         {selected == null
           ? 'Select a pin below the photo, then click the photo to place it.'
-          : `Placing “${pins[selected]?.kicker}” — click the photo. Click another pin to switch.`}
+          : `Placing “${pins[selected]?.kicker}” — click the photo, or focus it and use the arrow keys (Shift for bigger steps). Click another pin to switch.`}
       </p>
       <div
         onClick={placeAt}
+        onKeyDown={nudge}
+        role="application"
+        tabIndex={0}
+        aria-label={
+          selected == null
+            ? 'Pin placement area — select a pin first'
+            : `Placing ${pins[selected]?.kicker ?? 'pin'}. Arrow keys move it, Shift for larger steps.`
+        }
         style={{
           position: 'relative',
           width: '100%',

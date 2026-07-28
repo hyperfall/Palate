@@ -114,6 +114,29 @@ const NAV: NavItem[] = [
 /** The four quick tabs that flank the center chevron. */
 const TAB_HREFS = ['/', '/recipes', '/collections', '/account']
 
+/**
+ * Defined at module scope, not inside MobileNav: a component created during
+ * render is a new type on every render, so React unmounts and remounts the
+ * whole tab — throwing away its DOM and any transition mid-flight — every time
+ * the route or sheet state changes.
+ */
+function Tab({ item, active }: { item: NavItem; active: boolean }) {
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? 'page' : undefined}
+      className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 no-underline transition-colors ${
+        active ? 'text-flame' : 'text-milk/65 hover:text-milk'
+      }`}
+    >
+      {item.icon}
+      <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
+        {item.label}
+      </span>
+    </Link>
+  )
+}
+
 export function MobileNav() {
   const pathname = usePathname()
   const supabase = supabaseBrowser()
@@ -160,24 +183,6 @@ export function MobileNav() {
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
 
   const tabs = TAB_HREFS.map((h) => NAV.find((n) => n.href === h)!).filter(Boolean)
-
-  const Tab = ({ item }: { item: NavItem }) => {
-    const active = isActive(item.href)
-    return (
-      <Link
-        href={item.href}
-        aria-current={active ? 'page' : undefined}
-        className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 no-underline transition-colors ${
-          active ? 'text-flame' : 'text-milk/65 hover:text-milk'
-        }`}
-      >
-        {item.icon}
-        <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
-          {item.label}
-        </span>
-      </Link>
-    )
-  }
 
   return (
     <>
@@ -324,8 +329,8 @@ export function MobileNav() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <ul className="m-0 grid list-none grid-cols-5 p-0">
-          <li>{tabs[0] && <Tab item={tabs[0]} />}</li>
-          <li>{tabs[1] && <Tab item={tabs[1]} />}</li>
+          <li>{tabs[0] && <Tab item={tabs[0]} active={isActive(tabs[0].href)} />}</li>
+          <li>{tabs[1] && <Tab item={tabs[1]} active={isActive(tabs[1].href)} />}</li>
           <li>
             <button
               type="button"
@@ -350,8 +355,8 @@ export function MobileNav() {
               </span>
             </button>
           </li>
-          <li>{tabs[2] && <Tab item={tabs[2]} />}</li>
-          <li>{tabs[3] && <Tab item={tabs[3]} />}</li>
+          <li>{tabs[2] && <Tab item={tabs[2]} active={isActive(tabs[2].href)} />}</li>
+          <li>{tabs[3] && <Tab item={tabs[3]} active={isActive(tabs[3].href)} />}</li>
         </ul>
       </nav>
     </>

@@ -158,20 +158,9 @@ export function CookMode({
     setRunning(false)
   }, [index, step?.timerSeconds])
 
-  useEffect(() => {
-    if (!running || secondsLeft === null) return
-    if (secondsLeft <= 0) {
-      setRunning(false)
-      chime()
-      return
-    }
-    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? null : s - 1)), 1000)
-    return () => clearTimeout(t)
-     
-  }, [running, secondsLeft])
-
-  // Function declaration so the countdown effect above can reach it (hoisted).
-  function chime() {
+  // Declared above the countdown effect that calls it: hoisting made the old
+  // order work, but only if you knew to look for it.
+  const chime = useCallback(() => {
     try {
       audioRef.current ??= new AudioContext()
       const ctx = audioRef.current
@@ -189,7 +178,19 @@ export function CookMode({
     } catch {
       // No audio — the visual 0:00 still lands.
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!running || secondsLeft === null) return
+    if (secondsLeft <= 0) {
+      setRunning(false)
+      chime()
+      return
+    }
+    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? null : s - 1)), 1000)
+    return () => clearTimeout(t)
+     
+  }, [running, secondsLeft, chime])
 
   const mmss = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -315,7 +316,7 @@ export function CookMode({
 
               {step && step.uses.length > 0 && (
                 <div className="mt-6 flex flex-wrap items-center gap-2">
-                  <span className="eyebrow text-slate">You'll need</span>
+                  <span className="eyebrow text-slate">You’ll need</span>
                   {step.uses.map((use) =>
                     groupSubstitutions(use.substitutions).length > 0 ? (
                       <span key={use.name} className="chip !cursor-auto !py-1">

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 import { PartnerRequestForm } from '@/components/PartnerRequestForm'
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
@@ -74,9 +75,9 @@ export default function PartnersPage() {
             </li>
             <li>
               See the{' '}
-              <a href="/terms" className="text-flame underline underline-offset-2">
+              <Link href="/terms" className="text-flame underline underline-offset-2">
                 advertising terms
-              </a>
+              </Link>
               .
             </li>
           </ul>

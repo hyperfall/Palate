@@ -37,18 +37,51 @@ export async function findRecipes(
   // (the catalog is small). Falls through to the normal path with no profile.
   if (filters.sort === 'foryou' && filters.tasteVector) {
     const tv = filters.tasteVector
-    const all = await payload.find({ collection: 'recipes', where: buildWhere(filters) as never, depth: 1, limit: 500 })
-    const vecOf = (r: Recipe) => ({
-      spiciness: r.spiciness ?? 0,
-      sweetness: r.sweetness ?? 0,
-      richness: r.richness ?? 0,
-      effort: r.effort ?? 0,
+    // Rank on the four taste columns alone — no relations, no limit. The old
+    // shape pulled 500 whole recipes at depth 1 (hero image, author and cuisine
+    // joined for every row) to read four numbers, and silently truncated the
+    // catalog at 500 once it grew past that. Score cheap, hydrate only the page
+    // actually shown.
+    const scoring = await payload.find({
+      collection: 'recipes',
+      where: buildWhere(filters) as never,
+      depth: 0,
+      pagination: false,
+      select: { spiciness: true, sweetness: true, richness: true, effort: true },
     })
-    const sorted = [...all.docs].sort((a, b) => distance(tv, vecOf(a)) - distance(tv, vecOf(b)))
-    const totalDocs = sorted.length
+    const ranked = [...scoring.docs].sort(
+      (a, b) =>
+        distance(tv, {
+          spiciness: a.spiciness ?? 0,
+          sweetness: a.sweetness ?? 0,
+          richness: a.richness ?? 0,
+          effort: a.effort ?? 0,
+        }) -
+        distance(tv, {
+          spiciness: b.spiciness ?? 0,
+          sweetness: b.sweetness ?? 0,
+          richness: b.richness ?? 0,
+          effort: b.effort ?? 0,
+        }),
+    )
+    const totalDocs = ranked.length
     const start = (page - 1) * limit
+    const pageIds = ranked.slice(start, start + limit).map((r) => r.id)
+
+    // Fetch the page's rows in one query, then restore the ranked order — an
+    // `in` filter returns them in the database's order, not ours.
+    const hydrated = pageIds.length
+      ? await payload.find({
+          collection: 'recipes',
+          where: { id: { in: pageIds } } as never,
+          depth: 1,
+          limit: pageIds.length,
+        })
+      : { docs: [] as Recipe[] }
+    const byId = new Map(hydrated.docs.map((r) => [r.id, r]))
+
     return {
-      recipes: sorted.slice(start, start + limit),
+      recipes: pageIds.map((id) => byId.get(id)).filter((r): r is Recipe => Boolean(r)),
       totalDocs,
       totalPages: Math.max(1, Math.ceil(totalDocs / limit)),
       page,

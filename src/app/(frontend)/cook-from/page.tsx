@@ -8,6 +8,8 @@ import type { Have, Scored } from '@/lib/pantry'
 import { getUserPantry } from '@/lib/planData'
 import { findRecipesByPantry } from '@/lib/queries'
 import { serverUser } from '@/lib/supabase/server'
+import { AddToPlan } from '@/components/AddToPlan'
+import { imageFrom } from '@/lib/media'
 
 export const dynamic = 'force-dynamic'
 
@@ -46,6 +48,16 @@ function Band({ title, items, haveCount }: { title: string; items: Scored<Recipe
                   use {v.sub} for {v.item}
                 </p>
               ))}
+            </div>
+            {/* Deciding to cook it was the whole point of the page; making that
+                a trip through the recipe page just to reach the planner put two
+                navigations between the answer and the act. */}
+            <div className="mt-2.5">
+              <AddToPlan
+                slug={s.recipe.slug}
+                title={s.recipe.title}
+                image={imageFrom(s.recipe.heroImage, 'card')?.url ?? null}
+              />
             </div>
           </div>
         ))}

@@ -15,9 +15,19 @@ export type PlanIngredient = {
   item: string
   canonicalId?: number | null
   canonicalName?: string | null
+  canonicalSlug?: string | null
 }
 export type PlanRecipe = { title: string; ingredients: PlanIngredient[] }
-export type ShoppingLine = { key: string; name: string; amounts: string[]; recipes: string[] }
+export type ShoppingLine = {
+  key: string
+  name: string
+  amounts: string[]
+  recipes: string[]
+  /** Present when the row is linked to the canonical backbone — lets a
+   *  shopping line lead to "what else uses this", which is how a bought bunch
+   *  of coriander stops being a bunch of wasted coriander. */
+  slug?: string | null
+}
 export type Pantry = { ids: Set<number>; names: Set<string> }
 
 const EMPTY_PANTRY: Pantry = { ids: new Set(), names: new Set() }
@@ -25,7 +35,13 @@ const EMPTY_PANTRY: Pantry = { ids: new Set(), names: new Set() }
 export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = EMPTY_PANTRY): ShoppingLine[] {
   const groups = new Map<
     string,
-    { name: string; numeric: Map<string, number>; freeform: Set<string>; recipes: Set<string> }
+    {
+      name: string
+      slug: string | null
+      numeric: Map<string, number>
+      freeform: Set<string>
+      recipes: Set<string>
+    }
   >()
 
   for (const recipe of recipes) {
@@ -40,7 +56,13 @@ export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = 
       const key = id !== null ? `id:${id}` : `name:${lname}`
       let g = groups.get(key)
       if (!g) {
-        g = { name, numeric: new Map(), freeform: new Set(), recipes: new Set() }
+        g = {
+          name,
+          slug: ing.canonicalSlug ?? null,
+          numeric: new Map(),
+          freeform: new Set(),
+          recipes: new Set(),
+        }
         groups.set(key, g)
       }
       g.recipes.add(recipe.title)
@@ -63,7 +85,7 @@ export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = 
       amounts.push([humanizeQuantity(sum), unit].filter(Boolean).join(' '))
     }
     amounts.push(...g.freeform)
-    lines.push({ key, name: g.name, amounts, recipes: [...g.recipes] })
+    lines.push({ key, name: g.name, slug: g.slug, amounts, recipes: [...g.recipes] })
   }
   lines.sort((a, b) => a.name.localeCompare(b.name))
   return lines

@@ -140,6 +140,7 @@ export async function loadPlannedRecipes(slugs: string[]): Promise<Map<string, P
         item: row.item,
         canonicalId: canon ? (canon.id as number) : null,
         canonicalName: canon ? String(canon.name) : null,
+        canonicalSlug: canon && typeof canon.slug === 'string' ? canon.slug : null,
       }
     })
     out.set(r.slug, {

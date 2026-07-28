@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Disclosure } from '@/components/Disclosure'
@@ -26,7 +27,19 @@ function LineRow({
     <li className="grid gap-0.5 border-b border-rule py-2 last:border-b-0">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[1.0625rem]">
-          {line.name}
+          {/* You buy a bunch, a recipe wants two sprigs. The ingredient page is
+              where the rest of it stops being waste. */}
+          {line.slug ? (
+            <Link
+              href={`/ingredients/${line.slug}`}
+              title={`What else uses ${line.name}`}
+              className="text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
+            >
+              {line.name}
+            </Link>
+          ) : (
+            line.name
+          )}
           {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
         </span>
         {onStaple && (

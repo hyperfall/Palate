@@ -22,6 +22,14 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
   const ratingValue =
     ratingCount > 0 ? Math.round(((recipe.ratingSum ?? 0) / ratingCount) * 100) / 100 : 0
 
+  // Google wants a description on every recipe, but only 15 of 18 here carry a
+  // story — a storyless recipe was shipping none at all. Fall back to a factual
+  // line built from the recipe's own data rather than leaving the field empty.
+  const storyText = recipe.story ? lexicalToPlainText(recipe.story as never).trim() : ''
+  const dish = cuisine ? `${cuisine.name} ${recipe.course}` : String(recipe.course)
+  const timing = recipe.totalMinutes ? `, ready in ${recipe.totalMinutes} minutes` : ''
+  const description = storyText || `${recipe.title} — a ${dish} for ${recipe.servings}${timing}.`
+
   const nutrition = recipe.nutrition
   const hasNutrition =
     nutrition &&
@@ -35,8 +43,12 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
     ...(hero ? { image: [absoluteUrl(hero.url)] } : {}),
     ...(author ? { author: { '@type': 'Person', name: author.name } } : {}),
     ...(recipe.publishedAt ? { datePublished: recipe.publishedAt } : {}),
-    ...(recipe.story ? { description: lexicalToPlainText(recipe.story as never) } : {}),
+    description,
     ...(cuisine ? { recipeCuisine: cuisine.name } : {}),
+    // Course is set on every recipe and maps straight onto Google's
+    // recipeCategory — it was simply never emitted.
+    ...(recipe.course ? { recipeCategory: recipe.course } : {}),
+    ...(recipe.updatedAt ? { dateModified: recipe.updatedAt } : {}),
     ...(ratingCount > 0
       ? {
           aggregateRating: {

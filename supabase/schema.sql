@@ -16,9 +16,9 @@ create table if not exists public.collection_items (
   id uuid primary key default gen_random_uuid(),
   collection_id uuid not null references public.collections (id) on delete cascade,
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  recipe_slug text not null,
-  recipe_title text not null,
-  recipe_image text,
+  recipe_slug text not null check (char_length(recipe_slug) between 1 and 200),
+  recipe_title text not null check (char_length(recipe_title) between 1 and 200),
+  recipe_image text check (recipe_image is null or char_length(recipe_image) <= 500),
   created_at timestamptz not null default now(),
   unique (collection_id, recipe_slug)
 );
@@ -119,9 +119,9 @@ create table if not exists public.meal_plan (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
   day smallint not null check (day between 0 and 6),
-  recipe_slug text not null,
-  recipe_title text not null,
-  recipe_image text,
+  recipe_slug text not null check (char_length(recipe_slug) between 1 and 200),
+  recipe_title text not null check (char_length(recipe_title) between 1 and 200),
+  recipe_image text check (recipe_image is null or char_length(recipe_image) <= 500),
   position int not null default 0,
   created_at timestamptz not null default now()
 );

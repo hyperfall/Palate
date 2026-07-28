@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { deriveTotalMinutes, recipeBodyFields, recipeFacetFields } from '../fields/recipeContent'
 import { slugify } from '../fields/slug'
 import { computeRecipeNutrition } from '../lib/recipeNutrition'
+import { validateUsername } from '@/lib/username'
 
 /**
  * Design spec §5 `submissions` — DESIGNED, NOT BUILT in Phase 1.
@@ -138,6 +139,8 @@ export const Submissions: CollectionConfig = {
             if (taken.totalDocs === 0) break
             slug = `${base}-${n}`
           }
+          const rawHandle = typeof doc.creatorHandle === 'string' ? doc.creatorHandle : null
+          const validHandle = rawHandle && validateUsername(rawHandle).ok ? rawHandle : null
           const avatarId = relId(doc.creatorAvatar)
           author = await payload.create({
             collection: 'authors',
@@ -147,7 +150,11 @@ export const Submissions: CollectionConfig = {
               slug,
               provenanceDefault: 'community',
               ...(creatorId ? { creatorId } : {}),
-              ...(doc.creatorHandle ? { handle: doc.creatorHandle as string } : {}),
+              // Re-validate at the moment it becomes a public byline. The
+              // submit route already reads the reservation table rather than
+              // client-writable metadata; this catches rows submitted before
+              // that fix and any future path that forgets.
+              ...(validHandle ? { handle: validHandle } : {}),
               ...(avatarId ? { avatar: avatarId } : {}),
             },
           })

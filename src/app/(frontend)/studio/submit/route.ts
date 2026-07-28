@@ -5,7 +5,8 @@ import { plainTextToLexical } from '@/lib/lexical'
 import { limited } from '@/lib/rateLimit'
 import { MIN_INGREDIENTS, MIN_STEPS, validateRecipeNumbers } from '@/lib/recipeLimits'
 import { getPayloadClient } from '@/lib/queries'
-import { isCreator, serverUser } from '@/lib/supabase/server'
+import { isCreator, serverUser, supabaseServer } from '@/lib/supabase/server'
+import { validateUsername } from '@/lib/username'
 
 /**
  * Creator submissions. Auth is Supabase (account_type 'creator' required);
@@ -19,6 +20,38 @@ const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'i
 
 type StepIn = { text: string; timerSeconds?: number | null; image?: number | null }
 type IngredientIn = { quantity?: string; unit?: string; item: string; note?: string }
+
+/**
+ * The handle a creator has actually reserved, from the `usernames` table.
+ *
+ * Not `user_metadata.username`: that mirror is writable straight from the
+ * browser via supabase.auth.updateUser, so trusting it would let anyone claim
+ * a reserved handle ("admin", "support") or an unvalidated string as their
+ * public byline the first time a submission was approved — bypassing every
+ * check /account/username enforces. The table is the reservation, with the
+ * unique constraint behind it; re-validating is belt-and-braces for rows
+ * predating the current rules.
+ */
+/**
+ * Field caps. storyMarkdown was already capped; everything else a creator
+ * types went in unbounded, so one submission could carry a megabyte of title
+ * or step text into a row rendered on every public catalog page.
+ */
+const CAP = { title: 140, item: 200, note: 200, unit: 32, quantity: 32, step: 2000 } as const
+const cap = (v: unknown, max: number): string => (typeof v === 'string' ? v.slice(0, max) : '')
+
+async function reservedHandleFor(userId: string): Promise<string | null> {
+  const supabase = await supabaseServer()
+  if (!supabase) return null
+  const { data } = await supabase
+    .from('usernames')
+    .select('username')
+    .eq('user_id', userId)
+    .maybeSingle()
+  const handle = typeof data?.username === 'string' ? data.username : null
+  if (!handle) return null
+  return validateUsername(handle).ok ? handle : null
+}
 
 export async function POST(request: NextRequest) {
   const user = await serverUser()
@@ -160,7 +193,7 @@ export async function POST(request: NextRequest) {
     const submission = await payload.create({
       collection: 'submissions',
       data: {
-        title: recipe.title.trim(),
+        title: cap(recipe.title.trim(), CAP.title),
         ...(heroImage ? { heroImage } : {}),
         ...(recipe.story?.trim() ? { story: plainTextToLexical(recipe.story) } : {}),
         ...(recipe.storyMarkdown?.trim() ? { storyMarkdown: recipe.storyMarkdown.trim().slice(0, 5000) } : {}),
@@ -173,16 +206,16 @@ export async function POST(request: NextRequest) {
         ingredients: recipe.ingredients.map((ing) => {
           const parsed = parseIngredientLine(ing.item ?? '')
           return {
-            quantity: ing.quantity ?? parsed.quantity,
-            unit: ing.unit ?? parsed.unit,
-            item: parsed.item || ing.item,
-            ...(ing.note ? { note: ing.note } : {}),
+            quantity: cap(ing.quantity ?? parsed.quantity, CAP.quantity),
+            unit: cap(ing.unit ?? parsed.unit, CAP.unit),
+            item: cap(parsed.item || ing.item, CAP.item),
+            ...(ing.note ? { note: cap(ing.note, CAP.note) } : {}),
           }
         }),
         // Sanitised: only a whole-number media id is carried through, never an
         // arbitrary shape a client might post.
         steps: recipe.steps.map((st) => ({
-          text: st.text,
+          text: cap(st.text, CAP.step),
           ...(Number.isInteger(st.image) ? { image: st.image } : {}),
         })),
         cuisine: recipe.cuisine,
@@ -201,7 +234,7 @@ export async function POST(request: NextRequest) {
         creatorId: user.id,
         creatorName: user.user_metadata?.display_name ?? null,
         creatorEmail: user.email ?? null,
-        creatorHandle: user.user_metadata?.username ?? null,
+        creatorHandle: await reservedHandleFor(user.id),
         creatorAvatar,
         videoUrl: recipe.videoUrl || null,
       } as never,

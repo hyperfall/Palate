@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -86,14 +87,26 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => void toggle()}
-      disabled={busy}
-      aria-pressed={signedIn ? state === 'in' : undefined}
-      className="chip w-fit disabled:opacity-60"
-    >
-      {!signedIn ? 'Sign in to track this' : state === 'in' ? '✓ In your pantry' : '+ I have this'}
-    </button>
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        onClick={() => void toggle()}
+        disabled={busy}
+        aria-pressed={signedIn ? state === 'in' : undefined}
+        className="chip w-fit disabled:opacity-60"
+      >
+        {!signedIn ? 'Sign in to track this' : state === 'in' ? '✓ In your pantry' : '+ I have this'}
+      </button>
+      {/* Adding a thing to the pantry is only useful because of what it
+          unlocks — say so, the same way the shopping basket does. */}
+      {signedIn && state === 'in' && (
+        <Link
+          href="/cook-from"
+          className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+        >
+          What can I cook? →
+        </Link>
+      )}
+    </div>
   )
 }

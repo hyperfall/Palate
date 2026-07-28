@@ -63,10 +63,15 @@ export default async function IngredientsPage() {
       {groups.length > 1 && (
         <nav
           aria-label="Jump to letter"
+          // Sticky only where there's room: on a phone the rail wraps to three
+          // rows, and pinning that to the top would hold ~12% of the viewport
+          // hostage for the whole scroll. There it sits at the top and scrolls
+          // away once used.
+          //
           // scroll-mt on the sections is deliberately small: html already
           // carries scroll-padding-top for the sticky header, and the two add
           // up — 32 sent every heading 90px past the rail.
-          className="sticky top-[3.75rem] z-20 -mx-4 mt-8 border-y border-rule bg-paper/95 px-4 py-2.5 backdrop-blur"
+          className="-mx-4 mt-8 border-y border-rule bg-paper/95 px-4 py-2.5 backdrop-blur sm:sticky sm:top-[3.75rem] sm:z-20"
         >
           <ul className="m-0 flex list-none flex-wrap gap-x-1 gap-y-1 p-0">
             {ALPHABET.map((letter) => {
@@ -76,14 +81,14 @@ export default async function IngredientsPage() {
                   {has ? (
                     <a
                       href={`#letter-${letter}`}
-                      className="grid h-7 w-7 place-items-center rounded font-mono text-[0.8125rem] text-ink no-underline transition-colors hover:bg-flame hover:text-paper"
+                      className="grid h-10 w-10 place-items-center rounded font-mono text-[0.8125rem] text-ink no-underline transition-colors hover:bg-flame hover:text-paper sm:h-7 sm:w-7"
                     >
                       {letter}
                     </a>
                   ) : (
                     <span
                       aria-hidden="true"
-                      className="grid h-7 w-7 place-items-center font-mono text-[0.8125rem] text-slate/30"
+                      className="grid h-10 w-10 place-items-center font-mono text-[0.8125rem] text-slate/30 sm:h-7 sm:w-7"
                     >
                       {letter}
                     </span>

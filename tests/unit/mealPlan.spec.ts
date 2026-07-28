@@ -63,3 +63,42 @@ describe('weeklyCost', () => {
     expect(c).toEqual({ totalCents: 150 * 4 + 120 * 2, covered: 2, total: 3 })
   })
 })
+
+describe('consolidateShoppingList — canonical slug', () => {
+  it('carries the slug through so a shopping line can link to its ingredient', () => {
+    const [line] = consolidateShoppingList([
+      {
+        title: 'Shakshuka',
+        ingredients: [
+          { quantity: '2', unit: 'clove', item: 'garlic', canonicalId: 11, canonicalName: 'garlic', canonicalSlug: 'garlic' },
+        ],
+      },
+    ])
+    expect(line.slug).toBe('garlic')
+    expect(line.name).toBe('garlic')
+  })
+
+  it('leaves the slug null for a row with no canonical link', () => {
+    // An unlinked row is a string, not an ingredient — it has no page to reach.
+    const [line] = consolidateShoppingList([
+      { title: 'Scratch', ingredients: [{ quantity: '1', unit: '', item: 'a handful of something' }] },
+    ])
+    expect(line.slug ?? null).toBeNull()
+  })
+
+  it('keeps the slug when the same ingredient is merged across two recipes', () => {
+    const lines = consolidateShoppingList([
+      {
+        title: 'One',
+        ingredients: [{ quantity: '1', unit: 'clove', item: 'garlic', canonicalId: 11, canonicalName: 'garlic', canonicalSlug: 'garlic' }],
+      },
+      {
+        title: 'Two',
+        ingredients: [{ quantity: '2', unit: 'clove', item: 'garlic', canonicalId: 11, canonicalName: 'garlic', canonicalSlug: 'garlic' }],
+      },
+    ])
+    expect(lines).toHaveLength(1)
+    expect(lines[0].slug).toBe('garlic')
+    expect(lines[0].recipes).toEqual(['One', 'Two'])
+  })
+})

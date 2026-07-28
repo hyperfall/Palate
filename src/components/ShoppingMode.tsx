@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import Link from 'next/link'
+
+import { slugify } from '@/fields/slug'
 import type { ShoppingLine, WeekShoppingList } from '@/lib/mealPlan'
+import { supabaseBrowser } from '@/lib/supabase/client'
 import { useShoppingChecks } from '@/lib/useShoppingChecks'
 
 /**
@@ -67,6 +71,7 @@ function Row({ line, on, onToggle }: { line: ShoppingLine; on: boolean; onToggle
 function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () => void }) {
   const { checked, toggle, clearAll, synced } = useShoppingChecks()
   const [view, setView] = useState<'all' | 'dish'>('all')
+  const [stocking, setStocking] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
 
   // Keep the screen awake while shopping; release on close.
   useEffect(() => {
@@ -104,6 +109,27 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
 
   const toBuy = list.netted.filter((l) => !checked.has(l.key))
   const inBasket = list.netted.filter((l) => checked.has(l.key))
+
+  /**
+   * Close the loop. The cook has just told us exactly what they now own; until
+   * now that knowledge died with the basket and cook-from started empty again.
+   * Bought stock is not a staple — is_staple stays false, so "have it" on the
+   * shopping list keeps its separate, permanent meaning.
+   */
+  const stockPantry = async () => {
+    const supabase = supabaseBrowser()
+    if (!supabase || inBasket.length === 0) return
+    setStocking('saving')
+    const { error } = await supabase.from('pantry').upsert(
+      inBasket.map((l) => ({
+        ingredient_slug: slugify(l.name),
+        ingredient_name: l.name,
+        is_staple: false,
+      })),
+      { onConflict: 'user_id,ingredient_slug' },
+    )
+    setStocking(error ? 'error' : 'done')
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink">
@@ -153,10 +179,42 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
       {/* List */}
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-24 sm:px-8">
         <div className="mx-auto max-w-[40rem]">
-          {allDone && (
+          {done > 0 && (
             <div className="mt-8 rounded-lg border border-flame/40 bg-flame/5 px-5 py-6 text-center">
-              <p className="m-0 font-display text-[1.5rem] text-ink">Basket complete.</p>
-              <p className="mt-1 text-slate">Everything on the list is in. Happy cooking.</p>
+              <p className="m-0 font-display text-[1.5rem] text-ink">
+                {allDone ? 'Basket complete.' : `${done} in the basket.`}
+              </p>
+              {stocking === 'done' ? (
+                <>
+                  <p className="mt-1 text-slate">
+                    In your pantry. The board knows what you can cook now.
+                  </p>
+                  <Link href="/cook-from" className="btn-primary mt-4 inline-block">
+                    Cook from what you have →
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-slate">
+                    Put it in your pantry and you won’t have to tell us twice.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void stockPantry()}
+                    disabled={stocking === 'saving'}
+                    className="btn-primary mt-4 disabled:opacity-60"
+                  >
+                    {stocking === 'saving'
+                      ? 'Stocking…'
+                      : `Add ${done} ${done === 1 ? 'item' : 'items'} to my pantry`}
+                  </button>
+                  {stocking === 'error' && (
+                    <p role="alert" className="mt-2 m-0 font-mono text-[0.75rem] text-heat">
+                      Couldn’t stock the pantry — try again.
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           )}
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { getPayloadClient, findUsedIngredientSlugs } from '@/lib/queries'
+import { getPayloadClient, findIngredientUsage } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
 
 export const revalidate = 3600
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function IngredientsPage() {
   const payload = await getPayloadClient()
-  const [all, usedSlugs] = await Promise.all([
+  const [all, usage] = await Promise.all([
     payload.find({
       collection: 'ingredients',
       depth: 0,
@@ -25,13 +25,12 @@ export default async function IngredientsPage() {
       sort: 'name',
       select: { name: true, slug: true },
     }),
-    findUsedIngredientSlugs(),
+    findIngredientUsage(),
   ])
 
   // Only what something actually cooks with — a canonical row nothing uses
   // would lead to an empty page.
-  const used = new Set(usedSlugs)
-  const cooked = all.docs.filter((i) => i.slug && used.has(i.slug))
+  const cooked = all.docs.filter((i) => i.slug && usage.has(i.slug))
 
   // Grouped by initial, not by category: every canonical row currently sits in
   // "other", so grouping on it would print one enormous heading and help nobody.
@@ -114,6 +113,11 @@ export default async function IngredientsPage() {
                   <li key={ing.id}>
                     <Link href={`/ingredients/${ing.slug}`} className="chip no-underline">
                       {ing.name}
+                      {/* Only above one: "garlic 9" tells you something,
+                          "amchur 1" is just noise on every second chip. */}
+                      {(usage.get(ing.slug!) ?? 0) > 1 && (
+                        <span className="text-slate">{usage.get(ing.slug!)}</span>
+                      )}
                     </Link>
                   </li>
                 ))}

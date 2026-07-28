@@ -319,8 +319,12 @@ export const findIngredientBySlug = cache(async (slug: string) => {
   return result.docs[0] ?? null
 })
 
-/** Ingredient slugs at least one published recipe actually uses. */
-export async function findUsedIngredientSlugs(): Promise<string[]> {
+/**
+ * How many published recipes use each canonical ingredient, keyed by slug.
+ * Cached, because the sitemap, the pantry index and generateStaticParams all
+ * ask the same question during one render.
+ */
+export const findIngredientUsage = cache(async (): Promise<Map<string, number>> => {
   const payload = await getPayloadClient()
   const recipes = await payload.find({
     collection: 'recipes',
@@ -329,13 +333,24 @@ export async function findUsedIngredientSlugs(): Promise<string[]> {
     pagination: false,
     select: { ingredients: true },
   })
-  const slugs = new Set<string>()
+  const counts = new Map<string, number>()
   for (const r of recipes.docs) {
+    // One vote per recipe, matching the pairing tally: a recipe listing an
+    // item twice is still one recipe that uses it.
+    const seen = new Set<string>()
     for (const row of r.ingredients ?? []) {
-      if (typeof row.ingredient === 'object' && row.ingredient?.slug) slugs.add(row.ingredient.slug)
+      const slug = typeof row.ingredient === 'object' ? row.ingredient?.slug : null
+      if (!slug || seen.has(slug)) continue
+      seen.add(slug)
+      counts.set(slug, (counts.get(slug) ?? 0) + 1)
     }
   }
-  return [...slugs]
+  return counts
+})
+
+/** Ingredient slugs at least one published recipe actually uses. */
+export async function findUsedIngredientSlugs(): Promise<string[]> {
+  return [...(await findIngredientUsage()).keys()]
 }
 
 export type IngredientGraph = {

@@ -12,6 +12,9 @@ import { serverUser } from '@/lib/supabase/server'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  // Personalised and sign-in gated: to a crawler this is a thin sign-in
+  // prompt, so keep it out of the index like every other private page.
+  robots: { index: false, follow: false },
   title: 'What can I make?',
   description:
     'Add what is in your kitchen and Palate sorts the catalog into what you can cook now, what is one or two items away, and what is a bigger stretch.',

@@ -28,7 +28,13 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
   const storyText = recipe.story ? lexicalToPlainText(recipe.story as never).trim() : ''
   const dish = cuisine ? `${cuisine.name} ${recipe.course}` : String(recipe.course)
   const timing = recipe.totalMinutes ? `, ready in ${recipe.totalMinutes} minutes` : ''
-  const description = storyText || `${recipe.title} — a ${dish} for ${recipe.servings}${timing}.`
+  // Same chain the page's generateMetadata uses, so the schema and the meta tag
+  // never disagree: the curated description first, then the story, then a line
+  // built from the recipe's own facts.
+  const description =
+    recipe.metaDescription?.trim() ||
+    storyText ||
+    `${recipe.title} — a ${dish} for ${recipe.servings}${timing}.`
 
   const nutrition = recipe.nutrition
   const hasNutrition =
@@ -66,11 +72,16 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
     ...(toIsoDuration(recipe.totalMinutes) ? { totalTime: toIsoDuration(recipe.totalMinutes) } : {}),
     ...(recipe.dietaryTags?.length ? { keywords: recipe.dietaryTags.join(', ') } : {}),
     recipeIngredient: (recipe.ingredients ?? []).map(formatIngredient),
-    recipeInstructions: (recipe.steps ?? []).map((step, index) => ({
-      '@type': 'HowToStep',
-      position: index + 1,
-      text: step.text,
-    })),
+    recipeInstructions: (recipe.steps ?? []).map((step, index) => {
+      // A step photo is what puts thumbnails in Google's instruction carousel.
+      const shot = imageFrom(step.image, 'card')
+      return {
+        '@type': 'HowToStep',
+        position: index + 1,
+        text: step.text,
+        ...(shot ? { image: absoluteUrl(shot.url) } : {}),
+      }
+    }),
     ...(hasNutrition
       ? {
           nutrition: {

@@ -12,6 +12,9 @@ import { getPantryStaples, getPlanEntries, loadPlannedRecipes } from '@/lib/plan
 import { serverUser } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
+  // Personalised and sign-in gated: to a crawler this is a thin sign-in
+  // prompt, so keep it out of the index like every other private page.
+  robots: { index: false, follow: false },
   title: 'Your week',
   description: 'Plan the week and get one consolidated shopping list — overlapping ingredients netted, pantry staples dropped.',
 }

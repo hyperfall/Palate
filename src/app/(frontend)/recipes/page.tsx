@@ -11,12 +11,17 @@ import {
   findCuisines,
   findRecipes,
 } from '@/lib/queries'
+import { absoluteUrl } from '@/lib/site'
 import { ALLERGENS } from '@/lib/taxonomy'
 
 export const metadata: Metadata = {
   title: 'All recipes',
   description:
     'Filter by how a dish actually tastes — heat, sweetness, richness, and how much effort it will cost you.',
+  // Filters, sorts and pages are real crawlable links, so the catalog has a
+  // near-infinite set of query-string variants. They all point back here, or
+  // Google splits the ranking signal across permutations of the same page.
+  alternates: { canonical: absoluteUrl('/recipes') },
 }
 
 const PAGE_SIZE = 12

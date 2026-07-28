@@ -8,6 +8,9 @@ import { getPayloadClient } from '@/lib/queries'
 import { serverUser } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
+  // Personalised and sign-in gated: to a crawler this is a thin sign-in
+  // prompt, so keep it out of the index like every other private page.
+  robots: { index: false, follow: false },
   title: 'Find your taste',
   description: 'Rate a few dishes and we’ll learn what you lean toward — then tune tonight’s dinner and the catalog to it.',
 }

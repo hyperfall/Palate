@@ -49,6 +49,7 @@ export function CreatorRecipes() {
   const [page, setPage] = useState(1)
   const [data, setData] = useState<Page | null>(null)
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
 
   // Debounce the search box; reset to page 1 on any query/filter change.
   useEffect(() => {
@@ -60,16 +61,25 @@ export function CreatorRecipes() {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
+    setFailed(false)
     const params = new URLSearchParams({ page: String(page) })
     if (debouncedQ) params.set('q', debouncedQ)
     if (status) params.set('status', status)
     fetch(`/studio/submissions?${params}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((d: Page | null) => {
-        if (!cancelled) setData(d ?? { submissions: [], total: 0, page: 1, totalPages: 1 })
+        if (cancelled) return
+        // A failed request is not an empty portfolio. Collapsing the two told a
+        // creator with a shelf full of recipes that they had none.
+        if (!d) {
+          setFailed(true)
+          return
+        }
+        setFailed(false)
+        setData(d)
       })
       .catch(() => {
-        if (!cancelled) setData({ submissions: [], total: 0, page: 1, totalPages: 1 })
+        if (!cancelled) setFailed(true)
       })
       .finally(() => !cancelled && setLoading(false))
     return () => {
@@ -119,6 +129,10 @@ export function CreatorRecipes() {
             <li key={i} className="skeleton my-1 h-10 w-full" />
           ))}
         </ul>
+      ) : failed ? (
+        <p role="alert" className="mt-6 text-[0.9375rem] text-slate">
+          Couldn’t load your recipes just now — they’re safe. Refresh to try again.
+        </p>
       ) : total === 0 ? (
         <p className="mt-6 text-[0.9375rem] text-slate">
           {isFiltering ? 'No recipes match that.' : 'No recipes yet — '}

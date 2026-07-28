@@ -104,7 +104,12 @@ export async function proxy(request: NextRequest) {
         },
       },
     })
-    await supabase.auth.getUser()
+    // Never fatal. This middleware matches every page route, so an unreachable
+    // Supabase (outage, DNS, timeout — not just missing env) would otherwise
+    // throw here and take the whole site down with it. A failed refresh costs
+    // the reader a stale session; a throw costs them the page. Every other
+    // call site in the codebase guards this same call.
+    await supabase.auth.getUser().catch(() => null)
   }
 
   return response

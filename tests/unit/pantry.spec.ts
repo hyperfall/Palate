@@ -106,3 +106,32 @@ describe('accuracy: variants, staples, normalization', () => {
     expect(s.requiredCount).toBe(0)
   })
 })
+
+describe('bandRecipes caps', () => {
+  it('caps each band so a big catalog cannot render hundreds of cards', () => {
+    // 40 recipes the cook can make outright, 40 one item short.
+    const scored = [
+      ...Array.from({ length: 40 }, (_, i) => ({
+        recipe: { id: i },
+        missing: [] as string[],
+        viaSub: [],
+        requiredCount: 3,
+        coveredCount: 3,
+        usedCount: 3,
+      })),
+      ...Array.from({ length: 40 }, (_, i) => ({
+        recipe: { id: 100 + i },
+        missing: ['salt'],
+        viaSub: [],
+        requiredCount: 3,
+        coveredCount: 2,
+        usedCount: 2,
+      })),
+    ]
+    const bands = bandRecipes(scored)
+    expect(bands.cookNow).toHaveLength(24)
+    expect(bands.almost).toHaveLength(24)
+    // The cap keeps the best-ranked, not an arbitrary slice.
+    expect(bands.cookNow[0].usedCount).toBe(3)
+  })
+})

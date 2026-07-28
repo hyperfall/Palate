@@ -141,9 +141,14 @@ export function bandRecipes<R>(scored: Scored<R>[]): Bands<R> {
         ratio(b) - ratio(a),
     )
 
+  // Cap each band. The ranking above already puts the best matches first, so
+  // anything past this is noise the cook will never scroll to — and with a big
+  // catalog and a well-stocked pantry, "gettingThere" would otherwise render
+  // hundreds of cards and hydrate every one of them.
+  const BAND_MAX = 24
   return {
-    cookNow: shown.filter((s) => s.missing.length === 0),
-    almost: shown.filter((s) => s.missing.length >= 1 && s.missing.length <= 2),
-    gettingThere: shown.filter((s) => s.missing.length >= 3),
+    cookNow: shown.filter((s) => s.missing.length === 0).slice(0, BAND_MAX),
+    almost: shown.filter((s) => s.missing.length >= 1 && s.missing.length <= 2).slice(0, BAND_MAX),
+    gettingThere: shown.filter((s) => s.missing.length >= 3).slice(0, BAND_MAX),
   }
 }

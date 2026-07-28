@@ -304,6 +304,86 @@ export const findRecipesByAuthor = cache(async function findRecipesByAuthor(
 })
 
 /** Authors that carry a public handle — the set of buildable creator profiles. */
+/** One canonical ingredient, with its substitutions resolved. */
+export const findIngredientBySlug = cache(async (slug: string) => {
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'ingredients',
+    where: { slug: { equals: slug } },
+    // depth 1 resolves each substitution's `sub` relation to a real ingredient.
+    depth: 1,
+    limit: 1,
+  })
+  return result.docs[0] ?? null
+})
+
+/** Ingredient slugs at least one published recipe actually uses. */
+export async function findUsedIngredientSlugs(): Promise<string[]> {
+  const payload = await getPayloadClient()
+  const recipes = await payload.find({
+    collection: 'recipes',
+    where: PUBLISHED,
+    depth: 1,
+    pagination: false,
+    select: { ingredients: true },
+  })
+  const slugs = new Set<string>()
+  for (const r of recipes.docs) {
+    for (const row of r.ingredients ?? []) {
+      if (typeof row.ingredient === 'object' && row.ingredient?.slug) slugs.add(row.ingredient.slug)
+    }
+  }
+  return [...slugs]
+}
+
+export type IngredientGraph = {
+  recipes: Recipe[]
+  /** Ingredients that most often appear alongside this one, commonest first. */
+  pairsWith: Array<{ id: number; name: string; slug: string; count: number }>
+}
+
+/**
+ * The graph around one ingredient: what it is cooked in, and what it is cooked
+ * with. "Pairs with" is counted from the recipes themselves rather than
+ * authored by hand — the structured ingredient backbone paying out.
+ */
+export const findIngredientGraph = cache(async (ingredientId: number): Promise<IngredientGraph> => {
+  const payload = await getPayloadClient()
+  const found = await payload.find({
+    collection: 'recipes',
+    where: { and: [PUBLISHED, { 'ingredients.ingredient': { equals: ingredientId } }] },
+    sort: '-publishedAt',
+    depth: 1,
+    limit: 48,
+  })
+
+  const tally = new Map<number, { id: number; name: string; slug: string; count: number }>()
+  for (const recipe of found.docs) {
+    // One vote per recipe per ingredient — a recipe listing an item twice
+    // ("half now, half to finish") must not count double.
+    const seen = new Set<number>()
+    for (const row of recipe.ingredients ?? []) {
+      const ing = typeof row.ingredient === 'object' ? row.ingredient : null
+      if (!ing?.slug || ing.id === ingredientId || seen.has(ing.id)) continue
+      seen.add(ing.id)
+      const entry = tally.get(ing.id) ?? { id: ing.id, name: ing.name, slug: ing.slug, count: 0 }
+      entry.count += 1
+      tally.set(ing.id, entry)
+    }
+  }
+
+  return {
+    recipes: found.docs,
+    // Every co-occurrence counts. Requiring two would hide almost everything
+    // while the catalog is small, and a single shared recipe is still a true
+    // answer to "what is this cooked with" — the count is shown when it's
+    // more than one, so the strength of the pairing is never overstated.
+    pairsWith: [...tally.values()]
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+      .slice(0, 12),
+  }
+})
+
 export async function findAuthorsWithHandles(): Promise<Author[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({

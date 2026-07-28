@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { groupSubstitutions, type SubRow } from '@/lib/substitutions'
@@ -10,7 +11,18 @@ import { groupSubstitutions, type SubRow } from '@/lib/substitutions'
  * flavour / texture / cupboard. Ingredients with no curated subs never render
  * this — the caller checks first.
  */
-export function SubstitutionPopover({ item, substitutions }: { item: string; substitutions: SubRow[] }) {
+export function SubstitutionPopover({
+  item,
+  substitutions,
+  canonicalSlug,
+  canonicalName,
+}: {
+  item: string
+  substitutions: SubRow[]
+  /** When known, the panel offers a way through to the ingredient's own page. */
+  canonicalSlug?: string | null
+  canonicalName?: string | null
+}) {
   const [open, setOpen] = useState(false)
   // Flip the panel toward whichever edge has room so it never clips off-screen
   // (right edge of the ingredients column, or the bottom of cook mode's rail).
@@ -78,6 +90,16 @@ export function SubstitutionPopover({ item, substitutions }: { item: string; sub
               </span>
             </span>
           ))}
+          {canonicalSlug && (
+            // Someone asking "what can I use instead" is one question away from
+            // "what else can I make with this" — the ingredient page answers it.
+            <Link
+              href={`/ingredients/${canonicalSlug}`}
+              className="mt-3 block border-t border-rule pt-2.5 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase no-underline hover:text-flame"
+            >
+              Everything with {canonicalName ?? item} →
+            </Link>
+          )}
         </span>
       )}
     </span>

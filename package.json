@@ -27,6 +27,7 @@
     "seed:cuisines": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/worldCuisines.ts",
     "seed:grocery": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/seed/groceryRetailers.ts",
     "seed:cook-depth": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedCookDepth.ts",
+    "fix:fossil-names": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fixFossilNames.ts",
     "clean:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/cleanIngredientNames.ts",
     "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts",
     "seed:constraints": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedConstraints.ts"

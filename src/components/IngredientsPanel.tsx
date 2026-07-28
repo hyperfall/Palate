@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
 import { convertMeasure, humanizeQuantity } from '@/lib/units'
@@ -17,6 +18,9 @@ import { SubstitutionPopover } from './SubstitutionPopover'
  */
 
 type CanonicalIngredient = {
+  /** Present once the row is linked to the canonical backbone — the ingredient page's address. */
+  slug?: string | null
+  name?: string | null
   countable?: boolean | null
   substitutions?: SubRow[] | null
 }
@@ -198,7 +202,23 @@ export function IngredientsPanel({
                 return (
                   <span>
                     {groupSubstitutions(subs).length > 0 ? (
-                      <SubstitutionPopover item={ingredient.item} substitutions={subs} />
+                      <SubstitutionPopover
+                        item={ingredient.item}
+                        substitutions={subs}
+                        canonicalSlug={canonical?.slug}
+                        canonicalName={canonical?.name}
+                      />
+                    ) : canonical?.slug ? (
+                      // No swaps to offer, so the name itself leads to the
+                      // ingredient's page. A plain link, unlike the dotted
+                      // popover trigger, so the two never look interchangeable —
+                      // and unlike the popover it is there for crawlers too.
+                      <Link
+                        href={`/ingredients/${canonical.slug}`}
+                        className="text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
+                      >
+                        {ingredient.item}
+                      </Link>
                     ) : (
                       ingredient.item
                     )}

@@ -727,3 +727,85 @@
 .slider:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-flame) 28%, transparent);
 }
+
+/*
+ * Print: the recipe as a kitchen card.
+ *
+ * A cook printing a page wants the ingredients and the method on paper by the
+ * hob — not the nav, the footer, a full-bleed hero eating the first sheet, or
+ * a dark background draining a cartridge. Nothing here is a separate print
+ * route to fall out of sync: it restyles what's already on screen.
+ *
+ * Scoped to `body` rather than `:root` so the paged colours can't leak into the
+ * screen cascade.
+ */
+@media print {
+  /* Force paper-on-white regardless of the reader's theme. Backgrounds don't
+     print by default anyway, so dark mode would otherwise print pale text on
+     nothing. */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body * {
+    background-image: none !important;
+    box-shadow: none !important;
+    color: #000 !important;
+  }
+
+  /* Chrome and anything interactive: a printed page has no hover, no tap and
+     no scroll, so a control on paper is just noise. */
+  header,
+  footer,
+  nav,
+  button,
+  video,
+  [role='dialog'],
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  /* Let the page use the sheet. */
+  main,
+  .shell {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* The hero photo is the single biggest waste of a first sheet — keep the
+     dish recognisable, not poster-sized. */
+  img {
+    max-width: 100% !important;
+    max-height: 7cm !important;
+    object-fit: contain !important;
+  }
+
+  /* Never split a step or an ingredient across sheets mid-thought. */
+  li,
+  figure,
+  blockquote {
+    break-inside: avoid;
+  }
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  /* Deliberately NOT expanding hrefs after links. Ingredient names in the
+     recipe now link to their own pages, so printing every URL would put
+     "(/ingredients/coriander)" beside every line of the shopping list. The
+     underline goes too — on paper it marks nothing. */
+  a {
+    text-decoration: none !important;
+  }
+
+  .ticket-card {
+    border: 1px solid #ccc !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+}

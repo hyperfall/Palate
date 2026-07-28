@@ -1,4 +1,6 @@
 import { cache } from 'react'
+
+import { tallyPairings } from '@/lib/ingredients/pairing'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
@@ -357,31 +359,11 @@ export const findIngredientGraph = cache(async (ingredientId: number): Promise<I
     limit: 48,
   })
 
-  const tally = new Map<number, { id: number; name: string; slug: string; count: number }>()
-  for (const recipe of found.docs) {
-    // One vote per recipe per ingredient — a recipe listing an item twice
-    // ("half now, half to finish") must not count double.
-    const seen = new Set<number>()
-    for (const row of recipe.ingredients ?? []) {
-      const ing = typeof row.ingredient === 'object' ? row.ingredient : null
-      if (!ing?.slug || ing.id === ingredientId || seen.has(ing.id)) continue
-      seen.add(ing.id)
-      const entry = tally.get(ing.id) ?? { id: ing.id, name: ing.name, slug: ing.slug, count: 0 }
-      entry.count += 1
-      tally.set(ing.id, entry)
-    }
-  }
-
-  return {
-    recipes: found.docs,
-    // Every co-occurrence counts. Requiring two would hide almost everything
-    // while the catalog is small, and a single shared recipe is still a true
-    // answer to "what is this cooked with" — the count is shown when it's
-    // more than one, so the strength of the pairing is never overstated.
-    pairsWith: [...tally.values()]
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-      .slice(0, 12),
-  }
+  // Every co-occurrence counts. Requiring two would hide almost everything
+  // while the catalog is small, and a single shared recipe is still a true
+  // answer to "what is this cooked with" — the page shows the count only when
+  // it's above one, so the strength of a pairing is never overstated.
+  return { recipes: found.docs, pairsWith: tallyPairings(found.docs, ingredientId) }
 })
 
 export async function findAuthorsWithHandles(): Promise<Author[]> {

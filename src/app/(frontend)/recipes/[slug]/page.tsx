@@ -10,6 +10,7 @@ import { CookModeLauncher } from '@/components/CookMode'
 import { CreatorByline } from '@/components/CreatorByline'
 import { MethodTabs } from '@/components/MethodTabs'
 import { NutritionPanel } from '@/components/NutritionPanel'
+import { PrintRecipe } from '@/components/PrintRecipe'
 import { SaveRecipe } from '@/components/SaveRecipe'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
@@ -204,6 +205,9 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   title={recipe.title}
                   image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
                 />
+                {/* The print stylesheet turns this page into a kitchen card;
+                    nobody would guess that from Ctrl+P, so offer the door. */}
+                <PrintRecipe />
               </div>
 
               <div className="pointer-events-auto mt-6 max-w-[22rem]">

@@ -35,7 +35,9 @@ export async function generateMetadata({
 
   const canonical = absoluteUrl(`/creator/${author.handle}`)
   const description = author.bio ?? `Recipes by ${author.name} on Palate.`
-  const { totalDocs } = await findRecipesByAuthor(author.id, { limit: 1 })
+  // Default limit, matching the page body's call, so React cache serves both
+  // from one query instead of issuing a second just to read the count.
+  const { totalDocs } = await findRecipesByAuthor(author.id)
   const avatar = imageFrom(author.avatar)
 
   return {

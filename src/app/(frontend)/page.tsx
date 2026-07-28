@@ -86,7 +86,7 @@ export default async function HomePage() {
   // three more feed the hero's plate rail without repeating the mosaic.
   const [featured, cuisines, counts] = await Promise.all([
     findFeaturedRecipes(8),
-    findCuisines(),
+    findCuisines({ withImages: true }),
     countRecipesByCuisine(),
   ])
 

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
@@ -105,7 +106,13 @@ export async function findRecipes(
   }
 }
 
-export async function findRecipeBySlug(slug: string): Promise<Recipe | null> {
+/**
+ * Wrapped in React `cache` because generateMetadata and the page body each ask
+ * for the same recipe: without it that's two depth-2 reads (cuisine, every
+ * ingredient's canonical link and substitutions, every step's `uses`) per
+ * render instead of one.
+ */
+export const findRecipeBySlug = cache(async (slug: string): Promise<Recipe | null> => {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'recipes',
@@ -118,7 +125,7 @@ export async function findRecipeBySlug(slug: string): Promise<Recipe | null> {
     limit: 1,
   })
   return result.docs[0] ?? null
-}
+})
 
 export async function findAllRecipeSlugs(): Promise<Array<{ slug: string; updatedAt: string }>> {
   const payload = await getPayloadClient()
@@ -132,11 +139,24 @@ export async function findAllRecipeSlugs(): Promise<Array<{ slug: string; update
   return result.docs.map((doc) => ({ slug: doc.slug, updatedAt: doc.updatedAt }))
 }
 
-export async function findCuisines(): Promise<Cuisine[]> {
+/**
+ * Every cuisine, for hubs, filter chips, the studio dropdown and the search
+ * index.
+ *
+ * `withImages` is opt-in because depth 1 joins the media row behind each
+ * cuisine's hero image — 208+ joins — and most callers only read name, slug and
+ * flag. Only the pages that actually render a cuisine photo pay for it.
+ */
+export async function findCuisines({ withImages = false } = {}): Promise<Cuisine[]> {
   const payload = await getPayloadClient()
   // All cuisines (208+ seeded) — never truncate, or the studio dropdown silently
   // drops options past the first page (this is why "Levantine" went missing).
-  const result = await payload.find({ collection: 'cuisines', depth: 1, limit: 1000, sort: 'name' })
+  const result = await payload.find({
+    collection: 'cuisines',
+    depth: withImages ? 1 : 0,
+    limit: 1000,
+    sort: 'name',
+  })
   return result.docs
 }
 
@@ -152,24 +172,39 @@ export async function findCuisineBySlug(slug: string): Promise<Cuisine | null> {
 }
 
 /** Recipe counts per cuisine, for the hub index. One query, not one per cuisine. */
-export async function countRecipesByCuisine(): Promise<Map<string, number>> {
+/**
+ * One pass over the published set, both tallies. The catalog and home pages ask
+ * for cuisine counts and diet counts together; as two functions that was two
+ * full scans of the same rows per request. `cache` also collapses repeat calls
+ * within a single render.
+ */
+const countFacets = cache(async (): Promise<{ cuisine: Map<string, number>; diet: Map<string, number> }> => {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'recipes',
     where: PUBLISHED,
     depth: 0,
     limit: 1000,
-    select: { cuisine: true },
+    select: { cuisine: true, dietaryTags: true },
   })
 
-  const counts = new Map<string, number>()
+  const cuisine = new Map<string, number>()
+  const diet = new Map<string, number>()
   for (const doc of result.docs) {
     const id = typeof doc.cuisine === 'object' ? doc.cuisine?.id : doc.cuisine
-    if (id === undefined || id === null) continue
-    const key = String(id)
-    counts.set(key, (counts.get(key) ?? 0) + 1)
+    if (id !== undefined && id !== null) {
+      const key = String(id)
+      cuisine.set(key, (cuisine.get(key) ?? 0) + 1)
+    }
+    for (const tag of doc.dietaryTags ?? []) {
+      diet.set(tag, (diet.get(tag) ?? 0) + 1)
+    }
   }
-  return counts
+  return { cuisine, diet }
+})
+
+export async function countRecipesByCuisine(): Promise<Map<string, number>> {
+  return (await countFacets()).cuisine
 }
 
 /**
@@ -178,22 +213,7 @@ export async function countRecipesByCuisine(): Promise<Map<string, number>> {
  * tagged) should not offer a filter that always returns an empty page.
  */
 export async function countRecipesByDietTag(): Promise<Map<string, number>> {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'recipes',
-    where: PUBLISHED,
-    depth: 0,
-    limit: 1000,
-    select: { dietaryTags: true },
-  })
-
-  const counts = new Map<string, number>()
-  for (const doc of result.docs) {
-    for (const tag of doc.dietaryTags ?? []) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1)
-    }
-  }
-  return counts
+  return (await countFacets()).diet
 }
 
 /**
@@ -244,7 +264,8 @@ export async function findRelatedRecipes(recipe: Recipe, limit = 3): Promise<Rec
 }
 
 /** A creator's public profile, resolved by @handle. Depth 1 populates the avatar. */
-export async function findAuthorByHandle(handle: string): Promise<Author | null> {
+/** Cached: the creator page's metadata and body both look the same author up. */
+export const findAuthorByHandle = cache(async (handle: string): Promise<Author | null> => {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'authors',
@@ -253,10 +274,16 @@ export async function findAuthorByHandle(handle: string): Promise<Author | null>
     limit: 1,
   })
   return result.docs[0] ?? null
-}
+})
 
-/** Published recipes by one author, newest first — the creator profile grid. */
-export async function findRecipesByAuthor(
+/**
+ * Published recipes by one author, newest first — the creator profile grid.
+ *
+ * Cached per render: the page's metadata wants only the count while the body
+ * wants the list. They must pass the SAME arguments to share the query — React
+ * `cache` keys on them — so the metadata call uses the default limit too.
+ */
+export const findRecipesByAuthor = cache(async function findRecipesByAuthor(
   authorId: number,
   { limit = 48 }: { limit?: number } = {},
 ): Promise<CatalogPage> {
@@ -274,7 +301,7 @@ export async function findRecipesByAuthor(
     totalPages: result.totalPages,
     page: result.page ?? 1,
   }
-}
+})
 
 /** Authors that carry a public handle — the set of buildable creator profiles. */
 export async function findAuthorsWithHandles(): Promise<Author[]> {

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 export default async function CuisinesPage() {
-  const [cuisines, counts] = await Promise.all([findCuisines(), countRecipesByCuisine()])
+  const [cuisines, counts] = await Promise.all([findCuisines({ withImages: true }), countRecipesByCuisine()])
   const active = cuisines.filter((c) => (counts.get(String(c.id)) ?? 0) > 0)
 
   return (

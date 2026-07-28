@@ -28,6 +28,7 @@ const MODES = [
     label: 'Just me',
     blurb: 'Under 30 minutes, minimal washing up, no sad desk dinners.',
     servingsHint: undefined as number | undefined,
+    query: { time: '30', effort: '0-2' },
     filter: (r: Recipe) => (r.totalMinutes ?? 99) <= 30 && r.effort <= 2,
   },
   {
@@ -35,6 +36,7 @@ const MODES = [
     label: 'Me + tomorrow',
     blurb: 'Cook once, eat twice. Tomorrow-you says thanks.',
     servingsHint: undefined as number | undefined,
+    query: { effort: '0-3' },
     filter: (r: Recipe) => r.servings >= 4 && r.effort <= 3,
   },
   {
@@ -42,6 +44,7 @@ const MODES = [
     label: 'Two people',
     blurb: 'Date night or flatmate dinner — proper food, split shop.',
     servingsHint: 2,
+    query: { effort: '0-3' },
     filter: (r: Recipe) => r.effort <= 3,
   },
   {
@@ -49,6 +52,7 @@ const MODES = [
     label: 'People over',
     blurb: 'Big pans, shareable plates. Everything here opens pre-scaled for eight.',
     servingsHint: 8,
+    query: { effort: '0-3' },
     filter: (r: Recipe) => r.servings >= 4 && r.effort <= 3,
   },
   {
@@ -56,6 +60,7 @@ const MODES = [
     label: 'Flat meal',
     blurb: 'Cheap, filling, one big pot. Feeds the flat without rinsing anyone.',
     servingsHint: 6,
+    query: { effort: '0-2' },
     filter: (r: Recipe) => r.servings >= 4 && r.effort <= 2,
   },
 ] as const
@@ -83,7 +88,11 @@ export default async function StudentsPage({
   const { mode: rawMode } = await searchParams
   const mode = MODES.find((m) => m.key === (rawMode as ModeKey)) ?? MODES[0]
 
-  const { recipes } = await findRecipes(parseFilters({}), { limit: 250 })
+  // The time/effort half of each mode is a database question, so ask it there
+  // rather than fetching 250 rows at depth 1 and discarding all but eight. The
+  // JS predicate still runs — it also checks servings, which the catalog filter
+  // grammar doesn't express — so the selection is unchanged, just cheaper.
+  const { recipes } = await findRecipes(parseFilters(mode.query ?? {}), { limit: 60 })
   const picks = recipes.filter(mode.filter).slice(0, 8)
 
   return (

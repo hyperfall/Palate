@@ -15,5 +15,11 @@ export async function GET() {
     cuisine: typeof recipe.cuisine === 'object' ? (recipe.cuisine?.name ?? null) : null,
     totalLabel: formatMinutes(recipe.totalMinutes),
   }))
-  return NextResponse.json({ dishes })
+  // The quiz popup can open many times a session and the dish set changes on
+  // the ISR cadence, not per request — the sibling page renders the identical
+  // query with revalidate 3600. Let the CDN and browser hold it briefly.
+  return NextResponse.json(
+    { dishes },
+    { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600' } },
+  )
 }

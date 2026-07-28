@@ -331,7 +331,18 @@ export async function findRecipesByPantry(
   const where: Record<string, unknown> = { and: [PUBLISHED] as Record<string, unknown>[] }
   if (maxMinutes) (where.and as Record<string, unknown>[]).push({ totalMinutes: { less_than_equal: maxMinutes } })
 
-  const result = await payload.find({ collection: 'recipes', where: where as never, depth: 2, limit: 500 })
+  // Score on ingredients alone. depth 2 is genuinely required here — it walks
+  // each row's canonical ingredient through to its substitutions — but `select`
+  // keeps that expansion off every other relation, so this no longer joins the
+  // hero image, cuisine, author and step `uses` of the whole published catalog
+  // just to compare ingredient lists.
+  const result = await payload.find({
+    collection: 'recipes',
+    where: where as never,
+    depth: 2,
+    pagination: false,
+    select: { ingredients: true },
+  })
 
   const scored = result.docs.map((recipe) => {
     const required: RequiredIngredient[] = []
@@ -355,5 +366,27 @@ export async function findRecipesByPantry(
     return scoreRecipe(recipe, required, have)
   })
 
-  return bandRecipes(scored)
+  // Only the recipes that actually survive banding get fetched in full, and in
+  // one query rather than one per card.
+  const bands = bandRecipes(scored)
+  const keep = [...bands.cookNow, ...bands.almost, ...bands.gettingThere]
+  if (keep.length === 0) return { cookNow: [], almost: [], gettingThere: [] }
+
+  const hydrated = await payload.find({
+    collection: 'recipes',
+    where: { id: { in: keep.map((s) => s.recipe.id) } } as never,
+    depth: 1,
+    limit: keep.length,
+  })
+  const byId = new Map(hydrated.docs.map((r) => [r.id, r]))
+  const swap = (list: typeof keep) =>
+    list
+      .map((s) => ({ ...s, recipe: byId.get(s.recipe.id) }))
+      .filter((s): s is typeof s & { recipe: Recipe } => Boolean(s.recipe))
+
+  return {
+    cookNow: swap(bands.cookNow),
+    almost: swap(bands.almost),
+    gettingThere: swap(bands.gettingThere),
+  }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { PantryToggle } from '@/components/PantryToggle'
 import { RecipeCard } from '@/components/RecipeCard'
 import {
   findIngredientBySlug,
@@ -81,6 +82,11 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
             ? `${recipes.length} ${recipes.length === 1 ? 'recipe on the board uses' : 'recipes on the board use'} it.`
             : 'Nothing on the board uses it yet — it’s in the pantry, waiting.'}
         </p>
+        {/* Filling the pantry used to mean typing each item into cook-from's
+            search box. Browsing and tapping what you own is a shorter road. */}
+        <div className="mt-4">
+          <PantryToggle slug={ingredient.slug} name={ingredient.name} />
+        </div>
       </header>
 
       {/* What to reach for instead. The substitution data is authored per

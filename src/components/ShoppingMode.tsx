@@ -120,14 +120,25 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
     const supabase = supabaseBrowser()
     if (!supabase || inBasket.length === 0) return
     setStocking('saving')
-    const { error } = await supabase.from('pantry').upsert(
-      inBasket.map((l) => ({
-        ingredient_slug: slugify(l.name),
-        ingredient_name: l.name,
-        is_staple: false,
-      })),
-      { onConflict: 'user_id,ingredient_slug' },
-    )
+
+    // Use the canonical slug the line already carries. Deriving one from the
+    // display name looked equivalent and isn't: a renamed ingredient keeps its
+    // original slug, so the row would land under a slug no canonical record
+    // has, cook-from would resolve it to id: null and silently ignore it — the
+    // cook told they were stocked while nothing changed.
+    const rows = new Map<string, { ingredient_slug: string; ingredient_name: string; is_staple: boolean }>()
+    for (const line of inBasket) {
+      const slug = line.slug ?? slugify(line.name)
+      // Deduplicate: two lines resolving to one slug in a single upsert makes
+      // Postgres reject the whole batch ("cannot affect row a second time").
+      if (!rows.has(slug)) {
+        rows.set(slug, { ingredient_slug: slug, ingredient_name: line.name, is_staple: false })
+      }
+    }
+
+    const { error } = await supabase
+      .from('pantry')
+      .upsert([...rows.values()], { onConflict: 'user_id,ingredient_slug' })
     setStocking(error ? 'error' : 'done')
   }
 

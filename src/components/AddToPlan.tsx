@@ -15,7 +15,26 @@ type Planned = { id: string; day: number; meal: MealType }
  * lets you toggle it on/off per day + meal — so the recipe page reflects the
  * plan rather than firing blind inserts.
  */
-export function AddToPlan({ slug, title, image }: { slug: string; title: string; image: string | null }) {
+export function AddToPlan({
+  slug,
+  title,
+  image,
+  eager = true,
+}: {
+  slug: string
+  title: string
+  image: string | null
+  /**
+   * Whether to look up "is this already in the week" on mount.
+   *
+   * True on a recipe page, where there is one of these and the answer is worth
+   * showing at a glance. False in a grid: cook-from can render 72 of these, and
+   * each lookup is three round trips — auth, household, meal_plan — so eager
+   * mounting fired over 200 requests the moment the page appeared. There the
+   * answer loads when the picker is opened.
+   */
+  eager?: boolean
+}) {
   const supabase = supabaseBrowser()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -28,6 +47,7 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
 
   useEffect(() => {
     if (!supabase) return
+    if (!eager && !open) return
     supabase.auth
       .getUser()
       .then(async ({ data }) => {
@@ -48,7 +68,7 @@ export function AddToPlan({ slug, title, image }: { slug: string; title: string;
         )
       })
       .catch(() => setSignedIn(false))
-  }, [supabase, slug])
+  }, [supabase, slug, eager, open])
 
   useEffect(() => {
     const onDown = (e: PointerEvent) => {

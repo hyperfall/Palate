@@ -121,7 +121,14 @@ export default async function IngredientsPage() {
                       {/* Only above one: "garlic 9" tells you something,
                           "amchur 1" is just noise on every second chip. */}
                       {(usage.get(ing.slug!) ?? 0) > 1 && (
-                        <span className="text-slate">{usage.get(ing.slug!)}</span>
+                        <>
+                          <span aria-hidden="true" className="text-slate">
+                            {usage.get(ing.slug!)}
+                          </span>
+                          {/* Without this the link's accessible name runs the
+                              two together — "Garlic9". */}
+                          <span className="sr-only">— {usage.get(ing.slug!)} recipes</span>
+                        </>
                       )}
                     </Link>
                   </li>

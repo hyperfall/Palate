@@ -371,7 +371,10 @@ export const findIngredientGraph = cache(async (ingredientId: number): Promise<I
     where: { and: [PUBLISHED, { 'ingredients.ingredient': { equals: ingredientId } }] },
     sort: '-publishedAt',
     depth: 1,
-    limit: 48,
+    // Uncapped: the index badge counts every recipe, so a cap here would let
+    // the two pages disagree about the same ingredient the moment a staple
+    // passed the limit — and the pairing tally would silently undercount too.
+    pagination: false,
   })
 
   // Every co-occurrence counts. Requiring two would hide almost everything

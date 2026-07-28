@@ -25,9 +25,12 @@ const TIME_OPTIONS = [
 export function PantryFinder({
   initialHave,
   initialTime,
+  guest = false,
 }: {
   initialHave: Ingredient[]
   initialTime: number | null
+  /** Signed out: the pantry lives in the URL, not the database. */
+  guest?: boolean
 }) {
   const supabase = supabaseBrowser()
   const router = useRouter()
@@ -69,6 +72,12 @@ export function PantryFinder({
   }, [])
 
   const add = async (ing: Ingredient) => {
+    if (guest) {
+      setQuery('')
+      setSuggestions([])
+      guestAdd(ing.slug)
+      return
+    }
     if (!supabase || busy) return
     setBusy(true)
     setQuery('')
@@ -87,23 +96,48 @@ export function PantryFinder({
   }
 
   const remove = async (slug: string) => {
+    if (guest) {
+      guestRemove(slug)
+      return
+    }
     if (!supabase || busy) return
     setBusy(true)
     try {
-      const { error } = await supabase.from('pantry').delete().eq('ingredient_slug', slug)
+      // Scope to this user: the pantry RLS policy also grants access to a
+      // household's rows, so deleting by slug alone takes a partner's with it.
+      const { data: auth } = await supabase.auth.getUser()
+      if (!auth.user) return
+      const { error } = await supabase
+        .from('pantry')
+        .delete()
+        .eq('user_id', auth.user.id)
+        .eq('ingredient_slug', slug)
       if (!error) router.refresh()
     } finally {
       setBusy(false)
     }
   }
 
-  const setTime = (value: string) => {
+  const pushParams = (mutate: (p: URLSearchParams) => void) => {
     const params = new URLSearchParams(window.location.search)
-    if (value) params.set('time', value)
-    else params.delete('time')
+    mutate(params)
     const qs = params.toString()
     router.push(`/cook-from${qs ? `?${qs}` : ''}`)
   }
+
+  const setTime = (value: string) =>
+    pushParams((p) => (value ? p.set('time', value) : p.delete('time')))
+
+  /** Guest pantry: same add/remove, stored in `?have=` instead of Supabase. */
+  const guestSlugs = () => initialHave.map((h) => h.slug)
+  const guestAdd = (slug: string) =>
+    pushParams((p) => p.set('have', [...new Set([...guestSlugs(), slug])].join(',')))
+  const guestRemove = (slug: string) =>
+    pushParams((p) => {
+      const next = guestSlugs().filter((s) => s !== slug)
+      if (next.length) p.set('have', next.join(','))
+      else p.delete('have')
+    })
 
   return (
     <div className="grid gap-4">

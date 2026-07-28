@@ -135,3 +135,30 @@ describe('bandRecipes caps', () => {
     expect(bands.cookNow[0].usedCount).toBe(3)
   })
 })
+
+describe('usedCount counts your ingredients, not recipe rows', () => {
+  it('counts one onion once even when the recipe lists two onion variants', () => {
+    const have = [{ id: 1, name: 'onion' }]
+    const required = [
+      { id: 10, name: 'white onion', substitutions: null },
+      { id: 11, name: 'red onion', substitutions: null },
+      { id: 12, name: 'beef', substitutions: null },
+    ]
+    const s = scoreRecipe({}, required, have)
+    // Both onion rows are covered by the single onion in the basket.
+    expect(s.usedCount).toBe(1)
+    expect(s.usedCount).toBeLessThanOrEqual(have.length)
+    expect(s.missing).toEqual(['beef'])
+  })
+
+  it('never reports using more ingredients than the cook has', () => {
+    const have = [{ id: 1, name: 'tomato' }, { id: 2, name: 'garlic' }]
+    const required = [
+      { id: 1, name: 'tomato', substitutions: null },
+      { id: 2, name: 'garlic', substitutions: null },
+      { id: 20, name: 'cherry tomato', substitutions: null },
+    ]
+    const s = scoreRecipe({}, required, have)
+    expect(s.usedCount).toBeLessThanOrEqual(have.length)
+  })
+})

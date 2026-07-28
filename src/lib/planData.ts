@@ -108,19 +108,40 @@ export async function getUserPantry(): Promise<Array<{ id: number | null; slug: 
   ).order('created_at')
   const rows = data ?? []
   if (rows.length === 0) return []
+  return resolvePantrySlugs(
+    rows.map((r) => ({ slug: r.ingredient_slug as string, name: r.ingredient_name as string })),
+  )
+}
+
+/**
+ * Attach canonical ids to a list of pantry slugs.
+ *
+ * Shared by the saved pantry and the signed-out one, which lives in the URL so
+ * a first-time visitor can try the feature before being asked to register.
+ * Names come from the canonical record when it exists, so a hand-typed URL
+ * still reads properly.
+ */
+export async function resolvePantrySlugs(
+  entries: Array<{ slug: string; name?: string }>,
+): Promise<Array<{ id: number | null; slug: string; name: string }>> {
+  if (entries.length === 0) return []
   const payload = await getPayloadClient()
   const found = await payload.find({
     collection: 'ingredients',
-    where: { slug: { in: rows.map((r) => r.ingredient_slug as string) } },
+    where: { slug: { in: entries.map((e) => e.slug) } },
     depth: 0,
     limit: 300,
+    select: { slug: true, name: true },
   })
-  const bySlug = new Map(found.docs.map((d) => [String(d.slug), d.id as number]))
-  return rows.map((r) => ({
-    id: bySlug.get(r.ingredient_slug as string) ?? null,
-    slug: r.ingredient_slug as string,
-    name: r.ingredient_name as string,
-  }))
+  const bySlug = new Map(found.docs.map((d) => [String(d.slug), d]))
+  return entries.map((e) => {
+    const canon = bySlug.get(e.slug)
+    return {
+      id: canon ? (canon.id as number) : null,
+      slug: e.slug,
+      name: canon ? String(canon.name) : (e.name ?? e.slug),
+    }
+  })
 }
 
 /** Resolve planned slugs → ingredients (canonical-linked), cost, servings, leftover ideas. */

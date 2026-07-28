@@ -137,7 +137,14 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
               <li key={p.id}>
                 <Link href={`/ingredients/${p.slug}`} className="chip no-underline">
                   {p.name}
-                  {p.count > 1 && <span className="ml-1.5 text-slate">{p.count}</span>}
+                  {p.count > 1 && (
+                    <>
+                      <span aria-hidden="true" className="ml-1.5 text-slate">
+                        {p.count}
+                      </span>
+                      <span className="sr-only">— shares {p.count} recipes</span>
+                    </>
+                  )}
                 </Link>
               </li>
             ))}

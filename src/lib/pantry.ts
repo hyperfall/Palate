@@ -53,7 +53,11 @@ export type Scored<R> = {
 export type Bands<R> = { cookNow: Scored<R>[]; almost: Scored<R>[]; gettingThere: Scored<R>[] }
 
 /** A curated sub is usable when the cook holds the sub's resolved ingredient (by id) or its label (by name). */
-function subYouHold(subs: SubRow[] | null | undefined, haveIds: Set<number>, haveNames: Set<string>): string | null {
+function subYouHold(
+  subs: SubRow[] | null | undefined,
+  haveIds: Set<number>,
+  haveNames: Set<string>,
+): { label: string; heldKey: string } | null {
   for (const row of subs ?? []) {
     let subId: number | null = null
     let label = ''
@@ -65,8 +69,11 @@ function subYouHold(subs: SubRow[] | null | undefined, haveIds: Set<number>, hav
       label = (o.name ?? '').trim()
     }
     if (!label) label = (row.subText ?? '').trim()
-    if ((subId !== null && haveIds.has(subId)) || (label && haveNames.has(label.toLowerCase()))) {
-      return label || 'a substitute'
+    if (subId !== null && haveIds.has(subId)) {
+      return { label: label || 'a substitute', heldKey: `id:${subId}` }
+    }
+    if (label && haveNames.has(label.toLowerCase())) {
+      return { label, heldKey: `name:${label.toLowerCase()}` }
     }
   }
   return null
@@ -78,7 +85,6 @@ export function scoreRecipe<R>(recipe: R, required: RequiredIngredient[], have: 
   // uses — accents folded, plurals singularized, descriptors stripped — so
   // "Bird's eye chillies" in a pantry matches the canonical form.
   const haveNames = new Set(have.map((h) => h.name.toLowerCase()))
-  const haveNorms = have.map((h) => normalizeItem(h.name)).filter(Boolean)
 
   // Dedupe required by id and drop staples (checked raw and normalized, so
   // "sea salt flakes" counts as the staple it is).
@@ -91,27 +97,33 @@ export function scoreRecipe<R>(recipe: R, required: RequiredIngredient[], have: 
 
   const missing: string[] = []
   const viaSub: Array<{ item: string; sub: string }> = []
-  let usedCount = 0
+  // Count the cook's OWN ingredients that get used, not the recipe rows they
+  // cover. A recipe asking for "onion" and "red onion" is still one onion out
+  // of your basket — counting rows produced "Uses 4 of your 3", which is not a
+  // sentence that can be true.
+  const usedHave = new Set<string>()
   for (const r of real) {
     if (haveIds.has(r.id)) {
-      usedCount++
+      usedHave.add(`id:${r.id}`)
       continue
     }
     // Variant coverage: holding "onion" covers a recipe's "white onion" (and
     // the reverse) — same ingredient up to colour/size words.
     const reqNorm = normalizeItem(r.name)
-    if (haveNorms.some((h) => namesEquivalent(h, reqNorm))) {
-      usedCount++
+    const match = have.find((h) => namesEquivalent(normalizeItem(h.name), reqNorm))
+    if (match) {
+      usedHave.add(match.id != null ? `id:${match.id}` : `name:${match.name.toLowerCase()}`)
       continue
     }
     const sub = subYouHold(r.substitutions, haveIds, haveNames)
     if (sub) {
-      viaSub.push({ item: r.name, sub })
-      usedCount++ // the substitute is one of the cook's ingredients
+      viaSub.push({ item: r.name, sub: sub.label })
+      usedHave.add(sub.heldKey) // the substitute is one of the cook's ingredients
       continue
     }
     missing.push(r.name)
   }
+  const usedCount = usedHave.size
 
   return {
     recipe,

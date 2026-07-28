@@ -22,6 +22,7 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
   const [state, setState] = useState<'unknown' | 'out' | 'in'>('unknown')
   const [busy, setBusy] = useState(false)
 
+  const [userId, setUserId] = useState<string | null>(null)
   const [signedIn, setSignedIn] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
         if (cancelled) return
         const isIn = Boolean(data.user)
         setSignedIn(isIn)
+        setUserId(data.user?.id ?? null)
         if (!isIn) {
           // RLS returns an empty set rather than an error when signed out, so
           // querying first would read as "not in your pantry" and hand back a
@@ -44,9 +46,14 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
           setState('out')
           return
         }
+        // Scoped to this user, not just the slug. The RLS policy is
+        // `user_id = auth.uid() OR household_id = my_household_id()`, so in a
+        // shared household an unscoped read matches a partner's row too —
+        // maybeSingle() then errors on multiple rows and the button lies.
         const { data: row } = await supabase
           .from('pantry')
           .select('ingredient_slug')
+          .eq('user_id', data.user!.id)
           .eq('ingredient_slug', slug)
           .maybeSingle()
         if (!cancelled) setState(row ? 'in' : 'out')
@@ -80,7 +87,9 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
               { ingredient_slug: slug, ingredient_name: name, is_staple: false },
               { onConflict: 'user_id,ingredient_slug' },
             )
-        : await supabase.from('pantry').delete().eq('ingredient_slug', slug)
+        : // Same reason, with teeth: an unscoped delete would remove a
+          // household partner's row as well as your own.
+          await supabase.from('pantry').delete().eq('user_id', userId!).eq('ingredient_slug', slug)
     if (error) setState(state)
     else router.refresh()
     setBusy(false)

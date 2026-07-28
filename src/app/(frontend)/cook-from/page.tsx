@@ -5,7 +5,7 @@ import type { Recipe } from '@/payload-types'
 import { PantryFinder } from '@/components/PantryFinder'
 import { RecipeCard } from '@/components/RecipeCard'
 import type { Have, Scored } from '@/lib/pantry'
-import { getUserPantry } from '@/lib/planData'
+import { getUserPantry, resolvePantrySlugs } from '@/lib/planData'
 import { findRecipesByPantry } from '@/lib/queries'
 import { serverUser } from '@/lib/supabase/server'
 import { AddToPlan } from '@/components/AddToPlan'
@@ -57,6 +57,9 @@ function Band({ title, items, haveCount }: { title: string; items: Scored<Recipe
                 slug={s.recipe.slug}
                 title={s.recipe.title}
                 image={imageFrom(s.recipe.heroImage, 'card')?.url ?? null}
+                // Up to 72 of these render here; each eager lookup is three
+                // round trips. They load when opened instead.
+                eager={false}
               />
             </div>
           </div>
@@ -80,23 +83,70 @@ export default async function CookFromPage({
   const maxMinutes = parseTime(params.time)
 
   const user = await serverUser()
+
+  // Signed out, the pantry lives in the URL. The feature that most sets this
+  // site apart used to be a sign-in wall with nothing behind it — a first-time
+  // visitor could not see what it did, let alone why it was worth an account.
+  // Now they can use it outright; signing in is what makes it persist.
   if (!user) {
+    const slugs = [...new Set(String(params.have ?? '').split(',').map((x) => x.trim()).filter(Boolean))].slice(0, 40)
+    const guestPantry = await resolvePantrySlugs(slugs.map((slug) => ({ slug })))
+    const guestHave: Have[] = guestPantry
+      .filter((p) => p.id !== null)
+      .map((p) => ({ id: p.id as number, name: p.name }))
+    const guestBands = guestHave.length > 0 ? await findRecipesByPantry(guestHave, { maxMinutes }) : null
+    const guestTotal = guestBands
+      ? guestBands.cookNow.length + guestBands.almost.length + guestBands.gettingThere.length
+      : 0
+
     return (
-      <div className="shell py-14">
-        <div className="max-w-[46ch]">
-          <p className="eyebrow m-0">What can I make?</p>
-          <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
-          <p className="mt-3 text-slate max-sm:hidden">
-            Your pantry saves to your account, so it’s there every time. Sign in to add what’s in
-            your kitchen.
+      <div className="shell py-10 lg:py-14">
+        <div className="max-w-[72rem]">
+          <header className="max-w-[56ch]">
+            <p className="eyebrow m-0">What can I make?</p>
+            <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
+            <p className="mt-3 text-slate max-sm:hidden">
+              Add a few things from your kitchen — the board sorts into what you can cook right
+              now, what’s an item or two away, and what needs a bigger trip.
+            </p>
+          </header>
+
+          <div className="mt-8">
+            <PantryFinder initialHave={guestPantry} initialTime={maxMinutes} guest />
+          </div>
+
+          {guestBands ? (
+            <>
+              <p className="mt-6 font-mono text-[0.8125rem] text-slate">
+                {guestTotal === 0
+                  ? 'Nothing matches yet — add another ingredient.'
+                  : `${guestTotal} ${guestTotal === 1 ? 'recipe' : 'recipes'} from ${guestHave.length} ${guestHave.length === 1 ? 'ingredient' : 'ingredients'}.`}
+              </p>
+              <div className="mt-8 grid gap-12">
+                <Band title="Cook now" items={guestBands.cookNow} haveCount={guestHave.length} />
+                <Band title="One or two away" items={guestBands.almost} haveCount={guestHave.length} />
+                <Band title="Getting there" items={guestBands.gettingThere} haveCount={guestHave.length} />
+              </div>
+            </>
+          ) : (
+            <p className="mt-6 max-w-[52ch] text-slate">
+              Start with two or three staples — an onion, a tin of tomatoes, whatever’s actually in
+              there.
+            </p>
+          )}
+
+          <p className="mt-12 border-t border-rule pt-6 text-[0.9375rem] text-slate">
+            This pantry lasts as long as the page.{' '}
+            <Link href="/account" className="text-flame underline underline-offset-4">
+              Sign in
+            </Link>{' '}
+            and it saves to your account, ready every time you cook.
           </p>
-          <Link href="/account" className="btn-primary mt-6 inline-block">
-            Sign in
-          </Link>
         </div>
       </div>
     )
   }
+
 
   const pantry = await getUserPantry()
   const have: Have[] = pantry.filter((p) => p.id !== null).map((p) => ({ id: p.id as number, name: p.name }))

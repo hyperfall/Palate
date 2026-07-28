@@ -4,6 +4,7 @@ import { getPayloadClient } from '@/lib/queries'
 import { formatMinutes } from '@/lib/format'
 import { imageFrom } from '@/lib/media'
 import { TASTE_AXES, type TasteAxis } from '@/lib/taxonomy'
+import { limited } from '@/lib/rateLimit'
 
 /**
  * The decision engine behind "pick dinner for me": five answers in, ONE
@@ -23,6 +24,11 @@ function clampLevel(raw: string | null): number {
 }
 
 export async function GET(request: NextRequest) {
+  // Public and database-backed. Each call scores the catalog. Re-rolling a suggestion is normal; scripted
+  // re-rolling is not.
+  const rl = limited(request, { name: 'tonight-pick', limit: 60, windowMs: 60000 })
+  if (rl) return rl
+
   const params = request.nextUrl.searchParams
   const prefs: Record<TasteAxis, number> = {
     spiciness: clampLevel(params.get('spiciness')),

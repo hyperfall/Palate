@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { parseFilters, type RawSearchParams } from '@/lib/filters'
 import { findRecipes } from '@/lib/queries'
+import { limited } from '@/lib/rateLimit'
 
 /**
  * JSON feed behind the catalog's scroll-to-load: same filter grammar as the
@@ -14,6 +15,11 @@ export const dynamic = 'force-dynamic'
 const PAGE_SIZE = 12
 
 export async function GET(request: NextRequest) {
+  // Public and database-backed. Scroll-loading fires this legitimately several times a minute; the cap only
+  // catches a script paging the whole catalog.
+  const rl = limited(request, { name: 'recipes-feed', limit: 60, windowMs: 60000 })
+  if (rl) return rl
+
   const raw: RawSearchParams = {}
   for (const key of request.nextUrl.searchParams.keys()) {
     const all = request.nextUrl.searchParams.getAll(key)

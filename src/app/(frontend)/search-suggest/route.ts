@@ -4,6 +4,7 @@ import { countRecipesByCuisine, findCuisines, getPayloadClient } from '@/lib/que
 import { formatMinutes } from '@/lib/format'
 import { imageFrom } from '@/lib/media'
 import { tasteLabel } from '@/lib/taxonomy'
+import { limited } from '@/lib/rateLimit'
 
 /**
  * Navbar search completions, served from an in-memory index.
@@ -142,6 +143,11 @@ async function ensureIndex(): Promise<void> {
 }
 
 export async function GET(request: NextRequest) {
+  // Public and database-backed. Typed per keystroke behind a debounce, so a real searcher stays well under
+  // this; it only stops a script hammering the matcher.
+  const rl = limited(request, { name: 'search-suggest', limit: 120, windowMs: 60000 })
+  if (rl) return rl
+
   const q = (request.nextUrl.searchParams.get('q') ?? '').trim().slice(0, 80).toLowerCase()
   if (q.length < 2) {
     return NextResponse.json({ results: [] })

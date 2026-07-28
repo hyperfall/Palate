@@ -101,7 +101,11 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
 
   return (
     <div className="mt-4 border-t border-rule">
-      {error && <p className="mt-2 font-mono text-[0.75rem] text-heat">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-2 font-mono text-[0.75rem] text-heat">
+          {error}
+        </p>
+      )}
       {/* Netted buy-list — collapsed by default: the per-dish sections are the
           working view while planning; this expands when it's shopping time. */}
       <Disclosure

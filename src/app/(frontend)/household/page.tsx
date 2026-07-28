@@ -105,7 +105,11 @@ export default async function HouseholdPage({
           <p className="mt-1 text-[0.9375rem] text-slate">Share your week with the people you cook for.</p>
           {isSupporter ? (
             <form action="/household/create" method="post" className="mt-4 grid gap-2">
+              <label htmlFor="household-name" className="sr-only">
+                Household name
+              </label>
               <input
+                id="household-name"
                 name="name"
                 placeholder="Our kitchen"
                 maxLength={60}
@@ -129,7 +133,11 @@ export default async function HouseholdPage({
           <h2 className="font-display text-[1.25rem] text-ink">Join one</h2>
           <p className="mt-1 text-[0.9375rem] text-slate">Got an invite code? Joining is free.</p>
           <form action="/household/join" method="post" className="mt-4 grid gap-2">
+            <label htmlFor="household-code" className="sr-only">
+              Invite code
+            </label>
             <input
+              id="household-code"
               name="code"
               placeholder="Invite code"
               required

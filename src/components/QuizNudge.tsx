@@ -1,8 +1,9 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useDialogFocus } from '@/lib/useDialogFocus'
 import { TasteNight } from './TasteNight'
 
 type QuizDish = { title: string; image: string | null; cuisine: string | null; totalLabel: string }
@@ -41,19 +42,11 @@ export function QuizNudge() {
     if (visible) requestAnimationFrame(() => setShown(true))
   }, [visible])
 
-  useEffect(() => {
-    if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = prev
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
+  // Focus in, trap Tab, Escape out. It appears unprompted on almost every
+  // page, so it must never strand a keyboard user behind its overlay.
+  const quizRef = useRef<HTMLDivElement>(null)
+  const closeQuiz = useCallback(() => setOpen(false), [])
+  useDialogFocus({ open, ref: quizRef, onClose: closeQuiz })
 
   const dismiss = () => {
     setVisible(false)
@@ -109,6 +102,8 @@ export function QuizNudge() {
 
       {open && (
         <div
+          ref={quizRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Taste Night"

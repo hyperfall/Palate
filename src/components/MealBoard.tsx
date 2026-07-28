@@ -352,7 +352,7 @@ function DishItem({
             disabled={entry.servings <= 1}
             aria-label="Fewer servings"
             title="Fewer servings"
-            className="grid h-4 w-4 shrink-0 cursor-pointer place-items-center rounded-full border border-rule bg-transparent font-mono text-[0.6875rem] leading-none text-slate transition-colors hover:border-flame hover:text-flame disabled:opacity-30"
+            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-[0.8125rem] leading-none text-slate transition-colors hover:text-flame disabled:opacity-30"
           >
             −
           </button>
@@ -368,7 +368,7 @@ function DishItem({
             onClick={() => onServings(entry.id, entry.servings + 1)}
             aria-label="More servings"
             title="More servings"
-            className="grid h-4 w-4 shrink-0 cursor-pointer place-items-center rounded-full border border-rule bg-transparent font-mono text-[0.6875rem] leading-none text-slate transition-colors hover:border-flame hover:text-flame"
+            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-[0.8125rem] leading-none text-slate transition-colors hover:text-flame"
           >
             +
           </button>
@@ -377,7 +377,7 @@ function DishItem({
             disabled={busy}
             onClick={() => onRemove(entry.id)}
             aria-label={`Remove ${entry.title}`}
-            className="ml-auto grid h-4 w-4 shrink-0 cursor-pointer place-items-center rounded border-none bg-transparent font-mono text-[0.625rem] text-slate/50 transition-colors hover:text-heat disabled:opacity-40"
+            className="-my-2 -mr-2 ml-auto grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded border-none bg-transparent font-mono text-[0.75rem] text-slate/50 transition-colors hover:text-heat disabled:opacity-40"
           >
             ✕
           </button>

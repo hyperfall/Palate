@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { useDialogFocus } from '@/lib/useDialogFocus'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -149,18 +150,11 @@ export function MobileNav() {
   // Any navigation closes the sheet.
   useEffect(() => setOpen(false), [pathname])
 
-  // Escape closes; lock the page scroll behind the sheet while it's open.
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [open])
+  // Focus in, trap Tab, Escape out, scroll lock — the only nav on phones, so
+  // it has to be fully operable from a keyboard or screen reader.
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const closeSheet = useCallback(() => setOpen(false), [])
+  useDialogFocus({ open, ref: sheetRef, onClose: closeSheet })
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
@@ -197,6 +191,8 @@ export function MobileNav() {
             className="fixed inset-0 z-40 bg-black/50 sm:hidden"
           />
           <div
+            ref={sheetRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label="Menu"

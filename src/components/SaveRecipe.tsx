@@ -150,7 +150,11 @@ export function SaveRecipe({
       {open && (
         <div className="absolute top-full left-0 z-50 mt-2 w-[19rem] rounded-md border border-ink/30 bg-card p-4 text-ink shadow-(--shadow-block)">
           <p className="eyebrow m-0">Save to</p>
-          {error && <p className="mt-1 mb-0 font-mono text-[0.6875rem] text-heat">{error}</p>}
+          {error && (
+            <p role="alert" className="mt-1 mb-0 font-mono text-[0.6875rem] text-heat">
+              {error}
+            </p>
+          )}
 
           {collections.length > 0 ? (
             <ul className="m-0 mt-2 grid list-none gap-1 p-0">

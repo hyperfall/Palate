@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -21,6 +22,7 @@ import {
   type ConsentCategory,
   type ConsentState,
 } from '@/lib/consent'
+import { useDialogFocus } from '@/lib/useDialogFocus'
 
 type ConsentContextValue = {
   consent: ConsentState | null
@@ -227,16 +229,16 @@ function CookiePreferences({
     preferences: existing?.preferences ?? false,
   })
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && canClose && onClose()
-    document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [canClose, onClose])
+  // Focus in, trap Tab, Escape out, restore on close. Every visitor meets this
+  // dialog, so it has to be operable without a mouse.
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useDialogFocus({
+    open: true,
+    ref: dialogRef,
+    onClose: () => {
+      if (canClose) onClose()
+    },
+  })
 
   return (
     <div className="fixed inset-0 z-[70] grid place-items-end sm:place-items-center">
@@ -247,6 +249,8 @@ function CookiePreferences({
         className="absolute inset-0 bg-black/50"
       />
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Cookie settings"

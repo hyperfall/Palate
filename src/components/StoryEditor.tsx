@@ -233,7 +233,11 @@ export function StoryEditor({
           {value.length}/{STORY_MARKDOWN_CAP}
         </span>
       </div>
-      {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
+      {error && (
+        <span role="alert" className="font-mono text-[0.75rem] text-heat">
+          {error}
+        </span>
+      )}
     </div>
   )
 }

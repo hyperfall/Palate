@@ -95,7 +95,7 @@ export function StepRowsInput({
   }
 
   return (
-    <div role="group" aria-label="Steps" className="grid gap-3">
+    <div role="group" aria-label="Steps" className="grid grid-cols-1 gap-3">
       {value.map((row, i) => (
         <div
           key={i}

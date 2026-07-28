@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useDialogFocus } from '@/lib/useDialogFocus'
 import type { CookStep } from '@/lib/stepIngredients'
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 import { groupSubstitutions } from '@/lib/substitutions'
@@ -120,14 +121,11 @@ export function CookMode({
   // This dialog replaces the whole screen, so a keyboard or screen-reader user
   // needs focus moved onto it on open, and back to whatever launched it on
   // close — otherwise focus is left stranded on a button now hidden behind it.
+  // Focus in, trap Tab, restore on close. Scroll locking stays with the effect
+  // above that already owns it; Escape stays in the key handler below, beside
+  // the arrow keys it belongs with.
   const dialogRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null
-    dialogRef.current?.focus()
-    return () => {
-      previouslyFocused?.focus?.()
-    }
-  }, [])
+  useDialogFocus({ open: true, ref: dialogRef, onClose, lockScroll: false })
 
   const next = useCallback(() => setIndex((i) => Math.min(i + 1, steps.length)), [steps.length])
   const back = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), [])

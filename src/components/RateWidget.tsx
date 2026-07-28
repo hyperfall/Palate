@@ -139,7 +139,11 @@ export function RateWidget({
               </span>
             )}
           </p>
-          {error && <p className="m-0 font-mono text-[0.75rem] text-heat">{error}</p>}
+          {error && (
+            <p role="alert" className="m-0 font-mono text-[0.75rem] text-heat">
+              {error}
+            </p>
+          )}
         </>
       ) : (
         <>

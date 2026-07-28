@@ -102,11 +102,15 @@ export function NavAccount() {
     )
   }
 
+  // "Saved" matches what the footer, the mobile tab bar and the page's own
+  // eyebrow call it. Settings sits last, where configuration belongs, rather
+  // than second — the reader's own shelves come before their preferences.
   const menuItems = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/account', label: 'Settings' },
-    ...(session.creator ? [{ href: '/studio', label: 'Studio' }] : []),
+    { href: '/collections', label: 'Saved' },
     { href: '/feed', label: 'Feed' },
+    ...(session.creator ? [{ href: '/studio', label: 'Studio' }] : []),
+    { href: '/account', label: 'Settings' },
   ]
 
   return (

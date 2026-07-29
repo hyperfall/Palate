@@ -34,9 +34,13 @@ export async function sendEmail(mail: Mail): Promise<{ sent: boolean; reason?: s
       body: JSON.stringify({ from: FROM, to: [mail.to], subject: mail.subject, text: mail.text }),
     })
     if (!res.ok) {
-      // Logged, not thrown: whatever triggered this has already happened.
-      console.error(`[email:failed] ${res.status} → ${mail.to}`)
-      return { sent: false, reason: `resend ${res.status}` }
+      // Include the provider's own message. A bare status is undiagnosable —
+      // a 403 is "domain not verified", "sandbox sender can only reach your own
+      // address", or "key lacks sending permission", and only the body says
+      // which. Logged, not thrown: whatever triggered this already happened.
+      const detail = await res.text().catch(() => '')
+      console.error(`[email:failed] ${res.status} → ${mail.to} ${detail}`)
+      return { sent: false, reason: `resend ${res.status}: ${detail.slice(0, 300)}` }
     }
     return { sent: true }
   } catch (error) {

@@ -1,4 +1,7 @@
 /*
+ * Dropped by verify:grocery rather than shipped dead: EDEKA (ambiguous 403/404
+ * — Germany still has REWE, Aldi, Lidl, Kaufland, Amazon), Whole Foods and
+ * Aldi US (moved paths), Sheng Siong (DNS).
  * DK (Nemlig: redirect loop), MY (Lotus's: 404) and PL (Frisco: 404) were
  * authored and then dropped by verify:grocery — a country with no shops gets
  * the copy-list fallback, which beats a confidently dead link.
@@ -133,4 +136,44 @@ export const RETAILERS: SeedRetailer[] = [
   { label: 'Carrefour Egypt', slug: 'carrefour-eg', type: 'supermarket', countries: ['EG'], searchUrlTemplate: 'https://www.carrefouregypt.com/mafegy/en/v4/search?keyword={query}', priority: 40 },
   // ---- BD ----
   { label: 'Chaldal', slug: 'chaldal-bd', type: 'delivery', countries: ['BD'], searchUrlTemplate: 'https://chaldal.com/search?q={query}', priority: 40 },
+  // ---- Majors added after the first pass; graded by verify:grocery ----
+  { label: 'Morrisons', slug: 'morrisons', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://groceries.morrisons.com/search?entry={query}', priority: 35 },
+  { label: 'Waitrose', slug: 'waitrose', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://www.waitrose.com/ecom/shop/search?&searchTerm={query}', priority: 25 },
+  { label: 'Co-op', slug: 'coop-gb', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://www.coop.co.uk/products/search?q={query}', priority: 15 },
+  { label: 'Iceland', slug: 'iceland-gb', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://www.iceland.co.uk/search?q={query}', priority: 12 },
+  { label: 'Lidl', slug: 'lidl-gb', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://www.lidl.co.uk/q/search?q={query}', priority: 22 },
+  { label: 'Aldi', slug: 'aldi-gb', type: 'supermarket', countries: ['GB'], searchUrlTemplate: 'https://groceries.aldi.co.uk/en-GB/Search?keywords={query}', priority: 23 },
+  { label: 'Instacart', slug: 'instacart-us', type: 'delivery', countries: ['US'], searchUrlTemplate: 'https://www.instacart.com/store/s?k={query}', priority: 45 },
+  { label: 'Costco', slug: 'costco-us', type: 'marketplace', countries: ['US'], searchUrlTemplate: 'https://www.costco.com/CatalogSearch?keyword={query}', priority: 28 },
+  { label: 'Publix', slug: 'publix-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.publix.com/search?q={query}', priority: 26 },
+  { label: 'Safeway', slug: 'safeway-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.safeway.com/shop/search-results.html?q={query}', priority: 24 },
+  { label: 'H-E-B', slug: 'heb-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.heb.com/search?q={query}', priority: 18 },
+  { label: 'Loblaws', slug: 'loblaws-ca', type: 'supermarket', countries: ['CA'], searchUrlTemplate: 'https://www.loblaws.ca/search?search-bar={query}', priority: 45 },
+  { label: 'Metro', slug: 'metro-ca', type: 'supermarket', countries: ['CA'], searchUrlTemplate: 'https://www.metro.ca/en/online-grocery/search?filter={query}', priority: 40 },
+  { label: 'No Frills', slug: 'nofrills-ca', type: 'supermarket', countries: ['CA'], searchUrlTemplate: 'https://www.nofrills.ca/search?search-bar={query}', priority: 35 },
+  { label: 'Aldi Deutschland', slug: 'aldi-de', type: 'supermarket', countries: ['DE'], searchUrlTemplate: 'https://www.aldi-sued.de/de/suche.html?query={query}', priority: 45 },
+  { label: 'Lidl Deutschland', slug: 'lidl-de', type: 'supermarket', countries: ['DE'], searchUrlTemplate: 'https://www.lidl.de/q/search?q={query}', priority: 44 },
+  { label: 'Kaufland', slug: 'kaufland-de', type: 'supermarket', countries: ['DE'], searchUrlTemplate: 'https://www.kaufland.de/s/?search_value={query}', priority: 42 },
+  { label: 'E.Leclerc', slug: 'leclerc-fr', type: 'supermarket', countries: ['FR'], searchUrlTemplate: 'https://www.e.leclerc/recherche?q={query}', priority: 45 },
+  { label: 'Intermarché', slug: 'intermarche-fr', type: 'supermarket', countries: ['FR'], searchUrlTemplate: 'https://www.intermarche.com/recherche/{query}', priority: 35 },
+  { label: 'Monoprix', slug: 'monoprix-fr', type: 'supermarket', countries: ['FR'], searchUrlTemplate: 'https://www.monoprix.fr/recherche?q={query}', priority: 25 },
+  { label: 'Esselunga', slug: 'esselunga-it', type: 'supermarket', countries: ['IT'], searchUrlTemplate: 'https://www.esselunga.it/it-it/ricerca.html?query={query}', priority: 50 },
+  { label: 'Conad', slug: 'conad-it', type: 'supermarket', countries: ['IT'], searchUrlTemplate: 'https://spesaonline.conad.it/search?q={query}', priority: 45 },
+  { label: 'Lidl España', slug: 'lidl-es', type: 'supermarket', countries: ['ES'], searchUrlTemplate: 'https://www.lidl.es/q/search?q={query}', priority: 25 },
+  { label: 'Dunnes Stores', slug: 'dunnes-ie', type: 'supermarket', countries: ['IE'], searchUrlTemplate: 'https://www.dunnesstoresgrocery.com/sm/delivery/rsid/258/results?q={query}', priority: 35 },
+  { label: 'Aldi Australia', slug: 'aldi-au', type: 'supermarket', countries: ['AU'], searchUrlTemplate: 'https://www.aldi.com.au/results/?q={query}', priority: 30 },
+  { label: 'IGA', slug: 'iga-au', type: 'supermarket', countries: ['AU'], searchUrlTemplate: 'https://www.igashop.com.au/search?q={query}', priority: 25 },
+  { label: 'Pak’nSave', slug: 'paknsave-nz', type: 'supermarket', countries: ['NZ'], searchUrlTemplate: 'https://www.paknsave.co.nz/shop/search?q={query}', priority: 45 },
+  { label: 'New World', slug: 'newworld-nz', type: 'supermarket', countries: ['NZ'], searchUrlTemplate: 'https://www.newworld.co.nz/shop/search?q={query}', priority: 40 },
+  { label: 'DMart Ready', slug: 'dmart-in', type: 'supermarket', countries: ['IN'], searchUrlTemplate: 'https://www.dmart.in/search?searchTerm={query}', priority: 35 },
+  { label: 'Swiggy Instamart', slug: 'instamart-in', type: 'delivery', countries: ['IN'], searchUrlTemplate: 'https://www.swiggy.com/instamart/search?custom_back=true&query={query}', priority: 38 },
+  { label: 'Emart', slug: 'emart-kr', type: 'supermarket', countries: ['KR'], searchUrlTemplate: 'https://emart.ssg.com/search.ssg?target=all&query={query}', priority: 35 },
+  { label: 'Cold Storage', slug: 'cold-storage-sg', type: 'supermarket', countries: ['SG'], searchUrlTemplate: 'https://coldstorage.com.sg/search?q={query}', priority: 40 },
+  { label: 'Lulu Hypermarket', slug: 'lulu-ae', type: 'supermarket', countries: ['AE'], searchUrlTemplate: 'https://www.luluhypermarket.com/en-ae/search?q={query}', priority: 40 },
+  { label: 'Shoprite', slug: 'shoprite-za', type: 'supermarket', countries: ['ZA'], searchUrlTemplate: 'https://www.shoprite.co.za/search?q={query}', priority: 45 },
+  { label: 'Woolworths Online', slug: 'woolies-food-za', type: 'delivery', countries: ['ZA'], searchUrlTemplate: 'https://www.woolworths.co.za/cat/Food/_/N-1z13sk5?Ntt={query}', priority: 28 },
+  { label: 'Assaí', slug: 'assai-br', type: 'supermarket', countries: ['BR'], searchUrlTemplate: 'https://www.assai.com.br/busca?q={query}', priority: 35 },
+  { label: 'Chedraui', slug: 'chedraui-mx', type: 'supermarket', countries: ['MX'], searchUrlTemplate: 'https://www.chedraui.com.mx/{query}?_q={query}&map=ft', priority: 35 },
+  { label: 'Lider', slug: 'lider-cl', type: 'supermarket', countries: ['CL'], searchUrlTemplate: 'https://www.lider.cl/search?query={query}', priority: 45 },
+  { label: 'Coto', slug: 'coto-ar', type: 'supermarket', countries: ['AR'], searchUrlTemplate: 'https://www.cotodigital.com.ar/sitios/cdigi/browse?Ntt={query}', priority: 35 },
 ]

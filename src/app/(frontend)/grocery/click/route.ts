@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { searchUrl } from '@/lib/grocery'
+import { fallbackRetailerBySlug } from '@/lib/groceryData'
 import { logGroceryEvent, viewerCountry } from '@/lib/groceryData'
 import { getPayloadClient } from '@/lib/queries'
 
@@ -18,10 +19,20 @@ export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q')?.trim()
   if (!retailerId || !query) return NextResponse.redirect(home)
 
+  // A numeric id means a seeded row; a slug means the committed fallback
+  // registry, which serves a database that hasn't been seeded yet. Both have to
+  // resolve or the links render but go nowhere on a fresh deploy.
   const payload = await getPayloadClient()
-  const retailer = await payload
-    .findByID({ collection: 'groceryRetailers', id: Number(retailerId), depth: 0 })
-    .catch(() => null)
+  const numericId = Number(retailerId)
+  const retailer = Number.isFinite(numericId)
+    ? await payload
+        .findByID({ collection: 'groceryRetailers', id: numericId, depth: 0 })
+        .catch(() => null)
+    : (
+        await payload
+          .find({ collection: 'groceryRetailers', where: { slug: { equals: retailerId } }, limit: 1, depth: 0 })
+          .catch(() => ({ docs: [] as Array<never> }))
+      ).docs[0] ?? fallbackRetailerBySlug(retailerId)
   if (!retailer || retailer.active === false) return NextResponse.redirect(home)
 
   let dest: URL

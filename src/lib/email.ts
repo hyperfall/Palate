@@ -16,10 +16,13 @@ import { absoluteUrl } from '@/lib/site'
 
 type Mail = { to: string; subject: string; text: string }
 
-const FROM = process.env.EMAIL_FROM ?? 'Palate <hello@palate.example>'
+// Truthy, not `??`: an empty EMAIL_FROM in .env is the common case while the
+// mailer is being set up, and `??` only falls back on null/undefined — it would
+// have sent with a blank From address rather than the default.
+const FROM = process.env.EMAIL_FROM?.trim() || 'Palate <hello@palate.example>'
 
 export async function sendEmail(mail: Mail): Promise<{ sent: boolean; reason?: string }> {
-  const key = process.env.RESEND_API_KEY
+  const key = process.env.RESEND_API_KEY?.trim()
   if (!key) {
     console.info(`[email:unconfigured] → ${mail.to}\n${mail.subject}\n${mail.text}`)
     return { sent: false, reason: 'no RESEND_API_KEY' }

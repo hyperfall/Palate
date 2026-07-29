@@ -203,6 +203,21 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                           )
                         : null,
                     })),
+                    // No step in the catalog has authored `uses`, so the
+                    // ingredients a step names are derived from its text
+                    // against these rows.
+                    (recipe.ingredients ?? []).map((row) => ({
+                      item: row.item,
+                      heading: row.heading,
+                      canonicalName:
+                        typeof row.ingredient === 'object' && row.ingredient
+                          ? String(row.ingredient.name)
+                          : null,
+                      substitutions:
+                        typeof row.ingredient === 'object' && row.ingredient
+                          ? row.ingredient.substitutions
+                          : undefined,
+                    })),
                   )}
                   finish={recipe.finish ?? null}
                 />

@@ -1,4 +1,11 @@
 import type { SubRow } from './substitutions'
+import { matchIngredientsInStep, type MatchableIngredient } from './ingredients/stepMatch'
+
+/** An ingredient row as cook mode receives it: enough to match and to display. */
+export type CookIngredientRow = MatchableIngredient & {
+  substitutions?: unknown
+  measure?: string
+}
 
 /**
  * Turns a recipe's steps (with resolved `uses` ingredient objects) into
@@ -7,7 +14,7 @@ import type { SubRow } from './substitutions'
  * first-use map — so "take the butter out now" lands while there's still time.
  * Unresolved uses (bare ids, blank names) are dropped, not guessed.
  */
-export type StepUse = { name: string; substitutions?: SubRow[] }
+export type StepUse = { name: string; substitutions?: SubRow[]; measure?: string }
 
 export type RawStep = {
   text: string
@@ -37,12 +44,31 @@ function resolveUses(raw: RawStep['uses']): StepUse[] {
   return out
 }
 
-export function buildCookSteps(steps: RawStep[]): CookStep[] {
-  const resolved = steps.map((s) => ({
-    text: s.text,
-    timerSeconds: s.timerSeconds ?? null,
-    uses: resolveUses(s.uses),
-  }))
+export function buildCookSteps(
+  steps: RawStep[],
+  /**
+   * The recipe's ingredient rows. When a step has no authored `uses` — which
+   * is every step in the catalog — the ingredients it names are derived from
+   * its own text instead. Authored links still win, so a creator can correct
+   * the guess.
+   */
+  ingredients: CookIngredientRow[] = [],
+): CookStep[] {
+  const resolved = steps.map((s) => {
+    const authored = resolveUses(s.uses)
+    return {
+      text: s.text,
+      timerSeconds: s.timerSeconds ?? null,
+      uses:
+        authored.length > 0
+          ? authored
+          : matchIngredientsInStep(s.text, ingredients).map((i) => ({
+              name: i.canonicalName ?? i.item,
+              ...(Array.isArray(i.substitutions) ? { substitutions: i.substitutions as SubRow[] } : {}),
+              ...(i.measure ? { measure: i.measure } : {}),
+            })),
+    }
+  })
 
   // First step index where each ingredient name is used, then bucket each name
   // under the step one before its first use — a single pass, so the final map is

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { MEAL_LABELS, MEAL_ORDER, normalizeMeal, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
+import { signInHref } from '@/lib/signInRedirect'
 
 type Planned = { id: string; day: number; meal: MealType }
 
@@ -87,7 +88,7 @@ export function AddToPlan({
     // The panel shouldn't be open when signed out, but the write is the thing
     // that actually touches the database, so it carries its own guard.
     if (signedIn !== true) {
-      router.push('/account')
+      router.push(signInHref())
       return
     }
     setBusy(true)
@@ -133,7 +134,7 @@ export function AddToPlan({
           // null, and the old check let the panel open for a signed-out visitor
           // who then hit the database and got an RLS error in the face.
           if (!supabase || signedIn !== true) {
-            router.push('/account')
+            router.push(signInHref())
             return
           }
           setOpen((v) => !v)

@@ -754,6 +754,17 @@ export function AccountPanel() {
         setMode('recovery')
         setNotice({ kind: 'info', text: 'Set a new password to finish.' })
       }
+      // Signed in from a "you need an account" prompt somewhere else: go back
+      // to whatever they were doing, rather than stranding them on Settings.
+      if (event === 'SIGNED_IN') {
+        const next = new URLSearchParams(window.location.search).get('next')
+        // Same-origin paths only — an open redirect here would be a phishing
+        // hop through a domain people are about to type a password into.
+        if (next && next.startsWith('/') && !next.startsWith('//')) {
+          window.location.replace(next)
+          return
+        }
+      }
       void readUser()
     })
     return () => sub.subscription.unsubscribe()

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { supabaseBrowser, type Collection } from '@/lib/supabase/client'
+import { signInHref } from '@/lib/signInRedirect'
 
 /**
  * Save-to-collection, on the recipe hero. Signed out (or unconfigured), the
@@ -133,7 +134,7 @@ export function SaveRecipe({
         type="button"
         onClick={() => {
           if (!supabase || signedIn === false) {
-            router.push('/account')
+            router.push(signInHref())
             return
           }
           const willOpen = !open

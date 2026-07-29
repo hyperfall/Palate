@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { signInHref } from '@/lib/signInRedirect'
 
 /**
  * Follow/unfollow a creator by their author slug. Signed out → routes to /account.
@@ -55,7 +56,7 @@ export function FollowButton({
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      router.push('/account')
+      router.push(signInHref())
       return
     }
     setBusy(true)

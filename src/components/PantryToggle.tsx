@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { signInHref } from '@/lib/signInRedirect'
 
 /**
  * Put one ingredient in (or out of) the pantry from its own page.
@@ -72,7 +73,7 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
     if (!supabase || busy) return
     if (!signedIn) {
       // Same move the follow button makes: the ask is the invitation.
-      router.push('/account')
+      router.push(signInHref())
       return
     }
     setBusy(true)

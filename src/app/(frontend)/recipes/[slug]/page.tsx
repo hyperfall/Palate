@@ -12,6 +12,7 @@ import { MethodTabs } from '@/components/MethodTabs'
 import { NutritionPanel } from '@/components/NutritionPanel'
 import { PrintRecipe } from '@/components/PrintRecipe'
 import { SaveRecipe } from '@/components/SaveRecipe'
+import { ServesBadge } from '@/components/ServesBadge'
 import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
 import { RateWidget } from '@/components/RateWidget'
@@ -166,7 +167,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 )}
                 <span>{formatMinutes(recipe.totalMinutes)}</span>
                 <span aria-hidden="true" className="text-milk/40">·</span>
-                <span>Serves {recipe.servings}</span>
+                <ServesBadge slug={recipe.slug} base={recipe.servings ?? 1} />
                 <span aria-hidden="true" className="text-milk/40">·</span>
                 <span className="capitalize">{recipe.difficulty}</span>
                 {communityAverage > 0 && (

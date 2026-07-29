@@ -100,6 +100,10 @@ export function CookMode({
   const [rescueOpen, setRescueOpen] = useState(false)
   const [unitSystem] = useUnitSystem()
   const [listOpen, setListOpen] = useState(false)
+  // Ticking off what you've already got out. Kept for the length of the cook,
+  // because re-reading a list you've half-used is the thing you do with wet
+  // hands and no free attention.
+  const [gathered, setGathered] = useState<Set<string>>(new Set())
   // Reads the same servings the ingredients panel writes, and the same unit
   // system — a quantity that disagreed with the page you just left would be
   // worse than not showing one.
@@ -365,17 +369,43 @@ export function CookMode({
                       {ing.item}
                     </li>
                   ) : (
-                    <li
-                      key={i}
-                      className="flex items-baseline justify-between gap-6 border-b border-rule py-3 text-[1.125rem] last:border-b-0"
-                    >
-                      <span className="min-w-0">
-                        {ing.item}
-                        {ing.note ? <span className="text-slate">, {ing.note}</span> : null}
-                      </span>
-                      <span className="shrink-0 font-mono text-[1rem] tabular-nums text-slate">
-                        {formatMeasure(ing, { factor, unitSystem })}
-                      </span>
+                    <li key={i} className="border-b border-rule last:border-b-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setGathered((prev) => {
+                            const next = new Set(prev)
+                            const key = `${i}:${ing.item}`
+                            if (next.has(key)) next.delete(key)
+                            else next.add(key)
+                            return next
+                          })
+                        }
+                        aria-pressed={gathered.has(`${i}:${ing.item}`)}
+                        className={`flex w-full items-baseline justify-between gap-6 border-none bg-transparent py-3 text-left text-[1.125rem] transition-opacity ${
+                          gathered.has(`${i}:${ing.item}`) ? 'opacity-45' : ''
+                        }`}
+                      >
+                        <span className="flex min-w-0 items-baseline gap-3">
+                          <span
+                            aria-hidden="true"
+                            className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-sm border text-[0.75rem] ${
+                              gathered.has(`${i}:${ing.item}`)
+                                ? 'border-flame bg-flame text-paper'
+                                : 'border-rule'
+                            }`}
+                          >
+                            {gathered.has(`${i}:${ing.item}`) ? '✓' : ''}
+                          </span>
+                          <span className="min-w-0">
+                            {ing.item}
+                            {ing.note ? <span className="text-slate">, {ing.note}</span> : null}
+                          </span>
+                        </span>
+                        <span className="shrink-0 font-mono text-[1rem] tabular-nums text-slate">
+                          {formatMeasure(ing, { factor, unitSystem })}
+                        </span>
+                      </button>
                     </li>
                   ),
                 )}

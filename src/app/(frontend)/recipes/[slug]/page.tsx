@@ -230,6 +230,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   slug={recipe.slug}
                   title={recipe.title}
                   image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
+                  tone="pan"
                 />
                 {/* The print stylesheet turns this page into a kitchen card;
                     nobody would guess that from Ctrl+P, so offer the door. */}

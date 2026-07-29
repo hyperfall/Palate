@@ -20,10 +20,13 @@ export function AddToPlan({
   title,
   image,
   eager = true,
+  tone = 'paper',
 }: {
   slug: string
   title: string
   image: string | null
+  /** 'pan' for the recipe hero's dark ground; 'paper' anywhere the page shows. */
+  tone?: 'paper' | 'pan'
   /**
    * Whether to look up "is this already in the week" on mount.
    *
@@ -81,13 +84,19 @@ export function AddToPlan({
   /** Tap a day: add this recipe to (day, current meal), or remove it if already there. */
   const toggle = async (day: number) => {
     if (!supabase || busy) return
+    // The panel shouldn't be open when signed out, but the write is the thing
+    // that actually touches the database, so it carries its own guard.
+    if (signedIn !== true) {
+      router.push('/account')
+      return
+    }
     setBusy(true)
     setError(null)
     try {
       const existing = planned.find((p) => p.day === day && p.meal === meal)
       if (existing) {
         const { error } = await supabase.from('meal_plan').delete().eq('id', existing.id)
-        if (error) setError(error.message)
+        if (error) setError('Couldn’t update your week — try again.')
         else setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
       } else {
         // Position: every insert defaulted to 0, so multi-dish slots had
@@ -105,7 +114,7 @@ export function AddToPlan({
           })
           .select('id')
           .single()
-        if (error) setError(error.message)
+        if (error) setError('Couldn’t update your week — try again.')
         else if (data) setPlanned((prev) => [...prev, { id: data.id as string, day, meal }])
       }
     } finally {
@@ -120,13 +129,20 @@ export function AddToPlan({
       <button
         type="button"
         onClick={() => {
-          if (!supabase || signedIn === false) {
+          // `!== true`, not `=== false`: while auth is still resolving this is
+          // null, and the old check let the panel open for a signed-out visitor
+          // who then hit the database and got an RLS error in the face.
+          if (!supabase || signedIn !== true) {
             router.push('/account')
             return
           }
           setOpen((v) => !v)
         }}
-        className="chip !border-milk/40 !text-milk hover:!border-flame data-[in=true]:!border-flame data-[in=true]:!text-flame"
+        className={
+          tone === 'pan'
+            ? 'chip !border-milk/40 !text-milk hover:!border-flame data-[in=true]:!border-flame data-[in=true]:!text-flame'
+            : 'chip data-[in=true]:!border-flame data-[in=true]:!text-flame'
+        }
         data-in={inWeek}
         aria-expanded={open}
       >

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { CookedIt } from '@/components/CookedIt'
 import { formatMeasure } from '@/lib/measure'
@@ -224,14 +225,19 @@ export function CookMode({
   const mmss = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
-  return (
+  // Portalled to <body>, as shopping mode already is. Rendered inline this
+  // mounts inside the hero's action row, which sits in a `.shell` with z-30 —
+  // and a z-index only competes inside its own stacking context, so the
+  // overlay's z-50 lost to the site header's z-40 no matter how high it went.
+  // The rail, "Fix it" and the exit button all sat under the nav.
+  return createPortal(
     <div
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={`Cooking ${title}`}
       tabIndex={-1}
-      className="fixed inset-0 z-50 flex flex-col bg-paper text-ink outline-none"
+      className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink outline-none"
     >
       {/* Rail: where you are, and the way out. */}
       <div className="flex items-center justify-between gap-4 border-b-2 border-ink px-5 py-4 sm:px-8">
@@ -482,7 +488,8 @@ export function CookMode({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

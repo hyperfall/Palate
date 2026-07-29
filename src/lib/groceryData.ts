@@ -17,15 +17,22 @@ export async function viewerCountry(): Promise<string | null> {
 }
 
 export async function getGroceryRetailers(country: string | null): Promise<GroceryRetailer[]> {
+  return retailersForCountry(await getAllGroceryRetailers(), country)
+}
+
+/** Every active retailer, unfiltered — the client-side country picker's menu. */
+export async function getAllGroceryRetailers(): Promise<GroceryRetailer[]> {
   try {
     const payload = await getPayloadClient()
     const { docs } = await payload.find({
       collection: 'groceryRetailers',
       where: { active: { equals: true } },
-      limit: 50,
+      // The registry is ~70 rows and the cap exists only so a runaway admin
+      // import can't ship megabytes to every plan page.
+      limit: 200,
       depth: 0,
     })
-    return retailersForCountry(docs, country)
+    return docs
   } catch (err) {
     console.error('[grocery] retailer fetch failed:', err)
     return []

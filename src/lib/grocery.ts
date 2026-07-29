@@ -4,15 +4,21 @@
  * share these; nothing here touches Payload or the network.
  */
 
-export type GroceryRetailerLike = {
+/** What country selection actually reads — the client picker passes rows
+ *  WITHOUT templates, since destinations are rebuilt server-side on click and
+ *  the templates have no business shipping to the browser. */
+export type RetailerTargetingLike = {
   id: number | string
   label: string
   slug: string
   countries?: Array<{ code: string }> | null
-  searchUrlTemplate: string
-  affiliateUrlTemplate?: string | null
   priority?: number | null
   active?: boolean | null
+}
+
+export type GroceryRetailerLike = RetailerTargetingLike & {
+  searchUrlTemplate: string
+  affiliateUrlTemplate?: string | null
 }
 
 /**
@@ -20,7 +26,7 @@ export type GroceryRetailerLike = {
  * geo headers are absent). Empty/missing `countries` targets globally — the
  * brandCards contract. Ordered by priority desc, then label.
  */
-export function retailersForCountry<T extends GroceryRetailerLike>(
+export function retailersForCountry<T extends RetailerTargetingLike>(
   retailers: T[],
   country: string | null | undefined,
 ): T[] {

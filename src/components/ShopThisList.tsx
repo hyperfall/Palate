@@ -1,25 +1,94 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Disclosure } from '@/components/Disclosure'
-import { shoppingListText } from '@/lib/grocery'
+import { retailersForCountry, shoppingListText } from '@/lib/grocery'
 
-export type ShopRetailer = { id: number | string; label: string; slug: string }
+export type ShopRetailer = {
+  id: number | string
+  label: string
+  slug: string
+  countries: Array<{ code: string }>
+  priority: number
+  active: boolean
+}
 export type ShopLine = { key: string; name: string; amounts: string[] }
 
+const COUNTRY_KEY = 'palate:shop-country'
+
+/** ISO-2 → readable name, for the picker. Falls back to the code itself. */
+const countryName = (code: string): string => {
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code
+  } catch {
+    return code
+  }
+}
+
 /**
- * The grocery handoff panel: pick a retailer (geo-selected server-side), every
- * netted shopping line becomes a tracked search link at that retailer, opened
- * in a new tab. Links go through /grocery/click so the destination is rebuilt
- * server-side and the click is logged. Renders nothing without retailers or
- * lines — the brandCards contract.
+ * The grocery handoff panel: pick a retailer, every netted shopping line
+ * becomes a tracked search link, opened in a new tab (links go through
+ * /grocery/click so the destination is rebuilt server-side and logged).
+ *
+ * The country is the viewer's decision, not the IP header's: the header only
+ * sets the default; a picker covers VPNs, travel and dev, and the choice
+ * persists locally. An uncovered country keeps the Copy-list button and says
+ * so honestly instead of vanishing — the old contract of rendering nothing
+ * made the panel look broken from most of the world.
  */
-export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; lines: ShopLine[] }) {
-  const [active, setActive] = useState<ShopRetailer | null>(retailers[0] ?? null)
+export function ShopThisList({
+  retailers,
+  defaultCountry,
+  lines,
+}: {
+  retailers: ShopRetailer[]
+  defaultCountry: string | null
+  lines: ShopLine[]
+}) {
+  const [country, setCountry] = useState<string | null>(defaultCountry)
+  const [active, setActive] = useState<ShopRetailer | null>(null)
   const [copied, setCopied] = useState(false)
 
-  if (retailers.length === 0 || lines.length === 0) return null
+  // A remembered choice beats the header — read after mount so hydration
+  // matches the server render of the header-detected default.
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(COUNTRY_KEY)
+      if (saved) setCountry(saved)
+    } catch {
+      /* storage unavailable — the header default stands */
+    }
+  }, [])
+
+  const eligible = useMemo(() => retailersForCountry(retailers, country), [retailers, country])
+
+  // Countries worth offering: only the ones at least one retailer serves.
+  const covered = useMemo(() => {
+    const codes = new Set<string>()
+    for (const r of retailers) for (const c of r.countries) codes.add(c.code.toUpperCase())
+    return [...codes]
+      .map((code) => ({ code, name: countryName(code) }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [retailers])
+
+  // Keep the active retailer valid as the country changes.
+  useEffect(() => {
+    setActive((prev) =>
+      prev && eligible.some((r) => r.slug === prev.slug) ? prev : (eligible[0] ?? null),
+    )
+  }, [eligible])
+
+  const pickCountry = (code: string) => {
+    setCountry(code)
+    try {
+      window.localStorage.setItem(COUNTRY_KEY, code)
+    } catch {
+      /* fine — the choice still applies for this visit */
+    }
+  }
+
+  if (lines.length === 0) return null
 
   const copy = async () => {
     try {
@@ -35,11 +104,11 @@ export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; 
     <div className="mt-6">
       <Disclosure
         title={<span className="font-display text-[1.125rem] text-ink">Shop this list</span>}
-        meta={active ? active.label : undefined}
+        meta={active ? active.label : country ? countryName(country) : undefined}
         defaultOpen={false}
       >
         <div className="flex flex-wrap items-center gap-2">
-          {retailers.map((r) => (
+          {eligible.map((r) => (
             <button
               key={r.slug}
               type="button"
@@ -55,6 +124,13 @@ export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; 
           </button>
         </div>
 
+        {eligible.length === 0 && (
+          <p className="mt-3 mb-0 text-[0.875rem] text-slate">
+            No shops listed for {country ? countryName(country) : 'your country'} yet — copy the
+            list and take it anywhere.
+          </p>
+        )}
+
         {active && (
           <ul className="mt-3 grid list-none gap-1.5 p-0">
             {lines.map((line) => (
@@ -67,7 +143,9 @@ export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; 
                 >
                   <span className="text-[0.9375rem] text-ink group-hover:text-flame">
                     {line.name}
-                    {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
+                    {line.amounts.length > 0 && (
+                      <span className="text-slate"> — {line.amounts.join(' + ')}</span>
+                    )}
                   </span>
                   <span className="shrink-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase group-hover:text-flame">
                     find at {active.label} ↗
@@ -78,9 +156,23 @@ export function ShopThisList({ retailers, lines }: { retailers: ShopRetailer[]; 
           </ul>
         )}
 
-        <p className="mt-3 mb-0 font-mono text-[0.6875rem] tracking-[0.06em] text-slate">
-          Links open a search at the retailer. Some may earn Palate a commission — never at extra cost to you.
-        </p>
+        <label className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+          Shopping somewhere else?
+          <select
+            value={country && covered.some((c) => c.code === country) ? country : ''}
+            onChange={(e) => pickCountry(e.target.value)}
+            className="rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink focus:border-flame focus:outline-none"
+          >
+            <option value="" disabled>
+              Pick a country
+            </option>
+            {covered.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
       </Disclosure>
     </div>
   )

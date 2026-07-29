@@ -54,6 +54,12 @@ const PAGES = [
   { href: '/tonight', title: 'Pick dinner for me', keywords: 'tonight dinner pick decide random' },
   { href: '/taste-night', title: 'Taste Night — the quiz', keywords: 'quiz trivia taste night game' },
   { href: '/students', title: 'Studying hard?', keywords: 'student budget cheap flat batch' },
+  // Words people search that name a way of filtering, not a dish. "cheap"
+  // used to return nothing at all, despite the catalogue having a cost sort.
+  { href: '/recipes?sort=cheapest', title: 'Cheapest first', keywords: 'cheap cheapest budget affordable inexpensive price cost money' },
+  { href: '/recipes?sort=quickest', title: 'Quickest first', keywords: 'quick quickest fast easy hurry rush 15 speedy' },
+  { href: '/recipes?diet=vegan', title: 'Vegan recipes', keywords: 'vegan plant plantbased' },
+  { href: '/recipes?diet=vegetarian', title: 'Vegetarian recipes', keywords: 'vegetarian veggie meatless' },
   { href: '/collections', title: 'My collections', keywords: 'saved collections favourites favorites' },
 ] as const
 

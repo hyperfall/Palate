@@ -37,6 +37,7 @@ export function PantryFinder({
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<Ingredient[]>([])
   const [open, setOpen] = useState(false)
+  const [noMatch, setNoMatch] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const haveSlugs = new Set(initialHave.map((h) => h.slug))
@@ -165,7 +166,17 @@ export function PantryFinder({
           <input
             type="text"
             value={query}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return
+              e.preventDefault()
+              // Enter took the first suggestion — or said nothing matched.
+              // Before, typing "eggs" and pressing Enter did nothing at all:
+              // no chip, no error, no hint that a suggestion had to be clicked.
+              if (suggestions[0]) void add(suggestions[0])
+              else if (query.trim().length >= 2) setNoMatch(query.trim())
+            }}
             onChange={(e) => {
+              setNoMatch(null)
               setQuery(e.target.value)
               setOpen(true)
             }}
@@ -173,6 +184,12 @@ export function PantryFinder({
             placeholder="e.g. chicken thigh"
             className="w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
           />
+          {noMatch && (
+            <p role="status" className="mt-1.5 m-0 font-mono text-[0.75rem] text-slate">
+              Nothing in the pantry called “{noMatch}” — try a simpler word, like the
+              ingredient on its own.
+            </p>
+          )}
           {open && suggestions.length > 0 && (
             <ul
               role="listbox"

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { SITE } from '@/lib/site'
 import { MEAL_LABELS, WEEK_DAY_LABELS, weekDishCount, type WeekSnapshot } from '@/lib/mealPlan'
 
@@ -84,9 +85,12 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
                               </span>
                             )}
                             <span className="min-w-0">
-                              <span className="font-display text-[1.1875rem] leading-tight text-ink">
+                              <Link
+                                href={`/recipes/${dish.slug}`}
+                                className="font-display text-[1.1875rem] leading-tight text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
+                              >
                                 {dish.title}
-                              </span>
+                              </Link>
                               {dish.servings != null && (
                                 <span className="ml-2 font-mono text-[0.625rem] tracking-[0.1em] text-slate uppercase">
                                   serves {dish.servings}

@@ -50,7 +50,7 @@ export default async function FeedPage() {
           <p className="eyebrow m-0">Your feed</p>
           <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">The latest from creators you follow.</h1>
           <p className="mt-3 text-slate max-sm:hidden">Sign in and follow a few creators to build your feed.</p>
-          <Link href="/account" className="btn-primary mt-6 inline-block">
+          <Link href="/account?next=/feed" className="btn-primary mt-6 inline-block">
             Sign in
           </Link>
         </div>

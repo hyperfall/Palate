@@ -17,6 +17,11 @@ export function useShoppingChecks() {
   const supabase = supabaseBrowser()
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [ready, setReady] = useState(false)
+  // Configured-but-signed-out is its own case, and the one a shared week hits:
+  // the client exists, so writes were attempted, RLS refused them, and every
+  // tick silently reverted. A guest ticking a list in the aisle needs it to
+  // work — in memory is the correct home for it.
+  const [signedIn, setSignedIn] = useState(false)
   const [synced, setSynced] = useState(false)
   // Guards optimistic writes from being clobbered by a slightly-stale refetch.
   const localRef = useRef<Set<string>>(new Set())
@@ -32,6 +37,10 @@ export function useShoppingChecks() {
       return
     }
     let cancelled = false
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setSignedIn(Boolean(data.user))
+    })
 
     supabase
       .from('shopping_checks')
@@ -85,7 +94,9 @@ export function useShoppingChecks() {
       else optimistic.add(key)
       apply(optimistic)
 
-      if (!supabase) return
+      // No account: the optimistic flip is the whole feature. Persisting would
+      // be refused by RLS and would undo the tick the moment it failed.
+      if (!supabase || !signedIn) return
 
       const { error } = wasChecked
         ? await supabase.from('shopping_checks').delete().eq('item_key', key)
@@ -100,7 +111,9 @@ export function useShoppingChecks() {
         apply(reverted)
       }
     },
-    [supabase, apply],
+    // signedIn belongs here: without it the callback closes over the initial
+    // false and would keep skipping the write after a session arrives.
+    [supabase, apply, signedIn],
   )
 
   const clearAll = useCallback(async () => {

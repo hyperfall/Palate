@@ -26,7 +26,7 @@ export default async function HouseholdPage({
     return (
       <Shell>
         <p className="mt-4 text-slate">
-          <Link href="/account" className="text-flame underline underline-offset-4">
+          <Link href="/account?next=/household" className="text-flame underline underline-offset-4">
             Sign in
           </Link>{' '}
           to share a plan with your household.

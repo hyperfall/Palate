@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { GroceryPanel } from '@/components/GroceryPanel'
 import { ShoppingList } from '@/components/ShoppingList'
+import { ShoppingModeLauncher } from '@/components/ShoppingMode'
 import { WeekCard } from '@/components/WeekCard'
 import { WeekCardActions } from '@/components/WeekCardActions'
 import { buildDishShoppingList, buildWeekSnapshot, consolidateShoppingList, type WeekSnapshot } from '@/lib/mealPlan'
@@ -63,6 +64,13 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         <WeekCard week={week} />
         <div className="mx-auto mt-8 max-w-[40rem]">
           <ShoppingList list={shopping} interactive={false} />
+          {/* A shared week is what someone forwards before going to the shop,
+              so it needs the aisle checklist too — not just the read-only list.
+              Ticks are in-memory for a guest, which is exactly right: no
+              account, no persistence, but the list still works in the aisle. */}
+          <div className="mt-5">
+            <ShoppingModeLauncher list={shopping} />
+          </div>
           <GroceryPanel lines={shopping.netted} />
         </div>
         <WeekCardActions week={week} shopping={shopping} />
@@ -89,6 +97,13 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
         <WeekCard week={week} />
         <div className="mx-auto mt-8 max-w-[40rem]">
           <ShoppingList list={shopping} interactive={false} />
+          {/* A shared week is what someone forwards before going to the shop,
+              so it needs the aisle checklist too — not just the read-only list.
+              Ticks are in-memory for a guest, which is exactly right: no
+              account, no persistence, but the list still works in the aisle. */}
+          <div className="mt-5">
+            <ShoppingModeLauncher list={shopping} />
+          </div>
           <GroceryPanel lines={shopping.netted} />
         </div>
         <WeekCardActions week={week} shopping={shopping} />

@@ -34,7 +34,7 @@ export default async function PlanPage() {
             Assign recipes to days and get one shopping list — overlaps netted, staples dropped. Your
             plan saves to your account.
           </p>
-          <Link href="/account" className="btn-primary mt-6 inline-block">
+          <Link href="/account?next=/plan" className="btn-primary mt-6 inline-block">
             Sign in to plan
           </Link>
         </div>

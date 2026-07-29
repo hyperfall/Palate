@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Figtree, IBM_Plex_Mono, Young_Serif } from 'next/font/google'
 import React from 'react'
 
@@ -49,6 +49,29 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     type: 'website',
   },
+  // iOS ignores the manifest for these: without them, "Add to Home Screen"
+  // gives a screenshot-thumbnail icon and still opens inside Safari chrome.
+  appleWebApp: {
+    capable: true,
+    title: 'Palate',
+    // Dark bar over the pan-coloured header, rather than a pale strip above it.
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    apple: '/apple-icon-180.png',
+  },
+}
+
+/**
+ * themeColor belongs to viewport, not metadata (Next warns otherwise). Both
+ * schemes are declared so the browser chrome follows the site's own theme
+ * toggle rather than sitting light above a dark page.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#26301f' },
+    { media: '(prefers-color-scheme: dark)', color: '#14100c' },
+  ],
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

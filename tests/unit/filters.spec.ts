@@ -134,9 +134,18 @@ describe('buildWhere', () => {
     expect(where.and.some((c) => JSON.stringify(c).includes('less_than_equal'))).toBe(false)
   })
 
-  it('searches titles when q is present', () => {
+  it('searches title, cuisine name and ingredient rows when q is present', () => {
+    // Title alone sent "korean" to an empty page while two Korean recipes sat
+    // one filter away — a query can name the dish, the cuisine, or something
+    // in it.
     const where = buildWhere(parseFilters({ q: 'tofu' })) as { and: Record<string, unknown>[] }
-    expect(where.and).toContainEqual({ title: { like: 'tofu' } })
+    expect(where.and).toContainEqual({
+      or: [
+        { title: { like: 'tofu' } },
+        { 'cuisine.name': { like: 'tofu' } },
+        { 'ingredients.item': { like: 'tofu' } },
+      ],
+    })
   })
 
   it('treats multiple cuisines as alternatives', () => {

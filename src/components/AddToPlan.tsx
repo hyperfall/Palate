@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { MEAL_LABELS, MEAL_ORDER, normalizeMeal, type MealType } from '@/lib/mealPlan'
 import { supabaseBrowser, WEEKDAYS } from '@/lib/supabase/client'
@@ -48,6 +49,38 @@ export function AddToPlan({
   const [planned, setPlanned] = useState<Planned[]>([])
   const [error, setError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  // Fixed coordinates rather than absolute offsets: the recipe hero is
+  // overflow-hidden for its image treatment, so an absolutely-positioned panel
+  // was sliced off at the hero's bottom edge — the day grid literally
+  // disappeared mid-row. A portal escapes the clip; these coords put it back
+  // under the button.
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
+
+  const place = () => {
+    const r = triggerRef.current?.getBoundingClientRect()
+    if (!r) return
+    const W = 272 // w-[17rem]
+    const H = 300 // generous upper bound for the panel
+    const left = Math.min(Math.max(8, r.left), window.innerWidth - W - 8)
+    // Flip above the trigger when the viewport has no room below it.
+    const below = r.bottom + 8
+    const top = below + H > window.innerHeight - 8 ? Math.max(8, r.top - H - 8) : below
+    setPos({ left, top })
+  }
+
+  useEffect(() => {
+    if (!open) return
+    place()
+    // Scroll and resize both move the trigger out from under a fixed panel.
+    window.addEventListener('scroll', place, true)
+    window.addEventListener('resize', place)
+    return () => {
+      window.removeEventListener('scroll', place, true)
+      window.removeEventListener('resize', place)
+    }
+  }, [open])
 
   useEffect(() => {
     if (!supabase) return
@@ -76,7 +109,12 @@ export function AddToPlan({
 
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      // The panel is portalled to <body>, so containment in rootRef is no
+      // longer enough to know the click was "inside".
+      if (rootRef.current?.contains(t)) return
+      if (panelRef.current?.contains(t)) return
+      setOpen(false)
     }
     document.addEventListener('pointerdown', onDown)
     return () => document.removeEventListener('pointerdown', onDown)
@@ -128,6 +166,7 @@ export function AddToPlan({
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => {
           // `!== true`, not `=== false`: while auth is still resolving this is
@@ -150,8 +189,14 @@ export function AddToPlan({
         {inWeek ? `✓ In week (${planned.length})` : '+ Plan'}
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 z-50 mt-2 w-[17rem] rounded-md border border-ink/30 bg-card p-3.5 text-ink shadow-(--shadow-block)">
+      {open &&
+        pos !== null &&
+        createPortal(
+        <div
+          ref={panelRef}
+          style={{ left: pos.left, top: pos.top }}
+          className="fixed z-[70] w-[17rem] rounded-md border border-ink/30 bg-card p-3.5 text-ink shadow-(--shadow-block)"
+        >
           <p className="eyebrow m-0">Which meal?</p>
           <div className="mt-2 flex gap-1.5">
             {MEAL_ORDER.map((m) => (
@@ -199,8 +244,9 @@ export function AddToPlan({
           >
             View your week →
           </Link>
-        </div>
-      )}
+        </div>,
+          document.body,
+        )}
     </div>
   )
 }

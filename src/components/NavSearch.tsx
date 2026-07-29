@@ -198,10 +198,14 @@ export function NavSearch() {
     role: 'option' as const,
     'aria-selected': optionIndexByKey.get(key) === highlight,
     id: `nav-search-option-${optionIndexByKey.get(key)}`,
-    onPointerDown: (e: React.PointerEvent) => {
-      e.preventDefault()
-      go(option)
-    },
+    // preventDefault on pointerdown keeps the input focused (so the panel
+    // can't blur-close before the click lands) — but navigation happens on
+    // click, not pointerdown. Assistive tech and anything synthesizing
+    // activation fires click without a pointerdown; navigating only on
+    // pointerdown made every row a dead end for those users, which a
+    // user-journey agent found the hard way.
+    onPointerDown: (e: React.PointerEvent) => e.preventDefault(),
+    onClick: () => go(option),
     onPointerMove: () => setHighlight(optionIndexByKey.get(key) ?? -1),
   })
 
@@ -280,8 +284,8 @@ export function NavSearch() {
                     <li
                       key={term}
                       className="flex cursor-pointer items-center justify-between gap-3 rounded p-2 hover:bg-wash"
-                      onPointerDown={(e) => {
-                        e.preventDefault()
+                      onPointerDown={(e) => e.preventDefault()}
+                      onClick={() => {
                         setQuery(term)
                         inputRef.current?.focus()
                       }}
@@ -292,8 +296,8 @@ export function NavSearch() {
                   <li className="px-2 pb-1">
                     <button
                       type="button"
-                      onPointerDown={(e) => {
-                        e.preventDefault()
+                      onPointerDown={(e) => e.preventDefault()}
+                      onClick={() => {
                         setRecents([])
                         try {
                           localStorage.removeItem(RECENTS_KEY)
@@ -311,8 +315,8 @@ export function NavSearch() {
                 <li
                   key={link.href}
                   className="cursor-pointer rounded p-2 font-mono text-[0.8125rem] text-ink hover:bg-wash"
-                  onPointerDown={(e) => {
-                    e.preventDefault()
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={() => {
                     setOpen(false)
                     router.push(link.href)
                   }}
@@ -328,8 +332,8 @@ export function NavSearch() {
               </p>
               <button
                 type="button"
-                onPointerDown={(e) => {
-                  e.preventDefault()
+                onPointerDown={(e) => e.preventDefault()}
+                onClick={() => {
                   go({ key: 'all', href: `/recipes?q=${encodeURIComponent(q)}`, query: q })
                 }}
                 className="mt-2 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-flame uppercase hover:underline"

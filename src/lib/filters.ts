@@ -232,7 +232,17 @@ export function buildWhere(filters: CatalogFilters): Record<string, unknown> {
   const and: Record<string, unknown>[] = [{ status: { equals: 'published' } }]
 
   if (filters.q) {
-    and.push({ title: { like: filters.q } })
+    // Title alone sent real queries to a dead end: "korean" found nothing even
+    // though a Korean cuisine hub with recipes sat one filter away, because no
+    // recipe carries the word in its title. A search term can name the dish,
+    // the cuisine, or something in it.
+    and.push({
+      or: [
+        { title: { like: filters.q } },
+        { 'cuisine.name': { like: filters.q } },
+        { 'ingredients.item': { like: filters.q } },
+      ],
+    })
   }
 
   if (filters.cuisines.length > 0) {

@@ -170,10 +170,34 @@ export function CookMode({
     return () => window.removeEventListener('keydown', onKey)
   }, [next, back, onClose])
 
-  // --- Per-step timer ------------------------------------------------------
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
-  const [running, setRunning] = useState(false)
+  // --- Timers, one per step, all running at once ---------------------------
+  //
+  // These used to be a single pair of values reset by `[index]`, so advancing a
+  // step destroyed a running countdown without a word. That is the exact shape
+  // of a burnt dinner: start a 15-minute simmer, tap Next as anyone would, and
+  // the pan is now on an unwatched clock. Timers now live in a map keyed by
+  // step, survive navigation, and announce themselves from wherever you are.
+  const [timers, setTimers] = useState<Record<number, { secondsLeft: number; running: boolean }>>({})
   const audioRef = useRef<AudioContext | null>(null)
+
+  const current = step?.timerSeconds ? timers[index] : undefined
+  const secondsLeft = current?.secondsLeft ?? step?.timerSeconds ?? null
+  const running = current?.running ?? false
+
+  const setTimer = (stepIndex: number, patch: Partial<{ secondsLeft: number; running: boolean }>) =>
+    setTimers((prev) => {
+      const base = prev[stepIndex] ?? {
+        secondsLeft: steps[stepIndex]?.timerSeconds ?? 0,
+        running: false,
+      }
+      return { ...prev, [stepIndex]: { ...base, ...patch } }
+    })
+
+  /** Running timers that belong to a step you are not looking at. */
+  const elsewhere = Object.entries(timers)
+    .map(([i, t]) => ({ index: Number(i), ...t }))
+    .filter((t) => t.running && t.index !== index)
+    .sort((a, b) => a.secondsLeft - b.secondsLeft)
 
   // Closes the chime's AudioContext on unmount — otherwise repeatedly
   // opening/closing cooking mode across a session leaks one per timer used.
@@ -182,11 +206,6 @@ export function CookMode({
       void audioRef.current?.close().catch(() => {})
     }
   }, [])
-
-  useEffect(() => {
-    setSecondsLeft(step?.timerSeconds ?? null)
-    setRunning(false)
-  }, [index, step?.timerSeconds])
 
   // Declared above the countdown effect that calls it: hoisting made the old
   // order work, but only if you knew to look for it.
@@ -210,17 +229,30 @@ export function CookMode({
     }
   }, [])
 
+  // A single interval drives every timer, so a countdown keeps running while
+  // you read another step.
   useEffect(() => {
-    if (!running || secondsLeft === null) return
-    if (secondsLeft <= 0) {
-      setRunning(false)
-      chime()
-      return
-    }
-    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? null : s - 1)), 1000)
-    return () => clearTimeout(t)
-     
-  }, [running, secondsLeft, chime])
+    const anyRunning = Object.values(timers).some((t) => t.running && t.secondsLeft > 0)
+    if (!anyRunning) return
+    const id = setInterval(() => {
+      setTimers((prev) => {
+        const next: typeof prev = {}
+        let finished = false
+        for (const [k, t] of Object.entries(prev)) {
+          if (!t.running || t.secondsLeft <= 0) {
+            next[Number(k)] = t
+            continue
+          }
+          const left = t.secondsLeft - 1
+          if (left <= 0) finished = true
+          next[Number(k)] = { secondsLeft: Math.max(0, left), running: left > 0 }
+        }
+        if (finished) chime()
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [timers, chime])
 
   const mmss = (s: number) =>
     `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -239,6 +271,27 @@ export function CookMode({
       tabIndex={-1}
       className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink outline-none"
     >
+      {/* A pan on an unwatched clock is the thing this screen exists to prevent,
+          so any timer running on another step follows you here — tap to go
+          back to the step that owns it. */}
+      {elsewhere.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 border-b border-flame/40 bg-flame/10 px-5 py-2 sm:px-8">
+          <span className="eyebrow m-0 text-flame">Still cooking</span>
+          {elsewhere.map((t) => (
+            <button
+              key={t.index}
+              type="button"
+              onClick={() => setIndex(t.index)}
+              className="chip !min-h-0 !py-1"
+              aria-label={`Step ${t.index + 1} timer, ${mmss(t.secondsLeft)} left — go to that step`}
+            >
+              Step {String(t.index + 1).padStart(2, '0')}
+              <span className="ml-1.5 font-semibold tabular-nums">{mmss(t.secondsLeft)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Rail: where you are, and the way out. */}
       <div className="flex items-center justify-between gap-4 border-b-2 border-ink px-5 py-4 sm:px-8">
         <p className="eyebrow m-0 truncate text-ink">{title}</p>
@@ -441,7 +494,7 @@ export function CookMode({
                   </span>
                   <button
                     type="button"
-                    onClick={() => setRunning((r) => !r)}
+                    onClick={() => setTimer(index, { secondsLeft: secondsLeft ?? undefined, running: !running })}
                     className="chip"
                     data-active={running}
                   >
@@ -450,10 +503,9 @@ export function CookMode({
                   {secondsLeft !== step.timerSeconds && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setSecondsLeft(step.timerSeconds ?? null)
-                        setRunning(false)
-                      }}
+                      onClick={() =>
+                        setTimer(index, { secondsLeft: step.timerSeconds ?? 0, running: false })
+                      }
                       className="chip"
                     >
                       Reset

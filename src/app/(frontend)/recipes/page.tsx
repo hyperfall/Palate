@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { CatalogGrid } from '@/components/CatalogGrid'
 import { FilterPanel, SortSelect } from '@/components/FilterPanel'
 import { Pagination } from '@/components/Pagination'
-import { hasActiveFilters, parseFilters, type RawSearchParams } from '@/lib/filters'
+import { catalogHref, hasActiveFilters, parseFilters, type RawSearchParams } from '@/lib/filters'
+import { bestRelaxation, relaxations, type Relaxation } from '@/lib/relaxFilters'
 import {
   countRecipesByCuisine,
   countRecipesByDietTag,
@@ -53,6 +54,19 @@ export default async function CatalogPage({
       countRecipesByCuisine(),
       countRecipesByDietTag(),
     ])
+
+  // Nothing matched: work out which single constraint is doing the excluding,
+  // so the empty state can offer a fix instead of advice. Only runs on this
+  // path, and each candidate is a limit-1 count rather than a page of results.
+  let relaxed: Relaxation | null = null
+  if (recipes.length === 0 && hasActiveFilters(filters)) {
+    const counted = await Promise.all(
+      relaxations(filters)
+        .slice(0, 8)
+        .map(async (c) => ({ ...c, count: (await findRecipes(c.filters, { page: 1, limit: 1 })).totalDocs })),
+    )
+    relaxed = bestRelaxation(counted)
+  }
 
   // With 200+ world cuisines seeded, only offer filter chips for the ones
   // that have recipes — a "Tuvaluan" chip that always returns nothing is
@@ -112,14 +126,29 @@ export default async function CatalogPage({
             /* An empty screen is an invitation to act, not an apology. */
             <div className="ticket-card mt-6 px-6 py-16 text-center">
               <p className="m-0 font-display text-xl">Nothing matches all of that.</p>
-              <p className="mx-auto mt-3 max-w-[42ch] text-slate">
-                Try widening one of the taste bands — heat and effort are usually the ones doing
-                the excluding.
-              </p>
+              {relaxed ? (
+                <>
+                  <p className="mx-auto mt-3 max-w-[42ch] text-slate">
+                    Drop {relaxed.label} and there {relaxed.count === 1 ? 'is' : 'are'} {relaxed.count}.
+                  </p>
+                  <Link href={catalogHref(relaxed.filters)} className="btn-primary mt-6">
+                    Drop {relaxed.label}
+                  </Link>
+                </>
+              ) : (
+                <p className="mx-auto mt-3 max-w-[42ch] text-slate">
+                  Nothing comes back however this is loosened — the board is still small.
+                </p>
+              )}
               {hasActiveFilters(filters) && (
-                <Link href="/recipes" className="btn-primary mt-6">
-                  Clear filters
-                </Link>
+                <div className="mt-4">
+                  <Link
+                    href="/recipes"
+                    className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+                  >
+                    Clear everything
+                  </Link>
+                </div>
               )}
             </div>
           ) : (

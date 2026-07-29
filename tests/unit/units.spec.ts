@@ -55,3 +55,23 @@ describe('convertTemperatures', () => {
     expect(convertTemperatures('Simmer for 10 minutes.', 'metric')).toBe('Simmer for 10 minutes.')
   })
 })
+
+describe('US weights are readable on a scale', () => {
+  it('shows a decimal for weight, never a vulgar third', () => {
+    // 300 g read as "10⅔ oz" — a gradation no kitchen scale has.
+    const oz = convertMeasure(300, 'g', 'us')
+    expect(oz.unit).toBe('oz')
+    expect(humanizeQuantity(oz.quantity, { unit: oz.unit })).toBe('10.7')
+  })
+
+  it('keeps precision on pounds rather than snapping to quarters', () => {
+    const lb = convertMeasure(500, 'g', 'us')
+    expect(lb).toEqual({ quantity: 1.1, unit: 'lb' })
+    expect(humanizeQuantity(lb.quantity, { unit: lb.unit })).toBe('1.1')
+  })
+
+  it('still gives fractions to cups, where the jug is marked in them', () => {
+    expect(humanizeQuantity(0.33, { unit: 'cup' })).toBe('⅓')
+    expect(humanizeQuantity(1.5, { unit: 'tbsp' })).toBe('1½')
+  })
+})

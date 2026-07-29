@@ -58,15 +58,30 @@ const VULGAR: Array<[number, string]> = [
   [0.75, '¾'],
 ]
 
-export function humanizeQuantity(value: number, opts: { countable?: boolean } = {}): string {
+/**
+ * Units you measure by eye with a cup or spoon, where "⅓" is a real marking on
+ * a real object. Weights are not among them: a scale reads 1.3 lb and has no
+ * way to show you a third of a pound, so "1⅓ lb" is a number you cannot act on.
+ */
+const FRACTIONAL_UNITS = new Set(['cup', 'cups', 'tsp', 'tbsp', 'fl oz', 'pint', 'quart'])
+
+export function humanizeQuantity(
+  value: number,
+  opts: { countable?: boolean; unit?: string } = {},
+): string {
   if (opts.countable) {
     // Discrete items never read as fractions; never round a real ingredient to 0.
     return String(Math.max(1, Math.round(value)))
   }
   const whole = Math.floor(value)
   const frac = value - whole
-  for (const [v, glyph] of VULGAR) {
-    if (Math.abs(frac - v) < 0.05) return whole > 0 ? `${whole}${glyph}` : glyph
+  // A unit we know is spoon-or-cup shaped gets fractions; anything else — and
+  // anything unlabelled — gets the decimal a scale can actually display.
+  const spoonable = opts.unit === undefined || FRACTIONAL_UNITS.has(opts.unit.toLowerCase())
+  if (spoonable) {
+    for (const [v, glyph] of VULGAR) {
+      if (Math.abs(frac - v) < 0.05) return whole > 0 ? `${whole}${glyph}` : glyph
+    }
   }
   if (frac < 0.05) return String(whole)
   return String(Math.round(value * 100) / 100)

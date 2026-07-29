@@ -26,6 +26,9 @@ export function formatMeasure(
   const scaled = parsed * factor
   const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
   const converted = ing.unit ? convertMeasure(scaled, ing.unit, unitSystem) : { quantity: scaled, unit: '' }
-  const qty = humanizeQuantity(converted.quantity, { countable: Boolean(canonical?.countable) })
+  const qty = humanizeQuantity(converted.quantity, {
+    countable: Boolean(canonical?.countable),
+    unit: converted.unit,
+  })
   return [qty, converted.unit].filter(Boolean).join(' ')
 }

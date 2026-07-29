@@ -21,7 +21,7 @@ import { parseVector, encodeVector, type TasteVector } from './tasteProfile'
  * URLs keep meaning what they meant.
  */
 
-export type SortKey = 'newest' | 'quickest' | 'top' | 'foryou' | TasteAxis
+export type SortKey = 'newest' | 'quickest' | 'cheapest' | 'top' | 'foryou' | TasteAxis
 
 export type TasteRange = { min: number; max: number }
 
@@ -64,7 +64,7 @@ const INGREDIENT_VALUES = new Set(MAIN_INGREDIENTS.map((i) => i.value))
 export const CALORIE_MIN = 100
 export const CALORIE_MAX = 1200
 export const CALORIE_STEP = 50
-const SORT_VALUES = new Set<string>(['newest', 'quickest', 'top', 'foryou', ...TASTE_AXES])
+const SORT_VALUES = new Set<string>(['newest', 'quickest', 'cheapest', 'top', 'foryou', ...TASTE_AXES])
 
 /** The rating thresholds the catalog offers as filter chips. */
 export const RATING_CHOICES = [3, 4, 4.5] as const
@@ -211,6 +211,9 @@ export function countActiveFilters(filters: CatalogFilters): number {
  *  page 2 of a paginated query can re-serve rows page 1 already showed. */
 export function sortExpression(sort: SortKey): string[] {
   if (sort === 'quickest') return ['totalMinutes', '-id']
+  // Ascending, so the cheapest plate leads. Recipes with no cost sort last
+  // rather than first — a missing price is not a free dinner.
+  if (sort === 'cheapest') return ['costPerServing', '-id']
   if (sort === 'newest') return ['-publishedAt', '-id']
   if (sort === 'top') return ['-ratingScore', '-id']
   // 'foryou' is a distance sort computed in findRecipes; fall back to newest for

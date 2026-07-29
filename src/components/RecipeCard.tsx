@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import type { Recipe } from '@/payload-types'
 import { imageFrom } from '@/lib/media'
-import { formatMinutes } from '@/lib/format'
+import { formatMinutes, formatPlatePrice } from '@/lib/format'
 import { CreatorByline } from './CreatorByline'
 import { StarRating } from './StarRating'
 import { TasteTags } from './TasteGauge'
@@ -100,6 +100,12 @@ export function RecipeCard({
               )}
               <span className="shrink-0">
                 {formatMinutes(recipe.totalMinutes)} · Serves {recipe.servings}
+                {/* Cost lived only inside /students, so the number that decides
+                    the meal for anyone counting money vanished the moment they
+                    browsed anywhere else. */}
+                {recipe.costPerServing != null && (
+                  <> · ≈{formatPlatePrice(recipe.costPerServing)} a plate</>
+                )}
               </span>
             </p>
 

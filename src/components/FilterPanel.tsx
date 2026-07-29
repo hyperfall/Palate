@@ -318,6 +318,7 @@ function CalorieBand({
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'newest', label: 'Newest' },
   { value: 'quickest', label: 'Quickest' },
+  { value: 'cheapest', label: 'Cheapest' },
   { value: 'top', label: 'Top rated' },
   { value: 'foryou', label: 'For your taste' },
   ...TASTE_AXES.map((axis) => ({

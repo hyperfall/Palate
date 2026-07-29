@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { formatPlatePrice } from '@/lib/format'
 
 export type StudentPick = {
   id: number
@@ -22,7 +23,7 @@ const CAPS = [
   { label: '≤ £3.50', cap: 350 },
 ] as const
 
-const gbp = (pence: number) => `£${(pence / 100).toFixed(2)}`
+const gbp = (pence: number) => formatPlatePrice(pence) ?? '—'
 
 /**
  * The student picks board with the budget dial. Cost-per-plate is the axis

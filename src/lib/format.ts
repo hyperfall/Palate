@@ -33,3 +33,12 @@ export function formatTimer(seconds: number): string {
   const minutes = Math.round(seconds / 60)
   return formatMinutes(minutes)
 }
+
+/**
+ * A plate price, from pence. Shared by the students board and the recipe cards
+ * so the same dish can't read £1.50 on one screen and £1.5 on another.
+ */
+export function formatPlatePrice(pence: number | null | undefined): string | null {
+  if (pence == null || !Number.isFinite(pence)) return null
+  return `£${(pence / 100).toFixed(2)}`
+}

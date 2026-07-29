@@ -20,7 +20,7 @@ import { RecipeCard } from '@/components/RecipeCard'
 import { RecipeJsonLd } from '@/components/RecipeJsonLd'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { formatMinutes, formatTimer } from '@/lib/format'
+import { formatMinutes, formatPlatePrice, formatTimer } from '@/lib/format'
 import { lexicalToPlainText } from '@/lib/lexical'
 import { imageFrom } from '@/lib/media'
 import { HeroAnnotations, type HeroPin } from '@/components/HeroAnnotations'
@@ -170,6 +170,15 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 <ServesBadge slug={recipe.slug} base={recipe.servings ?? 1} />
                 <span aria-hidden="true" className="text-milk/40">·</span>
                 <span className="capitalize">{recipe.difficulty}</span>
+                {/* The card grid shows the plate price; hiding it on the page
+                    itself meant going BACK to a listing to check the cost of
+                    the dish in front of you. */}
+                {recipe.costPerServing != null && (
+                  <>
+                    <span aria-hidden="true" className="text-milk/40">·</span>
+                    <span>≈{formatPlatePrice(recipe.costPerServing)} a plate</span>
+                  </>
+                )}
                 {communityAverage > 0 && (
                   <>
                     <span aria-hidden="true" className="text-milk/40">·</span>

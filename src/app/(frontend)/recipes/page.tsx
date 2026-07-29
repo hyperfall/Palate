@@ -118,6 +118,14 @@ export default async function CatalogPage({
           <div className="hidden flex-wrap items-baseline justify-between gap-4 pb-4 lg:flex">
             <p className="datum m-0" aria-hidden="true">
               {totalDocs} {totalDocs === 1 ? 'recipe' : 'recipes'}
+              {/* "18 recipes" over 12 visible cards read as a broken page — a
+                  user-journey agent looked for the other six and found no hint
+                  that scrolling was the answer. */}
+              {totalDocs > recipes.length && (
+                <span className="ml-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                  showing {recipes.length} — more load as you scroll
+                </span>
+              )}
             </p>
             <SortSelect filters={filters} />
           </div>

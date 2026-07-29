@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 
-import { convertMeasure, humanizeQuantity } from '@/lib/units'
+import { formatMeasure } from '@/lib/measure'
+import { useServings } from '@/lib/useServings'
 import { useUnitSystem } from '@/lib/useUnitSystem'
 import { groupSubstitutions, type SubRow } from '@/lib/substitutions'
 import { SubstitutionPopover } from './SubstitutionPopover'
@@ -38,27 +39,22 @@ type Ingredient = {
 export function IngredientsPanel({
   ingredients,
   baseServings,
+  slug,
 }: {
   ingredients: Ingredient[]
   baseServings: number
+  /** Scopes the shared servings value so cook mode reads the same number. */
+  slug: string
 }) {
-  const [servings, setServings] = useState(baseServings)
+  // Shared rather than local: cook mode renders the same list, and a scaled
+  // quantity that disagrees between the two would be worse than none.
+  const [servings, setServings] = useServings(slug, baseServings)
   const factor = servings / baseServings
   const [unitSystem, setUnitSystem] = useUnitSystem()
 
+  // Shared with cook mode's list via lib/measure, so the two can never drift.
   const measureFor = useCallback(
-    (ing: Ingredient): string => {
-      const parsed = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
-      // Non-numeric ("a handful") is left verbatim — scaling it would be a lie.
-      if (Number.isNaN(parsed)) return [ing.quantity, ing.unit].filter(Boolean).join(' ')
-      const scaled = parsed * factor
-      const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
-      const converted = ing.unit
-        ? convertMeasure(scaled, ing.unit, unitSystem)
-        : { quantity: scaled, unit: '' }
-      const qty = humanizeQuantity(converted.quantity, { countable: Boolean(canonical?.countable) })
-      return [qty, converted.unit].filter(Boolean).join(' ')
-    },
+    (ing: Ingredient): string => formatMeasure(ing, { factor, unitSystem }),
     [factor, unitSystem],
   )
 

@@ -5,8 +5,22 @@ import { useEffect, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
 
-/** Follow/unfollow a creator by their author slug. Signed out → routes to /account. */
-export function FollowButton({ authorSlug }: { authorSlug: string }) {
+/**
+ * Follow/unfollow a creator by their author slug. Signed out → routes to /account.
+ *
+ * `tone` exists because this button lives on two different grounds: the
+ * creator page's dark pan hero, and paper cards on the feed. The milk palette
+ * is right on the first and invisible on the second — near-white text on a
+ * near-white card in light theme.
+ */
+export function FollowButton({
+  authorSlug,
+  tone = 'paper',
+}: {
+  authorSlug: string
+  /** 'pan' for the dark creator hero; 'paper' anywhere the page background shows. */
+  tone?: 'paper' | 'pan'
+}) {
   const supabase = supabaseBrowser()
   const router = useRouter()
   const [state, setState] = useState<'unknown' | 'out' | 'following'>('unknown')
@@ -68,7 +82,13 @@ export function FollowButton({ authorSlug }: { authorSlug: string }) {
       onClick={() => void toggle()}
       disabled={busy}
       data-active={state === 'following'}
-      className="chip !border-milk/40 !text-milk hover:!border-flame data-[active=true]:!border-flame data-[active=true]:!text-flame"
+      className={
+        tone === 'pan'
+          ? 'chip !border-milk/40 !text-milk hover:!border-flame data-[active=true]:!border-flame data-[active=true]:!text-flame'
+          : // Plain chip: its own tokens already resolve for both themes, so it
+            // stays readable on paper in light and dark alike.
+            'chip data-[active=true]:!border-flame data-[active=true]:!text-flame'
+      }
     >
       {state === 'following' ? '✓ Following' : '+ Follow'}
     </button>

@@ -114,7 +114,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ handle
           )}
 
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
-            <FollowButton authorSlug={author.slug} />
+            <FollowButton authorSlug={author.slug} tone="pan" />
             <SocialLinks socials={cleanSocials((author.socials as Record<string, unknown>) ?? null)} className="text-milk/70" />
           </div>
         </div>

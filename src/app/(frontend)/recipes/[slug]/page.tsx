@@ -181,6 +181,15 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 <CookModeLauncher
                   title={recipe.title}
                   slug={recipe.slug}
+                  ingredients={(recipe.ingredients ?? []).map((row) => ({
+                    quantity: row.quantity,
+                    unit: row.unit,
+                    item: row.item,
+                    note: row.note,
+                    heading: row.heading,
+                    ingredient: typeof row.ingredient === 'object' ? row.ingredient : null,
+                  }))}
+                  baseServings={recipe.servings ?? 1}
                   image={imageFrom(recipe.heroImage, 'card')?.url ?? null}
                   steps={buildCookSteps(
                     (recipe.steps ?? []).map((step) => ({
@@ -296,6 +305,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         >
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <IngredientsPanel
+              slug={recipe.slug}
               ingredients={recipe.ingredients ?? []}
               baseServings={recipe.servings}
             />

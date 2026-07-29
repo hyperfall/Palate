@@ -3,17 +3,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { CookedIt } from '@/components/CookedIt'
+import { formatMeasure } from '@/lib/measure'
+import { useServings } from '@/lib/useServings'
+import { useUnitSystem } from '@/lib/useUnitSystem'
 
 import { useDialogFocus } from '@/lib/useDialogFocus'
 import type { CookStep } from '@/lib/stepIngredients'
 import { parseIngredientLine } from '@/lib/ingredients/parse'
 import { groupSubstitutions } from '@/lib/substitutions'
 import { convertTemperatures } from '@/lib/units'
-import { useUnitSystem } from '@/lib/useUnitSystem'
 import { SubstitutionPopover } from './SubstitutionPopover'
 
 /** Strips a leftover unit/quantity prefix from a canonical ingredient name. */
 const cleanName = (n: string) => parseIngredientLine(n).item || n
+
+/** Enough of an ingredient row to render and scale it. */
+export type CookIngredient = {
+  quantity?: string | null
+  unit?: string | null
+  item: string
+  note?: string | null
+  heading?: boolean | null
+  ingredient?: { countable?: boolean | null } | number | null
+}
 
 type Finish = {
   storageDays?: number | null
@@ -69,6 +81,8 @@ export function CookMode({
   slug,
   image = null,
   steps,
+  ingredients = [],
+  baseServings = 1,
   finish = null,
   onClose,
 }: {
@@ -76,12 +90,21 @@ export function CookMode({
   slug: string
   image?: string | null
   steps: CookStep[]
+  ingredients?: CookIngredient[]
+  baseServings?: number
   finish?: Finish
   onClose: () => void
 }) {
   const [index, setIndex] = useState(0)
   const [rescueOpen, setRescueOpen] = useState(false)
   const [unitSystem] = useUnitSystem()
+  const [listOpen, setListOpen] = useState(false)
+  // Reads the same servings the ingredients panel writes, and the same unit
+  // system — a quantity that disagreed with the page you just left would be
+  // worse than not showing one.
+  const [servings] = useServings(slug, baseServings)
+  const factor = baseServings > 0 ? servings / baseServings : 1
+
   const done = index >= steps.length
   const step = done ? null : steps[index]
 
@@ -214,9 +237,26 @@ export function CookMode({
       <div className="flex items-center justify-between gap-4 border-b-2 border-ink px-5 py-4 sm:px-8">
         <p className="eyebrow m-0 truncate text-ink">{title}</p>
         <div className="flex items-center gap-5">
+          {ingredients.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setListOpen((v) => !v)
+                setRescueOpen(false)
+              }}
+              className="chip"
+              data-active={listOpen}
+              aria-expanded={listOpen}
+            >
+              Ingredients
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => setRescueOpen((v) => !v)}
+            onClick={() => {
+              setRescueOpen((v) => !v)
+              setListOpen(false)
+            }}
             className="chip"
             data-active={rescueOpen}
           >
@@ -249,7 +289,40 @@ export function CookMode({
       {/* The step, at counter distance — or the rescue playbook when open. */}
       <div className="scroll-rail flex flex-1 items-center overflow-y-auto">
         <div className="shell max-w-[52rem] py-10">
-          {rescueOpen ? (
+          {listOpen ? (
+            /* The whole list, on demand. Per-step "uses" chips tell you what
+               this step needs; they can't tell you whether to get the butter
+               out, or what the quantity was two steps ago with sticky hands. */
+            <div>
+              <p className="eyebrow m-0 text-flame">Ingredients</p>
+              <p className="mt-2 font-mono text-[0.8125rem] text-slate">
+                For {servings} {servings === 1 ? 'serving' : 'servings'}
+                {factor !== 1 && ' · scaled with the recipe'}
+              </p>
+              <ul className="m-0 mt-6 grid list-none gap-0 p-0">
+                {ingredients.map((ing, i) =>
+                  ing.heading ? (
+                    <li key={i} className="eyebrow pt-5 first:pt-0 text-flame">
+                      {ing.item}
+                    </li>
+                  ) : (
+                    <li
+                      key={i}
+                      className="flex items-baseline justify-between gap-6 border-b border-rule py-3 text-[1.125rem] last:border-b-0"
+                    >
+                      <span className="min-w-0">
+                        {ing.item}
+                        {ing.note ? <span className="text-slate">, {ing.note}</span> : null}
+                      </span>
+                      <span className="shrink-0 font-mono text-[1rem] tabular-nums text-slate">
+                        {formatMeasure(ing, { factor, unitSystem })}
+                      </span>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </div>
+          ) : rescueOpen ? (
             <div>
               <p className="eyebrow m-0 text-flame">Fix it</p>
               <dl className="m-0 mt-5 grid gap-5">
@@ -419,12 +492,16 @@ export function CookModeLauncher({
   slug,
   image = null,
   steps,
+  ingredients = [],
+  baseServings = 1,
   finish = null,
 }: {
   title: string
   slug: string
   image?: string | null
   steps: CookStep[]
+  ingredients?: CookIngredient[]
+  baseServings?: number
   finish?: Finish
 }) {
   const [open, setOpen] = useState(false)
@@ -446,6 +523,8 @@ export function CookModeLauncher({
           slug={slug}
           image={image}
           steps={steps}
+          ingredients={ingredients}
+          baseServings={baseServings}
           finish={finish}
           onClose={() => setOpen(false)}
         />

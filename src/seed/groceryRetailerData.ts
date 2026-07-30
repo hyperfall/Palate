@@ -1,5 +1,6 @@
 /*
- * Dropped by verify:grocery rather than shipped dead: EDEKA (ambiguous 403/404
+ * Dropped by verify:grocery rather than shipped dead: Sklavenitis (404),
+ * Carrefour Kuwait + Puregold PH (unreachable), AEON MY (404), EDEKA (ambiguous 403/404
  * — Germany still has REWE, Aldi, Lidl, Kaufland, Amazon), Whole Foods and
  * Aldi US (moved paths), Sheng Siong (DNS).
  * DK (Nemlig: redirect loop), MY (Lotus's: 404) and PL (Frisco: 404) were
@@ -176,4 +177,68 @@ export const RETAILERS: SeedRetailer[] = [
   { label: 'Chedraui', slug: 'chedraui-mx', type: 'supermarket', countries: ['MX'], searchUrlTemplate: 'https://www.chedraui.com.mx/{query}?_q={query}&map=ft', priority: 35 },
   { label: 'Lider', slug: 'lider-cl', type: 'supermarket', countries: ['CL'], searchUrlTemplate: 'https://www.lider.cl/search?query={query}', priority: 45 },
   { label: 'Coto', slug: 'coto-ar', type: 'supermarket', countries: ['AR'], searchUrlTemplate: 'https://www.cotodigital.com.ar/sitios/cdigi/browse?Ntt={query}', priority: 35 },
+  // ---- Batch 3: new countries + depth. Every row graded by verify:grocery
+  //      before seeding; fails get fixed or dropped, never shipped. ----
+  // US depth
+  { label: 'Albertsons', slug: 'albertsons-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.albertsons.com/shop/search-results.html?q={query}', priority: 23 },
+  { label: 'Wegmans', slug: 'wegmans-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.wegmans.com/shop/search?search-term={query}', priority: 21 },
+  { label: 'Meijer', slug: 'meijer-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://www.meijer.com/shopping/search.html?text={query}', priority: 19 },
+  { label: 'Sprouts', slug: 'sprouts-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://shop.sprouts.com/search?search_term={query}', priority: 17 },
+  { label: 'Food Lion', slug: 'foodlion-us', type: 'supermarket', countries: ['US'], searchUrlTemplate: 'https://shop.foodlion.com/search?search_term={query}', priority: 16 },
+  // CA depth
+  { label: 'Real Canadian Superstore', slug: 'superstore-ca', type: 'supermarket', countries: ['CA'], searchUrlTemplate: 'https://www.realcanadiansuperstore.ca/search?search-bar={query}', priority: 42 },
+  { label: 'Save-On-Foods', slug: 'saveonfoods-ca', type: 'supermarket', countries: ['CA'], searchUrlTemplate: 'https://www.saveonfoods.com/sm/pickup/rsid/1982/results?q={query}', priority: 25 },
+  // FR / ES / DE / AT / SE / NO depth
+  { label: 'Picard', slug: 'picard-fr', type: 'supermarket', countries: ['FR'], searchUrlTemplate: 'https://www.picard.fr/recherche?q={query}', priority: 20 },
+  { label: 'Alcampo', slug: 'alcampo-es', type: 'supermarket', countries: ['ES'], searchUrlTemplate: 'https://www.compraonline.alcampo.es/search?entry={query}', priority: 35 },
+  { label: 'Eroski', slug: 'eroski-es', type: 'supermarket', countries: ['ES'], searchUrlTemplate: 'https://supermercado.eroski.es/es/search/results/?q={query}', priority: 20 },
+  { label: 'Knuspr', slug: 'knuspr-de', type: 'delivery', countries: ['DE'], searchUrlTemplate: 'https://www.knuspr.de/suche?q={query}', priority: 30 },
+  { label: 'INTERSPAR', slug: 'interspar-at', type: 'supermarket', countries: ['AT'], searchUrlTemplate: 'https://www.interspar.at/shop/lebensmittel/search/?q={query}', priority: 35 },
+  { label: 'Mathem', slug: 'mathem-se', type: 'delivery', countries: ['SE'], searchUrlTemplate: 'https://www.mathem.se/se/search?q={query}', priority: 30 },
+  { label: 'Meny', slug: 'meny-no', type: 'supermarket', countries: ['NO'], searchUrlTemplate: 'https://meny.no/sok/?query={query}', priority: 35 },
+  // AU depth
+  { label: 'Harris Farm', slug: 'harrisfarm-au', type: 'supermarket', countries: ['AU'], searchUrlTemplate: 'https://www.harrisfarm.com.au/search?q={query}', priority: 15 },
+  // BR depth
+  { label: 'Extra', slug: 'extra-br', type: 'supermarket', countries: ['BR'], searchUrlTemplate: 'https://www.clubeextra.com.br/busca?terms={query}', priority: 30 },
+  // Poland (retry with different shops)
+  { label: 'Auchan Polska', slug: 'auchan-pl', type: 'supermarket', countries: ['PL'], searchUrlTemplate: 'https://zakupy.auchan.pl/search?text={query}', priority: 40 },
+  { label: 'Carrefour Polska', slug: 'carrefour-pl', type: 'supermarket', countries: ['PL'], searchUrlTemplate: 'https://www.carrefour.pl/szukaj?q={query}', priority: 35 },
+  // Denmark (retry)
+  { label: 'Bilka ToGo', slug: 'bilka-dk', type: 'supermarket', countries: ['DK'], searchUrlTemplate: 'https://www.bilkatogo.dk/search/{query}', priority: 40 },
+  { label: 'REMA 1000', slug: 'rema-dk', type: 'supermarket', countries: ['DK'], searchUrlTemplate: 'https://shop.rema1000.dk/varer/sog?q={query}', priority: 35 },
+  // Malaysia (retry)
+  { label: 'Jaya Grocer', slug: 'jaya-my', type: 'supermarket', countries: ['MY'], searchUrlTemplate: 'https://www.jayagrocer.com/search?q={query}', priority: 40 },
+  // Thailand
+  { label: 'Big C', slug: 'bigc-th', type: 'supermarket', countries: ['TH'], searchUrlTemplate: 'https://www.bigc.co.th/en/search?q={query}', priority: 40 },
+  { label: 'Tops', slug: 'tops-th', type: 'supermarket', countries: ['TH'], searchUrlTemplate: 'https://www.tops.co.th/en/search/{query}', priority: 35 },
+  // Indonesia
+  { label: 'Klik Indomaret', slug: 'klikindomaret-id', type: 'supermarket', countries: ['ID'], searchUrlTemplate: 'https://www.klikindomaret.com/search/?key={query}', priority: 40 },
+  { label: 'Alfagift', slug: 'alfagift-id', type: 'supermarket', countries: ['ID'], searchUrlTemplate: 'https://alfagift.id/search?q={query}', priority: 35 },
+  // Vietnam / Philippines
+  { label: 'Bách hoá XANH', slug: 'bhx-vn', type: 'supermarket', countries: ['VN'], searchUrlTemplate: 'https://www.bachhoaxanh.com/tim-kiem?key={query}', priority: 40 },
+  { label: 'SM Markets', slug: 'smmarkets-ph', type: 'supermarket', countries: ['PH'], searchUrlTemplate: 'https://smmarkets.ph/catalogsearch/result/?q={query}', priority: 35 },
+  // Pakistan / Sri Lanka
+  { label: 'Carrefour Pakistan', slug: 'carrefour-pk', type: 'supermarket', countries: ['PK'], searchUrlTemplate: 'https://www.carrefourpakistan.com/mafpak/en/v4/search?keyword={query}', priority: 40 },
+  { label: 'Naheed', slug: 'naheed-pk', type: 'supermarket', countries: ['PK'], searchUrlTemplate: 'https://www.naheed.pk/catalogsearch/result?q={query}', priority: 35 },
+  { label: 'Keells', slug: 'keells-lk', type: 'supermarket', countries: ['LK'], searchUrlTemplate: 'https://www.keellssuper.com/search?query={query}', priority: 40 },
+  // Greece / Czechia / Slovakia / Hungary / Romania / Bulgaria / Croatia / Serbia / Ukraine / Baltics
+  { label: 'AB Vassilopoulos', slug: 'ab-gr', type: 'supermarket', countries: ['GR'], searchUrlTemplate: 'https://www.ab.gr/search?q={query}', priority: 40 },
+  { label: 'Rohlík', slug: 'rohlik-cz', type: 'delivery', countries: ['CZ'], searchUrlTemplate: 'https://www.rohlik.cz/hledat?q={query}', priority: 40 },
+  { label: 'Košík', slug: 'kosik-cz', type: 'delivery', countries: ['CZ'], searchUrlTemplate: 'https://www.kosik.cz/vyhledavani?q={query}', priority: 35 },
+  { label: 'Tesco Slovensko', slug: 'tesco-sk', type: 'supermarket', countries: ['SK'], searchUrlTemplate: 'https://potravinydomov.itesco.sk/groceries/sk-SK/search?query={query}', priority: 40 },
+  { label: 'Tesco Magyarország', slug: 'tesco-hu', type: 'supermarket', countries: ['HU'], searchUrlTemplate: 'https://bevasarlas.tesco.hu/groceries/hu-HU/search?query={query}', priority: 40 },
+  { label: 'Mega Image', slug: 'mega-image-ro', type: 'supermarket', countries: ['RO'], searchUrlTemplate: 'https://www.mega-image.ro/search?q={query}', priority: 40 },
+  { label: 'eBag', slug: 'ebag-bg', type: 'delivery', countries: ['BG'], searchUrlTemplate: 'https://www.ebag.bg/search/?q={query}', priority: 40 },
+  { label: 'Konzum', slug: 'konzum-hr', type: 'supermarket', countries: ['HR'], searchUrlTemplate: 'https://www.konzum.hr/web/search?q={query}', priority: 40 },
+  { label: 'Maxi', slug: 'maxi-rs', type: 'supermarket', countries: ['RS'], searchUrlTemplate: 'https://www.maxi.rs/search?q={query}', priority: 40 },
+  { label: 'Silpo', slug: 'silpo-ua', type: 'supermarket', countries: ['UA'], searchUrlTemplate: 'https://silpo.ua/search?find={query}', priority: 40 },
+  { label: 'Barbora', slug: 'barbora-lt', type: 'delivery', countries: ['LT'], searchUrlTemplate: 'https://www.barbora.lt/paieska?q={query}', priority: 40 },
+  { label: 'Barbora Latvija', slug: 'barbora-lv', type: 'delivery', countries: ['LV'], searchUrlTemplate: 'https://www.barbora.lv/meklet?q={query}', priority: 40 },
+  { label: 'Barbora Eesti', slug: 'barbora-ee', type: 'delivery', countries: ['EE'], searchUrlTemplate: 'https://www.barbora.ee/otsing?q={query}', priority: 40 },
+  // Israel / Gulf
+  { label: 'Shufersal', slug: 'shufersal-il', type: 'supermarket', countries: ['IL'], searchUrlTemplate: 'https://www.shufersal.co.il/online/he/search?text={query}', priority: 40 },
+  { label: 'Carrefour Qatar', slug: 'carrefour-qa', type: 'supermarket', countries: ['QA'], searchUrlTemplate: 'https://www.carrefourqatar.com/mafqat/en/v4/search?keyword={query}', priority: 40 },
+  // South America depth
+  { label: 'PlazaVea', slug: 'plazavea-pe', type: 'supermarket', countries: ['PE'], searchUrlTemplate: 'https://www.plazavea.com.pe/{query}?map=ft', priority: 40 },
+  { label: 'Tienda Inglesa', slug: 'tienda-inglesa-uy', type: 'supermarket', countries: ['UY'], searchUrlTemplate: 'https://www.tiendainglesa.com.uy/busqueda?q={query}', priority: 40 },
 ]

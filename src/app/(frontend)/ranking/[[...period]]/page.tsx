@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { PeriodPicker } from '@/components/PeriodPicker'
 import { RecipeCard } from '@/components/RecipeCard'
 import { findRankedRecipes } from '@/lib/queries'
 import { isFuture, parsePeriod, periodFor, shiftPeriod, type Grain, type Period } from '@/lib/ranking'
@@ -92,7 +93,13 @@ export default async function RankingPage({ params }: Props) {
           ) : (
             <span />
           )}
-          <p className="m-0 font-display text-[1.125rem] text-ink">{period.label}</p>
+          {/* The label is the control: reading a date and changing it are the
+              same gesture, so there's no separate "jump to" widget to find. */}
+          <PeriodPicker
+            grain={period.grain}
+            anchorIso={period.start ? period.start.toISOString().slice(0, 10) : ''}
+            label={period.label}
+          />
           {newer && !isFuture(newer, now) ? (
             <Link href={`/ranking/${newer.slug}`} className="chip no-underline">
               {newer.label} →

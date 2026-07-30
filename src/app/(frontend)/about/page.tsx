@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 
 export const metadata: Metadata = {
   title: 'About',
@@ -35,8 +36,8 @@ export default function AboutPage() {
           and to your country, and rotated fairly when more than one brand fits. It’s always marked
           “Partner”, its links never pass search credit, and{' '}
           <span className="font-semibold text-ink">we never take money to change a recipe</span>. When
-          a partner card earns on a recipe, we share part of that revenue with the creator who wrote
-          it.
+          a partner card earns on a recipe, {DEFAULT_CREATOR_REV_SHARE}% of that revenue goes to
+          the creator who wrote it.
         </p>
         <p>
           Curious about advertising?{' '}

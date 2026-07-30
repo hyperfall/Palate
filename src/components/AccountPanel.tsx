@@ -388,9 +388,20 @@ function DisplayNameField({ initial, onSaved }: { initial: string | null; onSave
           setValue(e.target.value)
           setStatus('idle')
         }}
+        // Blur-saves like the username field beside it. A QA run typed a new
+        // name, tabbed out expecting parity with its neighbour, and lost the
+        // change silently — two adjacent fields must not have two save models.
+        // The chip stays as the visible affordance and for anyone who expects
+        // an explicit save.
+        onBlur={() => void save()}
         className="rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
       />
       {dirty && <SaveChip status={status} label="Save name" onClick={() => void save()} />}
+      {!dirty && status === 'saved' && (
+        <span role="status" className="font-mono text-[0.75rem] text-richness">
+          Saved.
+        </span>
+      )}
       {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
     </label>
   )
@@ -708,6 +719,30 @@ export function AccountPanel() {
   const [session, setSession] = useState<SessionInfo | null>(null)
   const [savedCount, setSavedCount] = useState<number | null>(null)
   const [checked, setChecked] = useState(false)
+  // Which OAuth providers Supabase actually has switched on. The buttons used
+  // to render unconditionally, so with only email enabled a visitor clicking
+  // "Google" got a raw provider error — two dead buttons on the front door.
+  // GoTrue's settings endpoint is public and answers in one round trip.
+  const [oauthProviders, setOauthProviders] = useState<string[]>([])
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !key) return
+    let cancelled = false
+    void fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } })
+      .then((r) => r.json())
+      .then((d: { external?: Record<string, boolean> }) => {
+        if (cancelled || !d.external) return
+        setOauthProviders(Object.entries(d.external).filter(([k, v]) => v && k !== 'email' && k !== 'phone').map(([k]) => k))
+      })
+      .catch(() => {
+        /* endpoint unreachable — offer nothing rather than dead buttons */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!supabase) {
@@ -1195,16 +1230,20 @@ export function AccountPanel() {
         )}
       </form>
 
-      {mode !== 'recovery' && (
+      {mode !== 'recovery' && oauthProviders.length > 0 && (
         <div className="mt-6 border-t border-rule pt-5">
           <p className="eyebrow m-0">Or continue with</p>
           <div className="mt-2.5 flex gap-2">
-            <button type="button" onClick={() => void oauth('google')} className="chip">
-              Google
-            </button>
-            <button type="button" onClick={() => void oauth('github')} className="chip">
-              GitHub
-            </button>
+            {oauthProviders.includes('google') && (
+              <button type="button" onClick={() => void oauth('google')} className="chip">
+                Google
+              </button>
+            )}
+            {oauthProviders.includes('github') && (
+              <button type="button" onClick={() => void oauth('github')} className="chip">
+                GitHub
+              </button>
+            )}
           </div>
         </div>
       )}

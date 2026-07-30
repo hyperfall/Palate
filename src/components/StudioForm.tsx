@@ -492,6 +492,10 @@ export function StudioForm({
       setTouched(false)
       clearDraft()
       setDraftSavedAt(null)
+      // The banner reads from state, not storage — clearing only the storage
+      // left "you have an unfinished recipe" sitting above the success notice,
+      // flatly contradicting it (QA walked into exactly that).
+      setFoundDraft(null)
     } catch (error) {
       setNotice({
         kind: 'error',
@@ -542,6 +546,17 @@ export function StudioForm({
     {quick && (
       <div className="mb-8">
         <QuickPaste onApply={applyParsed} onCancel={() => setQuick(false)} />
+      </div>
+    )}
+    {notice?.kind === 'ok' && (
+      <div
+        role="status"
+        className="mb-6 rounded-lg border border-richness/50 bg-richness/10 px-4 py-3 text-[0.9375rem] text-ink"
+      >
+        {notice.text}{' '}
+        <Link href="/dashboard" className="text-flame underline underline-offset-4">
+          Track it on your dashboard →
+        </Link>
       </div>
     )}
     {foundDraft && (

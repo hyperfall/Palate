@@ -29,6 +29,7 @@
     "seed:cook-depth": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedCookDepth.ts",
     "icons": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/buildAppIcons.ts",
     "email:test": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/sendTestEmail.ts",
+    "fetch:logos": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fetchShopLogos.ts",
     "verify:grocery": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/verifyGroceryRetailers.ts",
     "audit:recipes": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/auditRecipes.ts",
     "fix:fossil-names": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fixFossilNames.ts",

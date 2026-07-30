@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Disclosure } from '@/components/Disclosure'
 import { retailersForCountry, shoppingListText } from '@/lib/grocery'
 import { retailerTile } from '@/lib/retailerBrand'
+import { SHOP_LOGOS } from '@/lib/shopLogos'
 
 export type ShopRetailer = {
   id: number | string
@@ -125,12 +126,28 @@ export function ShopThisList({
                     on ? 'border-ink bg-wash' : 'border-rule hover:border-ink/40'
                   }`}
                 >
+                  {/* The shop's own mark where we have it, self-hosted. The
+                      monogram sits underneath rather than beside it, so a
+                      missing or failed image degrades to a coloured tile
+                      instead of a broken-image icon. */}
                   <span
                     aria-hidden="true"
                     style={{ background: tile.bg, color: tile.fg }}
-                    className="grid h-7 w-7 shrink-0 place-items-center rounded font-mono text-[0.6875rem] font-bold"
+                    className="relative grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded font-mono text-[0.6875rem] font-bold"
                   >
                     {tile.initials}
+                    {SHOP_LOGOS.has(r.slug) && (
+                      // eslint-disable-next-line @next/next/no-img-element -- static self-hosted asset, no optimisation needed at 28px
+                      <img
+                        src={`/shops/${r.slug}.png`}
+                        alt=""
+                        width={28}
+                        height={28}
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full bg-white object-contain"
+                      />
+                    )}
                   </span>
                   <span className="min-w-0 truncate font-body text-[0.875rem] text-ink">{r.label}</span>
                   {on && (

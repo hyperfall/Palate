@@ -91,6 +91,19 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: '/ranking/all',
+    label: 'Ranking',
+    icon: (
+      // Three bars on a podium — a standings mark, not another list glyph.
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M4 20h16" />
+        <rect x="5" y="12" width="4" height="8" rx="1" />
+        <rect x="10" y="7" width="4" height="13" rx="1" />
+        <rect x="15" y="15" width="4" height="5" rx="1" />
+      </svg>
+    ),
+  },
+  {
     href: '/collections',
     label: 'Saved',
     icon: (

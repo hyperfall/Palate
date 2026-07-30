@@ -22,7 +22,7 @@ const BROWSE_LINKS = [
   { href: '/browse', label: 'Collections', datum: 'curated' },
   { href: '/cuisines', label: 'Cuisines', datum: 'by country' },
   { href: '/ingredients', label: 'Ingredients', datum: 'the pantry' },
-  { href: '/ranking/all', label: 'The board', datum: 'most voted' },
+  { href: '/ranking/all', label: 'Ranking', datum: 'most voted' },
   { href: '/collections', label: 'Saved', datum: 'your shelf' },
 ] as const
 

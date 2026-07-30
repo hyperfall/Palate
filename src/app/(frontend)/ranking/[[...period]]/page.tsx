@@ -34,7 +34,7 @@ async function resolve(params: Props['params']): Promise<Period> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const period = await resolve(params)
-  const title = period.grain === 'all' ? 'The board, all time' : `The board — ${period.label}`
+  const title = period.grain === 'all' ? 'Top of the pass, all time' : `Top of the pass — ${period.label}`
   return {
     title,
     description: `The most voted recipes on Palate${period.grain === 'all' ? '' : ` for ${period.label}`}, ranked by how many people scored them.`,
@@ -65,7 +65,7 @@ export default async function RankingPage({ params }: Props) {
   return (
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[58ch]">
-        <p className="eyebrow m-0">The board</p>
+        <p className="eyebrow m-0">Top of the pass</p>
         <h1 className="mt-1 text-[clamp(1.75rem,4.5vw,3rem)] leading-[1.05]">
           What everyone actually cooked well.
         </h1>
@@ -138,17 +138,17 @@ export default async function RankingPage({ params }: Props) {
           <p className="mt-2 text-slate">
             {isFuture(period, now)
               ? 'This board fills in as people cook and score.'
-              : 'Nobody scored a recipe in this period. Cook something and be the first — a single vote puts a dish on the board.'}
+              : 'Nobody scored a recipe in this period. Cook something and be the first — a single vote puts a dish up here.'}
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/ranking/all" className="btn-primary">
-              See the all-time board →
+              See the all-time ranking →
             </Link>
             <Link
               href="/recipes"
               className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
             >
-              Browse the board
+              Browse every recipe
             </Link>
           </div>
         </div>

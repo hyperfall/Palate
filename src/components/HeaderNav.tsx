@@ -15,6 +15,9 @@ const NAV = [
   { href: '/plan', label: 'Plan', prefixes: ['/plan'] },
   { href: '/students', label: 'Students', prefixes: ['/students'] },
   { href: '/recipes', label: 'Recipes', prefixes: ['/recipes', '/browse'] },
+  // Sits next to Recipes: both are ways of reading the catalogue, one by
+  // filter and one by what people actually voted for.
+  { href: '/ranking/all', label: 'Ranking', prefixes: ['/ranking'] },
   { href: '/cuisines', label: 'Cuisines', prefixes: ['/cuisines', '/cuisine'] },
 ]
 

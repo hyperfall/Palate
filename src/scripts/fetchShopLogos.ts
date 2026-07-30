@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import sharp from 'sharp'
@@ -39,6 +39,58 @@ const CANDIDATES = [
   '/favicon.svg',
   '/favicon.ico',
 ]
+
+/**
+ * Icon services, used ONCE from this machine as a last resort for retailers
+ * that refuse direct fetches (Asda, Amazon, most Carrefour regions). The
+ * privacy rule was never "no third parties" — it was "no third parties in the
+ * READER's browser", and a build-time fetch that we then self-host keeps that
+ * intact. Service results are held to a minimum size, because both return a
+ * generic placeholder when they don't know the site, and a 16px globe blown up
+ * to 96px is worse than our monogram.
+ */
+const serviceSources = (host: string): string[] => {
+  // Both services index bare domains more reliably than www. hosts.
+  const bare = host.replace(/^www\./, '')
+  const hosts = bare === host ? [host] : [bare, host]
+  return hosts.flatMap((h) => [
+    `https://icons.duckduckgo.com/ip3/${h}.ico`,
+    `https://www.google.com/s2/favicons?domain=${h}&sz=128`,
+  ])
+}
+
+/**
+ * Chains that carry one global mark: when a regional site can't be fetched,
+ * its sibling's already-fetched logo is the same logo. Only true same-mark
+ * brands belong here — Jumbo NL and Jumbo Chile are different companies.
+ */
+const SAME_MARK: Record<string, string> = {
+  'walmart-ca': 'walmart',
+  'walmart-mx': 'walmart',
+  'carrefour-es': 'carrefour-fr',
+}
+
+/**
+ * Forced overrides, applied even when the fetch succeeds. The Gulf and
+ * African Carrefours are run by Majid Al Futtaim and publish MAF's corporate
+ * "M" as their favicon — accurate for the operator, unrecognisable for a
+ * shopper who knows the Carrefour arrows. Recognition is the whole point of
+ * the tile, so the arrows win.
+ */
+const FORCE_MARK: Record<string, string> = {
+  'carrefour-ae': 'carrefour-fr',
+  'carrefour-sa': 'carrefour-fr',
+  'carrefour-ke': 'carrefour-fr',
+  'carrefour-br': 'carrefour-fr',
+}
+
+/**
+ * Fetched, inspected, rejected: what these sites publish renders worse at
+ * tile size than our monogram (Intermarché's is a full wordmark that blurs
+ * into noise at 28px). They stay monogram until someone hand-places a better
+ * asset.
+ */
+const EXCLUDE = new Set<string>(['intermarche-fr'])
 
 const origin = (template: string): string | null => {
   try {
@@ -159,28 +211,77 @@ const CONCURRENCY = 6
 await Promise.all(
   Array.from({ length: CONCURRENCY }, async () => {
     for (let r = queue.shift(); r; r = queue.shift()) {
+      if (EXCLUDE.has(r.slug)) {
+        missing.push(r.slug)
+        continue
+      }
       const base = origin(r.searchUrlTemplate)
       if (!base) {
         missing.push(`${r.slug} (bad url)`)
         continue
       }
-      let saved = false
       const declared = await declaredIcons(base)
-      const attempts = [...declared, ...CANDIDATES.map((c) => base + c)]
+      const host = new URL(base).hostname
+      // Direct sources first (the site's own files), services as a last resort.
+      const attempts = [...declared, ...CANDIDATES.map((c) => base + c), ...serviceSources(host)]
+
+      // The first pass took the first icon that decoded, which shipped 32px
+      // favicons stretched to 96 — recognisable but soft. Now every candidate
+      // is measured and the largest wins; the hunt stops early only once
+      // something is already at full tile size.
+      let best: { buf: Buffer; size: number } | null = null
       for (const candidate of attempts) {
+        const isService = candidate.includes('duckduckgo.com') || candidate.includes('google.com/s2')
+        if (isService && best && best.size >= 48) break
         const raw = await get(candidate)
         if (!raw) continue
-        const png = await normalise(raw)
-        if (!png) continue
-        await writeFile(path.join(OUT, `${r.slug}.png`), png)
-        found.push(r.slug)
-        saved = true
-        break
+        const meta = await sharp(raw).metadata().catch(() => null)
+        const size = Math.min(meta?.width ?? 0, meta?.height ?? 0)
+        if (size === 0) continue
+        // Services hand back a placeholder for unknown hosts; refuse tiny ones.
+        if (isService && size < 48) continue
+        if (!best || size > best.size) best = { buf: raw, size }
+        if (best.size >= SIZE) break
       }
-      if (!saved) missing.push(r.slug)
+
+      if (best) {
+        const png = await normalise(best.buf)
+        if (png) {
+          await writeFile(path.join(OUT, `${r.slug}.png`), png)
+          found.push(r.slug)
+          continue
+        }
+      }
+      // Same-mark sibling: copy its already-normalised file.
+      const sibling = SAME_MARK[r.slug]
+      if (sibling) {
+        try {
+          const buf = await readFile(path.join(OUT, `${sibling}.png`))
+          await writeFile(path.join(OUT, `${r.slug}.png`), buf)
+          found.push(r.slug)
+          continue
+        } catch {
+          /* sibling missing too — fall through */
+        }
+      }
+      missing.push(r.slug)
     }
   }),
 )
+
+// Forced same-mark overrides, after all fetches so the sibling file exists.
+for (const [slug, sibling] of Object.entries(FORCE_MARK)) {
+  try {
+    const buf = await readFile(path.join(OUT, `${sibling}.png`))
+    await writeFile(path.join(OUT, `${slug}.png`), buf)
+    if (!found.includes(slug)) found.push(slug)
+    const i = missing.indexOf(slug)
+    if (i >= 0) missing.splice(i, 1)
+    console.log(`forced: ${slug} ← ${sibling}`)
+  } catch {
+    console.log(`forced FAILED (no ${sibling}.png): ${slug}`)
+  }
+}
 
 // A generated manifest, because the client can't stat the filesystem: the tile
 // needs to know whether to render an image or the monogram BEFORE it paints,

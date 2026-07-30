@@ -42,6 +42,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+/** Five stars, filled to the rounded average — read-only, in board colours. */
+function Stars({ value }: { value: number }) {
+  const filled = Math.round(value)
+  return (
+    <span aria-hidden="true" className="tracking-[0.1em]">
+      <span className="text-flame">{'★'.repeat(filled)}</span>
+      <span className="text-rule">{'★'.repeat(5 - filled)}</span>
+    </span>
+  )
+}
+
 export default async function RankingPage({ params }: Props) {
   const period = await resolve(params)
   const now = new Date()
@@ -63,55 +74,61 @@ export default async function RankingPage({ params }: Props) {
         </p>
       </header>
 
-      {/* Grain switch. Each links to the CURRENT bucket of that grain, so
-          switching from a March day to "this month" lands on this month rather
-          than March — a period switch is "show me now at this zoom". */}
-      <nav aria-label="Ranking period" className="mt-8 flex flex-wrap gap-2">
-        {GRAINS.map(({ grain, label }) => {
-          const target = periodFor(grain, now)
-          return (
-            <Link
-              key={grain}
-              href={`/ranking/${target.slug}`}
-              aria-current={period.grain === grain ? 'page' : undefined}
-              className="chip no-underline"
-              data-active={period.grain === grain}
-            >
-              {label}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Step through time at the current grain. */}
-      {period.grain !== 'all' && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-y border-rule py-3">
-          {older ? (
-            <Link href={`/ranking/${older.slug}`} className="chip no-underline">
-              ← {older.label}
-            </Link>
-          ) : (
-            <span />
-          )}
-          {/* The label is the control: reading a date and changing it are the
-              same gesture, so there's no separate "jump to" widget to find. */}
-          <PeriodPicker
-            grain={period.grain}
-            anchorIso={period.start ? period.start.toISOString().slice(0, 10) : ''}
-            label={period.label}
-          />
-          {newer && !isFuture(newer, now) ? (
-            <Link href={`/ranking/${newer.slug}`} className="chip no-underline">
-              {newer.label} →
-            </Link>
-          ) : (
-            // The future is not a place with votes in it.
-            <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate/50 uppercase">
-              nothing after this yet
-            </span>
-          )}
-        </div>
-      )}
+      {/* One control band: zoom on the left, time travel on the right. Three
+          separate rows drifting across the full shell read as clutter; a
+          single ruled band reads as the board's controls. */}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y border-rule py-3">
+        <nav aria-label="Ranking period" className="flex flex-wrap gap-2">
+          {GRAINS.map(({ grain, label }) => {
+            const target = periodFor(grain, now)
+            return (
+              <Link
+                key={grain}
+                href={`/ranking/${target.slug}`}
+                aria-current={period.grain === grain ? 'page' : undefined}
+                className="chip no-underline"
+                data-active={period.grain === grain}
+              >
+                {label}
+              </Link>
+            )
+          })}
+        </nav>
+        {period.grain !== 'all' && (
+          <div className="flex items-center gap-2">
+            {older && (
+              <Link
+                href={`/ranking/${older.slug}`}
+                aria-label={`Earlier: ${older.label}`}
+                className="chip no-underline"
+              >
+                ←
+              </Link>
+            )}
+            {/* The label is the control: reading the date and changing it are
+                the same gesture. */}
+            <PeriodPicker
+              grain={period.grain}
+              anchorIso={period.start ? period.start.toISOString().slice(0, 10) : ''}
+              label={period.label}
+            />
+            {newer && !isFuture(newer, now) ? (
+              <Link
+                href={`/ranking/${newer.slug}`}
+                aria-label={`Later: ${newer.label}`}
+                className="chip no-underline"
+              >
+                →
+              </Link>
+            ) : (
+              // The future is not a place with votes in it.
+              <span aria-hidden="true" className="chip pointer-events-none opacity-30">
+                →
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {ranked.length === 0 ? (
         <div className="mt-10 max-w-[52ch]">
@@ -137,46 +154,92 @@ export default async function RankingPage({ params }: Props) {
         </div>
       ) : (
         <>
-          {/* The winner gets the space. A leaderboard where first place looks
-              like fourth place isn't announcing anything. */}
-          <section className="mt-10">
-            <p className="eyebrow m-0 text-flame">
-              {period.grain === 'all' ? 'Most voted, all time' : `Most voted · ${period.label}`}
-            </p>
-            <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-center">
-              <RecipeCard recipe={winner.recipe} featured />
-              <div>
-                <p className="m-0 font-display text-[clamp(1.5rem,3vw,2.25rem)] leading-tight text-ink">
-                  {winner.recipe.title}
-                </p>
-                <p className="mt-3 font-mono text-[0.875rem] text-slate">
-                  <span className="text-ink">{winner.votes}</span>{' '}
-                  {winner.votes === 1 ? 'vote' : 'votes'} · averaging{' '}
-                  <span className="text-ink">{winner.average.toFixed(1)}</span> out of 5
-                </p>
-              </div>
+          {/* First place: rank numeral, the card, and a tally that fills its
+              column. The old layout printed the card's own title again beside
+              it and left the right half of the page empty — announcing nothing
+              with most of the space. */}
+          <section className="mt-10 grid gap-x-10 gap-y-6 lg:grid-cols-[auto_minmax(0,24rem)_minmax(0,1fr)] lg:items-start">
+            <div className="flex items-baseline gap-4 lg:block">
+              <p
+                aria-hidden="true"
+                className="m-0 font-display text-[clamp(4rem,10vw,7.5rem)] leading-[0.8] text-flame"
+              >
+                1
+              </p>
+              <p className="eyebrow m-0 lg:mt-3">
+                Most voted
+                {period.grain !== 'all' && (
+                  <>
+                    <br className="max-lg:hidden" /> {period.label}
+                  </>
+                )}
+              </p>
             </div>
+
+            <RecipeCard recipe={winner.recipe} featured />
+
+            {/* The tally: the numbers a leaderboard owes its winner, in the
+                site's dotted-leader ledger voice. */}
+            <dl className="m-0 grid content-start gap-2.5 border-t-2 border-ink pt-4 lg:max-w-[22rem]">
+              <div className="leader">
+                <dt className="eyebrow">Votes</dt>
+                <span className="leader__dots" aria-hidden="true" />
+                <dd className="datum m-0">{winner.votes}</dd>
+              </div>
+              <div className="leader">
+                <dt className="eyebrow">Average</dt>
+                <span className="leader__dots" aria-hidden="true" />
+                <dd className="datum m-0">
+                  <Stars value={winner.average} /> {winner.average.toFixed(1)}
+                </dd>
+              </div>
+              {typeof winner.recipe.cuisine === 'object' && winner.recipe.cuisine && (
+                <div className="leader">
+                  <dt className="eyebrow">Kitchen</dt>
+                  <span className="leader__dots" aria-hidden="true" />
+                  <dd className="datum m-0">{winner.recipe.cuisine.name}</dd>
+                </div>
+              )}
+              {rest[0] && (
+                <div className="leader">
+                  <dt className="eyebrow">Lead over Nº2</dt>
+                  <span className="leader__dots" aria-hidden="true" />
+                  <dd className="datum m-0">
+                    {winner.votes - rest[0].votes === 0
+                      ? 'tied on votes'
+                      : `${winner.votes - rest[0].votes} ${winner.votes - rest[0].votes === 1 ? 'vote' : 'votes'}`}
+                  </dd>
+                </div>
+              )}
+              <Link href={`/recipes/${winner.recipe.slug}`} className="btn-primary mt-3 w-fit">
+                Cook it →
+              </Link>
+            </dl>
           </section>
 
           {rest.length > 0 && (
-            <section className="mt-12">
+            <section className="mt-14">
               <h2 className="eyebrow m-0">The rest of the field</h2>
-              <ol className="m-0 mt-4 grid list-none gap-0 p-0">
+              {/* Two ledger columns at xl: eighteen single-file rows was a
+                  scroll, not a board. */}
+              <ol className="m-0 mt-4 grid list-none gap-x-12 gap-y-0 p-0 xl:grid-cols-2">
                 {rest.map((entry, i) => (
-                  <li
-                    key={entry.recipe.id}
-                    className="flex items-baseline gap-4 border-b border-rule py-3 last:border-b-0"
-                  >
-                    <span className="datum w-6 shrink-0 text-slate tabular-nums">{i + 2}</span>
+                  <li key={entry.recipe.id} className="border-b border-rule">
                     <Link
                       href={`/recipes/${entry.recipe.slug}`}
-                      className="min-w-0 flex-1 truncate text-[1.0625rem] text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
+                      className="group flex items-baseline gap-4 py-3 no-underline"
                     >
-                      {entry.recipe.title}
+                      <span className="w-8 shrink-0 font-display text-[1.25rem] leading-none text-slate/60 tabular-nums group-hover:text-flame">
+                        {String(i + 2).padStart(2, '0')}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[1.0625rem] text-ink group-hover:text-flame">
+                        {entry.recipe.title}
+                      </span>
+                      <span className="shrink-0 font-mono text-[0.8125rem] tabular-nums text-slate">
+                        {entry.votes} {entry.votes === 1 ? 'vote' : 'votes'} ·{' '}
+                        {entry.average.toFixed(1)}★
+                      </span>
                     </Link>
-                    <span className="shrink-0 font-mono text-[0.8125rem] tabular-nums text-slate">
-                      {entry.votes} {entry.votes === 1 ? 'vote' : 'votes'} · {entry.average.toFixed(1)}★
-                    </span>
                   </li>
                 ))}
               </ol>

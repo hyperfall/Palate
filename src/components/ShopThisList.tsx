@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { Disclosure } from '@/components/Disclosure'
 import { retailersForCountry, shoppingListText } from '@/lib/grocery'
+import { ALL_COUNTRY_CODES } from '@/lib/countries'
 import { retailerTile } from '@/lib/retailerBrand'
 import { SHOP_LOGOS } from '@/lib/shopLogos'
 
@@ -65,13 +66,19 @@ export function ShopThisList({
 
   const eligible = useMemo(() => retailersForCountry(retailers, country), [retailers, country])
 
-  // Countries worth offering: only the ones at least one retailer serves.
-  const covered = useMemo(() => {
-    const codes = new Set<string>()
-    for (const r of retailers) for (const c of r.countries) codes.add(c.code.toUpperCase())
-    return [...codes]
-      .map((code) => ({ code, name: countryName(code) }))
-      .sort((a, b) => a.name.localeCompare(b.name))
+  // Every country, split into served and not-yet. The site carries 208
+  // cuisines; a picker that only lists covered countries tells everyone else
+  // their home doesn't exist. Picking an unserved country is a real choice —
+  // it gets the copy-list fallback and remembers, same as any other.
+  const { covered, uncovered } = useMemo(() => {
+    const has = new Set<string>()
+    for (const r of retailers) for (const c of r.countries) has.add(c.code.toUpperCase())
+    const named = (codes: string[]) =>
+      codes.map((code) => ({ code, name: countryName(code) })).sort((a, b) => a.name.localeCompare(b.name))
+    return {
+      covered: named([...has]),
+      uncovered: named(ALL_COUNTRY_CODES.filter((c) => !has.has(c))),
+    }
   }, [retailers])
 
   // Keep the active retailer valid as the country changes.
@@ -222,18 +229,27 @@ export function ShopThisList({
         <label className="flex flex-wrap items-center gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
           Shopping somewhere else?
           <select
-            value={country && covered.some((c) => c.code === country) ? country : ''}
+            value={country ?? ''}
             onChange={(e) => pickCountry(e.target.value)}
             className="rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink focus:border-flame focus:outline-none"
           >
             <option value="" disabled>
               Pick a country
             </option>
-            {covered.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
+            <optgroup label={`With shops (${covered.length})`}>
+              {covered.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="No shops listed yet — copy list still works">
+              {uncovered.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </label>
         </div>

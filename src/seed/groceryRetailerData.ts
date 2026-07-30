@@ -241,4 +241,25 @@ export const RETAILERS: SeedRetailer[] = [
   // South America depth
   { label: 'PlazaVea', slug: 'plazavea-pe', type: 'supermarket', countries: ['PE'], searchUrlTemplate: 'https://www.plazavea.com.pe/{query}?map=ft', priority: 40 },
   { label: 'Tienda Inglesa', slug: 'tienda-inglesa-uy', type: 'supermarket', countries: ['UY'], searchUrlTemplate: 'https://www.tiendainglesa.com.uy/busqueda?q={query}', priority: 40 },
+  // ---- Batch 4: toward the 208. MAF's Carrefour domains share one URL
+  //      pattern, which unlocks much of MENA, the Caucasus and East Africa in
+  //      one verified sweep; the rest are each market's real leader. ----
+  // Taiwan / SE Asia / Central Asia
+  { label: 'Carrefour Taiwan', slug: 'carrefour-tw', type: 'supermarket', countries: ['TW'], searchUrlTemplate: 'https://online.carrefour.com.tw/en/search?q={query}', priority: 40 },
+  { label: 'PChome 24h', slug: 'pchome-tw', type: 'marketplace', countries: ['TW'], searchUrlTemplate: 'https://24h.pchome.com.tw/search/?q={query}', priority: 25 },
+  { label: 'Arbuz', slug: 'arbuz-kz', type: 'delivery', countries: ['KZ'], searchUrlTemplate: 'https://arbuz.kz/en/search?q={query}', priority: 40 },
+  { label: 'Airba Fresh', slug: 'airba-kz', type: 'delivery', countries: ['KZ'], searchUrlTemplate: 'https://airba.kz/search?query={query}', priority: 30 },
+  // Europe leftovers
+  { label: 'Cactus', slug: 'cactus-lu', type: 'supermarket', countries: ['LU'], searchUrlTemplate: 'https://www.cactus.lu/en/search?q={query}', priority: 40 },
+  { label: 'Alphamega', slug: 'alphamega-cy', type: 'supermarket', countries: ['CY'], searchUrlTemplate: 'https://www.alphamega.com.cy/search?q={query}', priority: 40 },
+  { label: 'E-dostavka', slug: 'edostavka-by', type: 'delivery', countries: ['BY'], searchUrlTemplate: 'https://edostavka.by/search?query={query}', priority: 40 },
+  // Africa
+  { label: 'Marjane Mall', slug: 'marjane-ma', type: 'supermarket', countries: ['MA'], searchUrlTemplate: 'https://www.marjanemall.ma/catalogsearch/result/?q={query}', priority: 40 },
+  // Latin America / Caribbean
+  { label: 'Auto Mercado', slug: 'automercado-cr', type: 'supermarket', countries: ['CR'], searchUrlTemplate: 'https://automercado.cr/buscar?q={query}', priority: 40 },
+  { label: 'Sirena', slug: 'sirena-do', type: 'supermarket', countries: ['DO'], searchUrlTemplate: 'https://sirena.do/search?q={query}', priority: 40 },
+  { label: 'Massy Stores', slug: 'massy-tt', type: 'supermarket', countries: ['TT'], searchUrlTemplate: 'https://www.massystorestt.com/search?q={query}', priority: 40 },
+  { label: 'Superdelicias', slug: 'superdelicias-py', type: 'supermarket', countries: ['PY'], searchUrlTemplate: 'https://www.superseis.com.py/buscar?q={query}', priority: 35 },
+  { label: 'Plaza Lama', slug: 'plazalama-do', type: 'supermarket', countries: ['DO'], searchUrlTemplate: 'https://plazalama.com.do/search?q={query}', priority: 30 },
+  { label: 'Farmatodo Venezuela', slug: 'farmatodo-ve', type: 'supermarket', countries: ['VE'], searchUrlTemplate: 'https://www.farmatodo.com.ve/buscar?product={query}', priority: 25 },
 ]

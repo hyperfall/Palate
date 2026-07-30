@@ -57,7 +57,17 @@ export const metadata: Metadata = {
     // Dark bar over the pan-coloured header, rather than a pale strip above it.
     statusBarStyle: 'black-translucent',
   },
+  // Every icon is declared here, deliberately. Setting metadata.icons at all
+  // REPLACES the app-router file convention's generated links — so adding just
+  // `apple` for the PWA work silently removed <link rel="icon"> and the site
+  // lost its favicon. Listing them is the only safe shape once this key exists.
   icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/icon-32.png',
     apple: '/apple-icon-180.png',
   },
 }

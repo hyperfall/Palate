@@ -50,6 +50,11 @@ const OUT = path.join(process.cwd(), 'public')
 await mkdir(OUT, { recursive: true })
 
 const targets = [
+  // The browser-tab favicon. Explicitly generated because the app-router file
+  // convention stopped emitting <link rel="icon"> once layout metadata declared
+  // an apple icon — setting metadata.icons REPLACES the convention's links,
+  // which silently cost the site its favicon.
+  { file: 'icon-32.png', size: 32, inset: 0 },
   { file: 'icon-192.png', size: 192, inset: 0 },
   { file: 'icon-512.png', size: 512, inset: 0 },
   // Maskable: the mark pulled well inside the safe zone so a circular crop
@@ -69,5 +74,9 @@ for (const t of targets) {
   console.log(`${t.file}  ${t.size}×${t.size}${t.inset ? `  (inset ${t.inset})` : ''}`)
 }
 
-console.log(`\n${targets.length} icons written to public/`)
+// Vector favicon alongside the raster ones — sharp at any tab density.
+await writeFile(path.join(OUT, 'icon.svg'), markSvg({ size: 32 }))
+console.log('icon.svg  vector')
+
+console.log(`\n${targets.length + 1} icons written to public/`)
 process.exit(0)

@@ -32,6 +32,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl('/cuisines'), changeFrequency: 'weekly', priority: 0.7 },
     { url: absoluteUrl('/browse'), changeFrequency: 'weekly', priority: 0.7 },
     { url: absoluteUrl('/ingredients'), changeFrequency: 'weekly', priority: 0.7 },
+    // The board: all-time plus the current month and year. Daily and weekly
+    // permalinks exist and work, but sitemapping every past day would be
+    // thousands of near-empty pages spending crawl budget on nothing.
+    { url: absoluteUrl('/ranking/all'), changeFrequency: 'daily', priority: 0.7 },
+    ...(() => {
+      const now = new Date()
+      const month = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+      return [
+        { url: absoluteUrl(`/ranking/${month}`), changeFrequency: 'daily' as const, priority: 0.6 },
+        { url: absoluteUrl(`/ranking/${now.getUTCFullYear()}`), changeFrequency: 'daily' as const, priority: 0.6 },
+      ]
+    })(),
     ...COLLECTIONS.map((c) => ({
       url: absoluteUrl(`/browse/${c.slug}`),
       changeFrequency: 'weekly' as const,

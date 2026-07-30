@@ -384,6 +384,90 @@ export const findIngredientGraph = cache(async (ingredientId: number): Promise<I
   return { recipes: found.docs, pairsWith: tallyPairings(found.docs, ingredientId) }
 })
 
+export type RankedRecipe = {
+  recipe: Recipe
+  votes: number
+  average: number
+}
+
+/**
+ * Recipes ranked by how many people voted for them inside a window.
+ *
+ * "Most voted" means exactly that — vote COUNT leads, because a single
+ * five-star rating should never outrank a dish forty people scored well.
+ * Average breaks ties, then id so the order can't wobble between requests.
+ *
+ * Ratings carry createdAt, so a rating cast today counts toward today's board
+ * even for a recipe published years ago — the board measures the period's
+ * enthusiasm, not the catalogue's age.
+ */
+export const findRankedRecipes = cache(
+  async (
+    start: Date | null,
+    end: Date | null,
+    limit = 20,
+  ): Promise<RankedRecipe[]> => {
+    const payload = await getPayloadClient()
+    // All-time passes no clause at all rather than an unbounded range.
+    const where =
+      start && end
+        ? {
+            and: [
+              { createdAt: { greater_than_equal: start.toISOString() } },
+              { createdAt: { less_than: end.toISOString() } },
+            ],
+          }
+        : undefined
+
+    const ratings = await payload.find({
+      collection: 'ratings',
+      ...(where ? { where } : {}),
+      // Ratings are one small row each; the cap is a runaway guard, not a page
+      // size — every rating in the window must be counted for the totals to
+      // mean anything.
+      limit: 5000,
+      pagination: false,
+      depth: 0,
+      select: { recipe: true, stars: true },
+    })
+
+    const tally = new Map<number, { votes: number; total: number }>()
+    for (const r of ratings.docs) {
+      const id = typeof r.recipe === 'object' ? (r.recipe as { id: number }).id : (r.recipe as number)
+      if (typeof id !== 'number') continue
+      const entry = tally.get(id) ?? { votes: 0, total: 0 }
+      entry.votes += 1
+      entry.total += Number(r.stars) || 0
+      tally.set(id, entry)
+    }
+    if (tally.size === 0) return []
+
+    const ranked = [...tally.entries()]
+      .map(([id, t]) => ({ id, votes: t.votes, average: t.total / t.votes }))
+      .sort((a, b) => b.votes - a.votes || b.average - a.average || a.id - b.id)
+      .slice(0, limit)
+
+    // One query for the winners, then reorder — Payload can't sort by a tally
+    // it doesn't hold, and fetching per recipe would be a query per row.
+    const found = await payload.find({
+      collection: 'recipes',
+      where: { and: [PUBLISHED, { id: { in: ranked.map((r) => r.id) } }] },
+      depth: 1,
+      limit: ranked.length,
+    })
+    const bySlug = new Map(found.docs.map((d) => [d.id, d]))
+
+    return ranked
+      .map((r) => {
+        const recipe = bySlug.get(r.id)
+        // A rated recipe can since have been unpublished; it drops off the
+        // board rather than rendering a dead card.
+        return recipe ? { recipe, votes: r.votes, average: r.average } : null
+      })
+      .filter((r): r is RankedRecipe => r !== null)
+  },
+)
+
 export async function findAuthorsWithHandles(): Promise<Author[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({

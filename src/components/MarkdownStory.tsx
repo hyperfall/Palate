@@ -1,20 +1,88 @@
+import type { ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
+import { deservesContents, headingId, outlineOf, readingTime } from '@/lib/storyOutline'
 
 /**
  * Renders a creator's Story markdown. react-markdown is safe by default — raw
  * HTML in the source is escaped, so this can't inject scripts even though the
  * content is creator-authored. Images (`![alt](url)`) are styled to the reading
  * column; links open in a new tab. GFM adds tables/strikethrough/task lists.
+ *
+ * Headings carry stable ids so any section can be linked to directly, and a
+ * contents block appears only when the story is long AND sectioned enough to
+ * need one — see deservesContents. A short note gets none: a list of links
+ * taller than the prose it indexes is furniture, not navigation.
  */
+/** The text of a heading's rendered children, for id generation. */
+function textOf(node: ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(textOf).join('')
+  if (node && typeof node === 'object' && 'props' in node) {
+    return textOf((node as { props: { children?: ReactNode } }).props.children)
+  }
+  return ''
+}
+
 export function MarkdownStory({ markdown }: { markdown: string }) {
+  const headings = outlineOf(markdown)
+  const showContents = deservesContents(markdown, headings)
+  const minutes = readingTime(markdown)
+
+  // The renderer walks the source independently of outlineOf, so ids are
+  // regenerated here in the same document order with the same collision rule —
+  // that's what makes a contents link land on its heading.
+  // headingId is pure, so the renderer and outlineOf independently derive the
+  // same id for the same text — which is what makes a contents link land.
+
   return (
     <div className="story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink">
+      {showContents && (
+        <nav
+          aria-label="In this story"
+          className="mb-8 border-y border-rule py-4"
+        >
+          <p className="eyebrow m-0 flex flex-wrap items-baseline justify-between gap-3">
+            In this story
+            {minutes && <span className="text-slate/70">{minutes}</span>}
+          </p>
+          <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
+            {headings.map((h) => (
+              <li key={h.id} className={h.depth === 3 ? 'pl-4' : undefined}>
+                <a
+                  href={`#${h.id}`}
+                  className="text-[0.9375rem] text-slate no-underline hover:text-flame hover:underline hover:underline-offset-4"
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          h2: (props) => <h2 className="mt-8 mb-2 font-display text-[1.5rem] text-ink" {...props} />,
-          h3: (props) => <h3 className="mt-6 mb-2 font-display text-[1.25rem] text-ink" {...props} />,
+          // scroll-mt keeps a jumped-to heading clear of the sticky header.
+          h2: ({ children, ...props }) => (
+            <h2
+              id={headingId(textOf(children))}
+              className="mt-8 mb-2 scroll-mt-24 font-display text-[1.5rem] text-ink"
+              {...props}
+            >
+              {children}
+            </h2>
+          ),
+          h3: ({ children, ...props }) => (
+            <h3
+              id={headingId(textOf(children))}
+              className="mt-6 mb-2 scroll-mt-24 font-display text-[1.25rem] text-ink"
+              {...props}
+            >
+              {children}
+            </h3>
+          ),
           p: (props) => <p className="my-4 text-slate" {...props} />,
           ul: (props) => <ul className="my-4 list-disc pl-5 text-slate" {...props} />,
           ol: (props) => <ol className="my-4 list-decimal pl-5 text-slate" {...props} />,
@@ -25,9 +93,8 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
           blockquote: (props) => (
             <blockquote className="my-4 border-l-2 border-flame/50 pl-4 text-slate italic" {...props} />
           ),
-          // eslint-disable-next-line @next/next/no-img-element -- markdown image, arbitrary creator URL
           img: ({ node: _n, ...props }) => (
-            // eslint-disable-next-line @next/next/no-img-element
+            // eslint-disable-next-line @next/next/no-img-element -- markdown image at an arbitrary creator URL; next/image can't optimise it
             <img className="my-6 w-full rounded-lg border border-rule" alt={props.alt ?? ''} {...props} />
           ),
           code: (props) => <code className="rounded bg-wash px-1.5 py-0.5 font-mono text-[0.9em]" {...props} />,

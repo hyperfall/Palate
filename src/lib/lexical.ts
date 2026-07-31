@@ -28,6 +28,40 @@ export function lexicalToPlainText(value: LexicalValue): string {
   return parts.join(' ').replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * The same content, kept as separate paragraphs.
+ *
+ * `lexicalToPlainText` inserts a break at every block boundary and then its
+ * final `\s+` collapse destroys them — correct for a meta description, which
+ * must be one line, and wrong for the page, where a three-paragraph story was
+ * rendering as a single undifferentiated wall. Display uses this; metadata
+ * keeps the flattened form.
+ */
+export function lexicalToParagraphs(value: LexicalValue): string[] {
+  const root = value?.root
+  if (!root) return []
+
+  const out: string[] = []
+  let current: string[] = []
+  const flush = () => {
+    const text = current.join(' ').replace(/\s+/g, ' ').trim()
+    if (text) out.push(text)
+    current = []
+  }
+
+  const walk = (node: LexicalNode) => {
+    if (typeof node.text === 'string') current.push(node.text)
+    node.children?.forEach(walk)
+    // A block ends the paragraph being gathered rather than adding whitespace
+    // that a later collapse can eat.
+    if (node.type === 'paragraph' || node.type === 'heading') flush()
+  }
+  walk(root)
+  flush()
+
+  return out
+}
+
 export function countWords(value: LexicalValue): number {
   const text = lexicalToPlainText(value)
   if (!text) return 0

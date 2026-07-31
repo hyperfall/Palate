@@ -21,7 +21,8 @@ import { RecipeJsonLd } from '@/components/RecipeJsonLd'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { formatMinutes, formatPlatePrice, formatTimer } from '@/lib/format'
-import { lexicalToPlainText } from '@/lib/lexical'
+import { lexicalToParagraphs, lexicalToPlainText } from '@/lib/lexical'
+import { readingTime } from '@/lib/storyOutline'
 import { imageFrom } from '@/lib/media'
 import { HeroAnnotations, type HeroPin } from '@/components/HeroAnnotations'
 import { findAllRecipeSlugs, findRecipeBySlug, findRelatedRecipes } from '@/lib/queries'
@@ -90,7 +91,8 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
       : '50% 50%'
   const cuisine = typeof recipe.cuisine === 'object' ? recipe.cuisine : null
   const author = typeof recipe.author === 'object' ? recipe.author : null
-  const story = recipe.story ? lexicalToPlainText(recipe.story as never) : ''
+  // Paragraphs for the page; the flattened form stays for the meta description.
+  const storyParagraphs = recipe.story ? lexicalToParagraphs(recipe.story as never) : []
 
   // The community tally shown to users is always the real average of real votes
   // (sum ÷ count) — the editorial override drives sort/filter, never the number
@@ -414,11 +416,27 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               </section>
             )}
 
-            {/* The story lives here, after the cooking — never before it (§1). */}
-            {story && (
+            {/* The story lives here, after the cooking — never before it (§1).
+                That placement is why it needs a reading estimate: someone has
+                already got what they came for, so tell them what they'd be
+                committing to before they scroll. */}
+            {storyParagraphs.length > 0 && (
               <section className="mt-14 max-w-[70ch] border-t border-rule pt-6">
-                <p className="eyebrow m-0">Notes, if you feel like it</p>
-                <p className="mt-3 text-[1.0625rem] leading-relaxed text-slate">{story}</p>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+                  <p className="eyebrow m-0">Notes, if you feel like it</p>
+                  <p className="m-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                    {readingTime(storyParagraphs.join(' '))}
+                  </p>
+                </div>
+                {/* Each paragraph its own element. These used to be welded into
+                    a single block by the flattener's whitespace collapse. */}
+                <div className="mt-3 grid gap-3.5">
+                  {storyParagraphs.map((para, i) => (
+                    <p key={i} className="m-0 text-[1.0625rem] leading-relaxed text-slate">
+                      {para}
+                    </p>
+                  ))}
+                </div>
               </section>
             )}
           </div>

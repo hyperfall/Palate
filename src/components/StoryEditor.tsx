@@ -196,8 +196,10 @@ export function StoryEditor({
 
       {preview ? (
         <div className="min-h-[8rem] rounded border border-rule bg-transparent px-3 py-2">
+          {/* Contents stacked, not railed: the editor column is too narrow for a
+              rail without cramping the prose below a readable measure. */}
           {value.trim() ? (
-            <MarkdownStory markdown={value} />
+            <MarkdownStory markdown={value} contentsLayout="stacked" />
           ) : (
             <p className="m-0 text-[0.875rem] text-slate/60">Nothing to preview yet.</p>
           )}

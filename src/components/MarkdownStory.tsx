@@ -25,9 +25,24 @@ function textOf(node: ReactNode): string {
   return ''
 }
 
-export function MarkdownStory({ markdown }: { markdown: string }) {
+export function MarkdownStory({
+  markdown,
+  contentsLayout = 'rail',
+}: {
+  markdown: string
+  /**
+   * Where the contents block sits. 'rail' puts it beside the prose from xl —
+   * right for the article, which has the width. 'stacked' keeps it above, for
+   * narrow hosts like the studio's editor column: measured there, the rail
+   * squeezed the prose to 407px (~48 characters), below a readable measure AND
+   * narrower than the 504px a reader actually gets. A preview that misreports
+   * the reading width is worse than one that stacks.
+   */
+  contentsLayout?: 'rail' | 'stacked'
+}) {
   const headings = outlineOf(markdown)
   const showContents = deservesContents(markdown, headings)
+  const railed = showContents && contentsLayout === 'rail'
   const minutes = readingTime(markdown)
 
   // The renderer walks the source independently of outlineOf, so ids are
@@ -42,11 +57,19 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
       // Above the prose on narrow screens, a sticky rail beside it from xl.
       // Sticky is the point of a side rail: a contents list that scrolls away
       // is just a header with extra steps.
-      className="mb-8 border-y border-rule py-4 xl:sticky xl:top-24 xl:mb-0 xl:border-y-0 xl:border-l xl:py-0 xl:pl-5"
+      className={
+        railed
+          ? 'mb-8 border-y border-rule py-4 xl:sticky xl:top-24 xl:mb-0 xl:border-y-0 xl:border-l xl:py-0 xl:pl-5'
+          : 'mb-8 border-y border-rule py-4'
+      }
     >
-      <p className="eyebrow m-0 flex flex-wrap items-baseline justify-between gap-3 xl:block">
+      <p
+        className={`eyebrow m-0 flex flex-wrap items-baseline justify-between gap-3 ${railed ? 'xl:block' : ''}`}
+      >
         In this story
-        {minutes && <span className="text-slate/70 xl:mt-1 xl:block">{minutes}</span>}
+        {minutes && (
+          <span className={`text-slate/70 ${railed ? 'xl:mt-1 xl:block' : ''}`}>{minutes}</span>
+        )}
       </p>
       <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
         {headings.map((h) => (
@@ -66,7 +89,7 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
   return (
     <div
       className={
-        showContents
+        railed
           ? // Prose keeps its 65ch measure; the rail takes the room the method
             // column already has at this width for step photos.
             'grid gap-x-10 xl:grid-cols-[minmax(0,65ch)_minmax(0,14rem)] xl:items-start'
@@ -75,8 +98,10 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
     >
       {/* Source order puts the contents first so it precedes the prose for
           screen readers and on narrow screens; the grid moves it right at xl. */}
-      {contents && <div className="xl:order-2">{contents}</div>}
-      <div className="story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink xl:order-1">
+      {contents && <div className={railed ? 'xl:order-2' : undefined}>{contents}</div>}
+      <div
+        className={`story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink ${railed ? 'xl:order-1' : ''}`}
+      >
         {/* Every story says how long it is. Only the CONTENTS is conditional —
             a short note still deserves the estimate, and it lived inside the
             nav at first, so stories under the threshold silently lost it. */}

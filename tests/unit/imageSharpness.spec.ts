@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { isUpscaled, laplacianVariance, SOFT_BELOW } from '@/lib/imageSharpness'
+import {
+  HERO_IDEAL_WIDTH,
+  heroResolution,
+  heroUpscaleFactor,
+  isUpscaled,
+  laplacianVariance,
+  SOFT_BELOW,
+} from '@/lib/imageSharpness'
 
 /** A greyscale field built from a generator, so the tests state their content. */
 const field = (w: number, h: number, f: (x: number, y: number) => number) => {
@@ -66,5 +73,30 @@ describe('isUpscaled', () => {
   it('keeps the threshold below the sharpest thing it accuses', () => {
     // Guards against someone raising SOFT_BELOW until it catches real photos.
     expect(SOFT_BELOW).toBeLessThan(195)
+  })
+})
+
+describe('heroResolution', () => {
+  it('calls a clean 1200px photograph too small for a full-bleed band', () => {
+    // The birria hero: genuinely sharp (216), genuinely the owner's own file,
+    // and still stretched because the band takes the whole viewport.
+    expect(heroResolution(1200)).toBe('too small')
+    expect(heroUpscaleFactor(1200)).toBeCloseTo(2.4, 2)
+  })
+
+  it('separates a size problem from a quality problem', () => {
+    // 1600px sources are not soft, they are just short of ample — a different
+    // fault with a different fix, so they must not share a verdict.
+    expect(heroResolution(1600)).toBe('adequate')
+    expect(heroResolution(HERO_IDEAL_WIDTH)).toBe('ample')
+  })
+
+  it('asks for no upscale at all once a source is ample', () => {
+    expect(heroUpscaleFactor(2880)).toBe(1)
+    expect(heroUpscaleFactor(HERO_IDEAL_WIDTH)).toBeLessThanOrEqual(1.2)
+  })
+
+  it('does not divide by a missing width', () => {
+    expect(heroUpscaleFactor(0)).toBe(0)
   })
 })

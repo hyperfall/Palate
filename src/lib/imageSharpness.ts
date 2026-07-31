@@ -45,3 +45,35 @@ export function isUpscaled(sharpness: number, width: number): boolean {
   // about a file claiming a size it cannot fill with detail.
   return width >= 1200 && sharpness < SOFT_BELOW
 }
+
+/**
+ * How wide a hero photograph has to be.
+ *
+ * The hero band is full-bleed, so it takes the whole viewport width. On a
+ * 1440px laptop at devicePixelRatio 2 that is 2,880 device pixels across, and
+ * because the band is far wider than it is tall, object-cover scales to the
+ * width — the height never rescues a narrow source.
+ *
+ * 2,400 is the honest floor: it covers a 1200px CSS width at 2x exactly, and
+ * leaves a 1440px screen a shortfall small enough not to read as soft. Below
+ * 1,600 the upscale is visible to anyone.
+ *
+ * This is not a quality judgement. A clean 1200x900 photograph is a good
+ * photograph; it is simply being asked to cover more than twice its own width.
+ */
+export const HERO_IDEAL_WIDTH = 2400
+export const HERO_MIN_WIDTH = 1600
+
+export type HeroVerdict = 'ample' | 'adequate' | 'too small'
+
+export function heroResolution(width: number): HeroVerdict {
+  if (width >= HERO_IDEAL_WIDTH) return 'ample'
+  if (width >= HERO_MIN_WIDTH) return 'adequate'
+  return 'too small'
+}
+
+/** How far a source is stretched to cover a full-bleed band, worst realistic case. */
+export function heroUpscaleFactor(width: number, cssWidth = 1440, dpr = 2): number {
+  if (width <= 0) return 0
+  return (cssWidth * dpr) / width
+}

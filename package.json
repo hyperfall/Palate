@@ -1,7 +1,7 @@
 {
   "name": "supersecretrecipewebsite",
   "version": "0.1.0",
-  "description": "Recipe platform — Phase 1 (see docs/2026-07-18-recipe-platform-design.md)",
+  "description": "Recipe platform \u2014 Phase 1 (see docs/2026-07-18-recipe-platform-design.md)",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -32,6 +32,7 @@
     "fetch:logos": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fetchShopLogos.ts",
     "verify:grocery": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/verifyGroceryRetailers.ts",
     "audit:recipes": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/auditRecipes.ts",
+    "remaster:heroes": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/remasterHeroes.ts",
     "fix:fossil-names": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/fixFossilNames.ts",
     "clean:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/cleanIngredientNames.ts",
     "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts",

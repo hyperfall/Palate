@@ -36,31 +36,55 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
   // headingId is pure, so the renderer and outlineOf independently derive the
   // same id for the same text — which is what makes a contents link land.
 
+  const contents = showContents ? (
+    <nav
+      aria-label="In this story"
+      // Above the prose on narrow screens, a sticky rail beside it from xl.
+      // Sticky is the point of a side rail: a contents list that scrolls away
+      // is just a header with extra steps.
+      className="mb-8 border-y border-rule py-4 xl:sticky xl:top-24 xl:mb-0 xl:border-y-0 xl:border-l xl:py-0 xl:pl-5"
+    >
+      <p className="eyebrow m-0 flex flex-wrap items-baseline justify-between gap-3 xl:block">
+        In this story
+        {minutes && <span className="text-slate/70 xl:mt-1 xl:block">{minutes}</span>}
+      </p>
+      <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
+        {headings.map((h) => (
+          <li key={h.id} className={h.depth === 3 ? 'pl-4' : undefined}>
+            <a
+              href={`#${h.id}`}
+              className="text-[0.9375rem] leading-snug text-slate no-underline hover:text-flame hover:underline hover:underline-offset-4"
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  ) : null
+
   return (
-    <div className="story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink">
-      {showContents && (
-        <nav
-          aria-label="In this story"
-          className="mb-8 border-y border-rule py-4"
-        >
-          <p className="eyebrow m-0 flex flex-wrap items-baseline justify-between gap-3">
-            In this story
-            {minutes && <span className="text-slate/70">{minutes}</span>}
+    <div
+      className={
+        showContents
+          ? // Prose keeps its 65ch measure; the rail takes the room the method
+            // column already has at this width for step photos.
+            'grid gap-x-10 xl:grid-cols-[minmax(0,65ch)_minmax(0,14rem)] xl:items-start'
+          : 'max-w-[65ch]'
+      }
+    >
+      {/* Source order puts the contents first so it precedes the prose for
+          screen readers and on narrow screens; the grid moves it right at xl. */}
+      {contents && <div className="xl:order-2">{contents}</div>}
+      <div className="story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink xl:order-1">
+        {/* Every story says how long it is. Only the CONTENTS is conditional —
+            a short note still deserves the estimate, and it lived inside the
+            nav at first, so stories under the threshold silently lost it. */}
+        {!showContents && minutes && (
+          <p className="m-0 mb-4 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+            {minutes}
           </p>
-          <ol className="m-0 mt-3 grid list-none gap-1.5 p-0">
-            {headings.map((h) => (
-              <li key={h.id} className={h.depth === 3 ? 'pl-4' : undefined}>
-                <a
-                  href={`#${h.id}`}
-                  className="text-[0.9375rem] text-slate no-underline hover:text-flame hover:underline hover:underline-offset-4"
-                >
-                  {h.text}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
+        )}
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -102,6 +126,7 @@ export function MarkdownStory({ markdown }: { markdown: string }) {
       >
         {markdown}
       </ReactMarkdown>
+      </div>
     </div>
   )
 }

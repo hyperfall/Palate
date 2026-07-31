@@ -39,10 +39,11 @@ export function MethodTabs({ story, children }: { story?: string | null; childre
       {view === 'instructions' ? (
         children
       ) : (
-        // The column is wide on xl for step photos; prose must not follow it out.
-        <div className="max-w-[70ch]">
-          <MarkdownStory markdown={story!} />
-        </div>
+        // The prose measure is enforced inside MarkdownStory, which also owns
+        // whether a contents rail sits beside it. Capping the wrapper at 70ch
+        // here would leave the rail nowhere to go — the column is wide on xl
+        // for step photos, and a story with a contents block can use that.
+        <MarkdownStory markdown={story!} />
       )}
     </div>
   )

@@ -17,11 +17,13 @@ import { IngredientsPanel } from '@/components/IngredientsPanel'
 import { ProvenanceBadge } from '@/components/ProvenanceBadge'
 import { RateWidget } from '@/components/RateWidget'
 import { RecipeCard } from '@/components/RecipeCard'
+import { RecipeContents } from '@/components/RecipeContents'
 import { RecipeJsonLd } from '@/components/RecipeJsonLd'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
 import { formatMinutes, formatPlatePrice, formatTimer } from '@/lib/format'
 import { lexicalToParagraphs, lexicalToPlainText } from '@/lib/lexical'
+import { recipeSections } from '@/lib/recipeContents'
 import { readingTime } from '@/lib/storyOutline'
 import { imageFrom } from '@/lib/media'
 import { HeroAnnotations, type HeroPin } from '@/components/HeroAnnotations'
@@ -93,6 +95,13 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
   const author = typeof recipe.author === 'object' ? recipe.author : null
   // Paragraphs for the page; the flattened form stays for the meta description.
   const storyParagraphs = recipe.story ? lexicalToParagraphs(recipe.story as never) : []
+
+  // Built from what this recipe actually has, so no entry can scroll to nothing.
+  const sections = recipeSections({
+    hasVideo: Boolean(recipe.videoUrl),
+    hasStory: storyParagraphs.length > 0,
+    hasRelated: related.length > 0,
+  })
 
   // The community tally shown to users is always the real average of real votes
   // (sum ÷ count) — the editorial override drives sort/filter, never the number
@@ -328,15 +337,18 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           approaches a new dish on a phone.
         */}
         <div
-          id="method"
-          className="shell grid scroll-mt-20 gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,72rem)] 2xl:gap-x-20"
+          className="shell grid gap-x-14 gap-y-10 py-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,48rem)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,72rem)] 2xl:gap-x-20"
         >
           <aside className="lg:sticky lg:top-20 lg:self-start">
-            <IngredientsPanel
-              slug={recipe.slug}
-              ingredients={recipe.ingredients ?? []}
-              baseServings={recipe.servings}
-            />
+            <RecipeContents sections={sections} />
+
+            <div id="ingredients" className="scroll-mt-20">
+                <IngredientsPanel
+                slug={recipe.slug}
+                ingredients={recipe.ingredients ?? []}
+                baseServings={recipe.servings}
+              />
+            </div>
 
             <NutritionPanel nutrition={recipe.nutrition} />
 
@@ -348,7 +360,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           {/* The method — a reading column, not a page-wide river. On xl the column
               opens up so each step's photo can sit in the margin beside it; the
               text and every prose block below re-cap themselves to a measure. */}
-          <div className="max-w-[70ch] 2xl:max-w-none">
+          <div id="method" className="max-w-[70ch] scroll-mt-20 2xl:max-w-none">
             <div className="border-t-2 border-ink pt-4">
               <h2 className="text-[1.5rem]">Method</h2>
             </div>
@@ -403,7 +415,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
 
             {/* The creator's own video — their reach is the reward for sharing. */}
             {recipe.videoUrl && (
-              <section className="mt-14 max-w-[70ch] border-t border-rule pt-6">
+              <section id="watch" className="mt-14 max-w-[70ch] scroll-mt-20 border-t border-rule pt-6">
                 <p className="eyebrow m-0">
                   {author ? `Watch ${author.name} make it` : 'Watch it made'}
                 </p>
@@ -421,7 +433,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 already got what they came for, so tell them what they'd be
                 committing to before they scroll. */}
             {storyParagraphs.length > 0 && (
-              <section className="mt-14 max-w-[70ch] border-t border-rule pt-6">
+              <section id="notes" className="mt-14 max-w-[70ch] scroll-mt-20 border-t border-rule pt-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                   <p className="eyebrow m-0">Notes, if you feel like it</p>
                   <p className="m-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
@@ -443,7 +455,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         </div>
 
         {related.length > 0 && (
-          <section className="border-t border-rule bg-wash">
+          <section id="more" className="scroll-mt-20 border-t border-rule bg-wash">
             <div className="shell py-12">
               <div className="flex flex-wrap items-baseline justify-between gap-4">
                 <h2 className="text-[clamp(1.5rem,2vw,2rem)]">

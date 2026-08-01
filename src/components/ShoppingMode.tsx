@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { slugify } from '@/fields/slug'
 import type { ShoppingLine, WeekShoppingList } from '@/lib/mealPlan'
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { useDialogFocus } from '@/lib/useDialogFocus'
 import { useShoppingChecks } from '@/lib/useShoppingChecks'
 
 /**
@@ -35,7 +36,11 @@ function CheckCircle({ on }: { on: boolean }) {
     <span
       aria-hidden="true"
       className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 transition-colors ${
-        on ? 'border-flame bg-flame text-milk' : 'border-rule text-transparent'
+        // on-flame, not milk: milk on flame measures 2.96:1, under even the
+        // 3:1 floor for a UI component, and this tick IS the state. The token
+        // exists for exactly this pairing and .btn-primary already uses it —
+        // 4.63:1 light, 5.21:1 dark.
+        on ? 'border-flame bg-flame text-on-flame' : 'border-rule text-transparent'
       }`}
     >
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -90,17 +95,14 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
     }
   }, [])
 
-  // Esc closes; lock body scroll behind the overlay.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    document.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [onClose])
+  // Escape, the Tab trap, initial focus, focus restore and the scroll lock all
+  // come from the shared hook. This overlay hand-rolled only Escape and the
+  // lock, so a keyboard user tabbed straight out of a full-screen takeover into
+  // the page behind it — visually covered, still focusable, and by then they
+  // are typing into something they cannot see. Cook mode, the same shape of
+  // takeover, was already on the hook; this one was missed.
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useDialogFocus({ open: true, ref: dialogRef, onClose })
 
   const total = list.netted.length
   const done = list.netted.filter((l) => checked.has(l.key)).length
@@ -143,7 +145,14 @@ function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClose: () =
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Shopping mode"
+      tabIndex={-1}
+      className="fixed inset-0 z-[60] flex flex-col bg-paper text-ink outline-none"
+    >
       {/* Progress rail */}
       <div className="h-1 w-full bg-rule">
         <div className="h-full bg-flame transition-[width] duration-300" style={{ width: `${pct}%` }} />

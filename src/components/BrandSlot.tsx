@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { BRAND_CTA_CLASS, BRAND_THUMB_CLASS, BrandCardFace } from '@/components/BrandCardFace'
+
 export type BrandSlotCard = {
   id: string | number
   brand: string
@@ -55,38 +57,27 @@ export function BrandSlot({ recipeSlug }: { recipeSlug: string }) {
         <div aria-hidden="true" className="h-[13rem] rounded-md border border-rule bg-wash" />
       ) : (
         cards.map((card) => (
-          <div
+          <BrandCardFace
             key={card.id}
-            className="rounded-md border border-dashed border-slate/60 bg-card p-5"
-          >
-            <p className="eyebrow m-0">— Partner —</p>
-
-            <div className="mt-3 flex items-start gap-4">
-              {card.image && (
+            brand={card.brand}
+            tagline={card.tagline}
+            thumb={
+              card.image ? (
                 // eslint-disable-next-line @next/next/no-img-element -- client fetch; next/image buys nothing here
-                <img
-                  src={card.image.url}
-                  alt=""
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 shrink-0 rounded-sm object-cover"
-                />
-              )}
-              <div className="min-w-0">
-                <p className="m-0 font-mono text-[0.875rem] font-semibold text-ink">{card.brand}</p>
-                <p className="mt-1 text-[0.9375rem] leading-snug text-slate">{card.tagline}</p>
-              </div>
-            </div>
-
-            <a
-              href={`/brand-slot/click?card=${encodeURIComponent(String(card.id))}&recipe=${encodeURIComponent(recipeSlug)}`}
-              rel="sponsored nofollow noopener"
-              target="_blank"
-              className="mt-4 inline-block rounded border border-ink px-4 py-2 font-mono text-[0.8125rem] font-semibold tracking-[0.08em] text-ink uppercase no-underline transition-colors hover:bg-ink hover:text-paper"
-            >
-              {card.ctaLabel}
-            </a>
-          </div>
+                <img src={card.image.url} alt="" width={64} height={64} className={BRAND_THUMB_CLASS} />
+              ) : undefined
+            }
+            cta={
+              <a
+                href={`/brand-slot/click?card=${encodeURIComponent(String(card.id))}&recipe=${encodeURIComponent(recipeSlug)}`}
+                rel="sponsored nofollow noopener"
+                target="_blank"
+                className={BRAND_CTA_CLASS}
+              >
+                {card.ctaLabel}
+              </a>
+            }
+          />
         ))
       )}
     </aside>

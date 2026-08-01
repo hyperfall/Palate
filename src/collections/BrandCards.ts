@@ -31,6 +31,11 @@ export const BrandCards: CollectionConfig = {
         {
           label: 'Creative',
           fields: [
+            {
+              name: 'cardPreview',
+              type: 'ui',
+              admin: { components: { Field: '@/components/admin/BrandCardPreview#BrandCardPreview' } },
+            },
             { name: 'brand', type: 'text', required: true },
             {
               name: 'logo',
@@ -220,6 +225,11 @@ export const BrandCards: CollectionConfig = {
                 readOnly: true,
                 description: 'Counted from the impression log. Read-only.',
               },
+            },
+            {
+              name: 'cardStats',
+              type: 'ui',
+              admin: { components: { Field: '@/components/admin/BrandCardStats#BrandCardStats' } },
             },
           ],
         },

@@ -41,18 +41,30 @@ function hash(value: string): number {
 }
 
 /**
+ * The creatives that can actually reach a reader.
+ *
+ * Exported because the admin preview has to step through exactly this set. If
+ * the preview and the runtime disagreed about which images are eligible, an
+ * editor could approve a creative that never ships — or, worse, miss one that
+ * does. One rule, two callers.
+ *
+ * Retired creatives are dropped, not counted — otherwise switching one off
+ * would leave a hole in the rotation that shows nothing at all.
+ */
+export function liveCreatives(creatives: Creative[] | null | undefined): Creative[] {
+  return (creatives ?? []).filter((c) => c.active !== false && Boolean(c.image))
+}
+
+/**
  * Pick one creative for this visitor, or null when the card carries none and
  * the caller should fall back to its single image.
- *
- * Retired creatives are skipped, not counted — otherwise switching one off
- * would leave a hole in the rotation that shows nothing at all.
  */
 export function pickCreative(
   creatives: Creative[] | null | undefined,
   visitorKey: string,
   cardId: string | number,
 ): ChosenCreative | null {
-  const live = (creatives ?? []).filter((c) => c.active !== false && c.image)
+  const live = liveCreatives(creatives)
   if (live.length === 0) return null
 
   // Salt with the card id so a visitor does not land on slot 0 of every

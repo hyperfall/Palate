@@ -22,6 +22,8 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { HeroAnnotator as HeroAnnotator_0aaf361889c36f311bcc3575e9e8a772 } from '@/components/admin/HeroAnnotator'
+import { BrandCardPreview as BrandCardPreview_e49633d53cf233294753c0e094ef9020 } from '@/components/admin/BrandCardPreview'
+import { BrandCardStats as BrandCardStats_6390279286fd3072f5c0fae09ea9109b } from '@/components/admin/BrandCardStats'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -50,5 +52,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/components/admin/HeroAnnotator#HeroAnnotator": HeroAnnotator_0aaf361889c36f311bcc3575e9e8a772,
+  "@/components/admin/BrandCardPreview#BrandCardPreview": BrandCardPreview_e49633d53cf233294753c0e094ef9020,
+  "@/components/admin/BrandCardStats#BrandCardStats": BrandCardStats_6390279286fd3072f5c0fae09ea9109b,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

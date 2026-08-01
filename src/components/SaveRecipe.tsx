@@ -144,8 +144,13 @@ export function SaveRecipe({
         className="chip !border-milk/40 !text-milk hover:!border-flame"
         data-active={saved}
         aria-expanded={open}
+        // Signed out, the label says what the click does. Without this it read
+        // "+ Save" and then yanked the reader to a bare sign-in page with no
+        // word of why — the same complaint signInHref's own comment records,
+        // fixed there only for the return trip. This is PantryToggle's pattern.
+        title={signedIn === false ? 'Sign in to save this recipe' : undefined}
       >
-        {saved ? '✓ Saved' : '+ Save'}
+        {signedIn === false ? 'Sign in to save' : saved ? '✓ Saved' : '+ Save'}
       </button>
 
       {open && (

@@ -153,7 +153,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
           type="button"
           onClick={onClose}
           aria-label="Close shopping mode"
-          className="flex shrink-0 items-center gap-2 rounded-full border border-rule py-1.5 pr-3 pl-2.5 text-ink transition-colors hover:border-flame hover:text-flame"
+          className="flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-rule py-2 pr-3.5 pl-3 text-ink transition-colors hover:border-flame hover:text-flame"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" />

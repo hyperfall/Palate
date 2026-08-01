@@ -185,8 +185,10 @@ export function AddToPlan({
         }
         data-in={inWeek}
         aria-expanded={open}
+        title={signedIn === false ? 'Sign in to add this to your week' : undefined}
       >
-        {inWeek ? `✓ In week (${planned.length})` : '+ Plan'}
+        {/* Signed out, say so before the click rather than after the redirect. */}
+        {signedIn === false ? 'Sign in to plan' : inWeek ? `✓ In week (${planned.length})` : '+ Plan'}
       </button>
 
       {open &&

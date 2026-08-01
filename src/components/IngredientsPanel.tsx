@@ -92,7 +92,7 @@ export function IngredientsPanel({
             onClick={() => setServings((s) => Math.max(1, s - 1))}
             disabled={servings <= 1}
             aria-label="Fewer servings"
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-sm border-none bg-transparent font-mono text-base text-ink transition-colors hover:bg-wash disabled:cursor-default disabled:text-rule"
+            className="grid h-10 w-10 cursor-pointer place-items-center rounded-sm border-none bg-transparent font-mono text-base text-ink transition-colors hover:bg-wash disabled:cursor-default disabled:text-rule"
           >
             −
           </button>
@@ -129,7 +129,7 @@ export function IngredientsPanel({
             onClick={() => setServings((s) => Math.min(24, s + 1))}
             disabled={servings >= 24}
             aria-label="More servings"
-            className="grid h-8 w-8 cursor-pointer place-items-center rounded-sm border-none bg-transparent font-mono text-base text-ink transition-colors hover:bg-wash disabled:cursor-default disabled:text-rule"
+            className="grid h-10 w-10 cursor-pointer place-items-center rounded-sm border-none bg-transparent font-mono text-base text-ink transition-colors hover:bg-wash disabled:cursor-default disabled:text-rule"
           >
             +
           </button>

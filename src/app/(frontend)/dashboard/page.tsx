@@ -5,6 +5,7 @@ import { CreatorRecipes } from '@/components/CreatorRecipes'
 import { MyEarnings } from '@/components/MyEarnings'
 import { getHouseholdContext } from '@/lib/household'
 import { getPlanEntries } from '@/lib/planData'
+import { withLiveImages } from '@/lib/recipeImages'
 import { isCreator, serverUser, supabaseServer } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
@@ -31,13 +32,15 @@ async function recentCooks(): Promise<Array<{ slug: string; title: string; image
     .select('recipe_slug,recipe_title,recipe_image,note,cooked_at')
     .order('cooked_at', { ascending: false })
     .limit(6)
-  return (data ?? []).map((r) => ({
-    slug: r.recipe_slug as string,
-    title: r.recipe_title as string,
-    image: (r.recipe_image as string | null) ?? null,
-    at: r.cooked_at as string,
-    note: (r.note as string | null) ?? null,
-  }))
+  return withLiveImages(
+    (data ?? []).map((r) => ({
+      slug: r.recipe_slug as string,
+      title: r.recipe_title as string,
+      image: (r.recipe_image as string | null) ?? null,
+      at: r.cooked_at as string,
+      note: (r.note as string | null) ?? null,
+    })),
+  )
 }
 
 async function cookCount(): Promise<number> {
@@ -75,7 +78,7 @@ async function recentSaves(): Promise<Array<{ slug: string; title: string; image
     out.push({ slug: row.recipe_slug, title: row.recipe_title, image: row.recipe_image ?? null })
     if (out.length === 4) break
   }
-  return out
+  return withLiveImages(out)
 }
 
 export default async function DashboardPage() {

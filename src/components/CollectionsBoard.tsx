@@ -17,6 +17,24 @@ export function CollectionsBoard() {
   const [signedIn, setSignedIn] = useState(false)
   const [collections, setCollections] = useState<Collection[]>([])
   const [items, setItems] = useState<SavedItem[]>([])
+  // Live card images by slug. The recipe_image on each row is a snapshot taken
+  // when the recipe was saved and goes stale when the media library changes;
+  // this refreshes it from the recipe, falling back to the snapshot for a
+  // recipe that no longer exists.
+  const [liveImages, setLiveImages] = useState<Record<string, string>>({})
+
+  const refreshImages = async (slugs: string[]) => {
+    const unique = [...new Set(slugs.filter(Boolean))]
+    if (unique.length === 0) return
+    try {
+      const res = await fetch(`/recipes/images?slugs=${encodeURIComponent(unique.join(','))}`)
+      if (!res.ok) return
+      const { images } = (await res.json()) as { images?: Record<string, string> }
+      if (images) setLiveImages(images)
+    } catch {
+      // The snapshot still renders — a live refresh is an upgrade, not a need.
+    }
+  }
 
   const load = async () => {
     if (!supabase) return
@@ -29,7 +47,9 @@ export function CollectionsBoard() {
           .order('created_at', { ascending: false }),
       ])
       setCollections((cols.data as Collection[]) ?? [])
-      setItems((its.data as SavedItem[]) ?? [])
+      const loaded = (its.data as SavedItem[]) ?? []
+      setItems(loaded)
+      void refreshImages(loaded.map((i) => i.recipe_slug))
     } catch {
       // A network hiccup leaves the shelf empty rather than crashing the page.
     }
@@ -90,10 +110,10 @@ export function CollectionsBoard() {
   const Card = ({ item, onRemove }: { item: SavedItem; onRemove?: () => void }) => (
     <div className="ticket-card group relative">
       <Link href={`/recipes/${item.recipe_slug}`} className="block p-3 no-underline">
-        {item.recipe_image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- snapshot URL from Supabase
+        {(liveImages[item.recipe_slug] ?? item.recipe_image) ? (
+          // eslint-disable-next-line @next/next/no-img-element -- live URL, snapshot fallback
           <img
-            src={item.recipe_image}
+            src={liveImages[item.recipe_slug] ?? item.recipe_image}
             alt=""
             width={320}
             height={200}

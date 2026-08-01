@@ -99,9 +99,20 @@ for (const r of recipes.docs) {
     }
   }
 
-  // 4. No cost, so it silently vanishes from the budget board.
+  // 4. No cost, so every surface that prints a plate price stays silent for it.
+  //
+  // This used to claim the recipe was "excluded from /students". It is not, and
+  // never was: the student modes filter on time, effort and servings, and no
+  // code path anywhere filters on cost. Verified by fetching all five modes —
+  // birria appears under ?mode=two and shakshuka in four of the five, both
+  // without a price. A check that invents a consequence is worse than no check:
+  // it sends whoever reads it chasing a bug that does not exist.
   if (r.costPerServing == null) {
-    issues.push({ recipe: title, kind: 'COST', detail: 'no costPerServing — excluded from /students' })
+    issues.push({
+      recipe: title,
+      kind: 'COST',
+      detail: 'no costPerServing — cards and the recipe page show no plate price',
+    })
   }
 }
 

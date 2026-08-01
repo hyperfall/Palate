@@ -165,6 +165,23 @@ export default async function StudentsPage({
             }))}
           />
         )}
+
+        {/*
+            Say where the number comes from. This page is built on "tight
+            budgets", so a plate price here carries more weight than anywhere
+            else on the site — and these are per-recipe estimates entered by
+            hand, not a live basket priced at a real shop. Someone budgeting a
+            week deserves to know which of those they are reading, and that a
+            dish without a figure is missing one rather than being free.
+        */}
+        {picks.length > 0 && (
+          <p className="mt-5 max-w-[60ch] text-[0.875rem] text-slate">
+            Plate prices are estimates for a typical UK shop, not a quote — what
+            you pay depends on where you buy and what you already have. Some
+            dishes carry no estimate yet; those show no price rather than a
+            guess.
+          </p>
+        )}
       </section>
 
       {/* Tonight, not theory. */}

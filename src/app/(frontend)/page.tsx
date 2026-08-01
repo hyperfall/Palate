@@ -96,7 +96,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* The pass. Dark, full-bleed — headline, playable board, real plates. */}
-      <section className="bg-pan text-milk">
+      <section className="pass-surface bg-pan text-milk">
         <div className="shell grid gap-12 py-12 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-20 lg:py-16 xl:grid-cols-[1fr_0.9fr_14.5rem] 2xl:gap-24">
           <div>
             <p className="m-0 font-mono text-[0.8125rem] font-semibold tracking-[0.16em] text-flame-text uppercase">

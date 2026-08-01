@@ -739,6 +739,75 @@
  * Scoped to `body` rather than `:root` so the paged colours can't leak into the
  * screen cascade.
  */
+/*
+ * The pass, as a surface.
+ *
+ * The hero is named after a service pass — the steel counter where plates are
+ * handed over — so the pattern is drawn from that room rather than applied to
+ * it: tiled wall behind, a pool of warm light falling across it from above.
+ *
+ * Brick-coursed, not a square grid. The offset is the whole point: a plain grid
+ * of lines is the pattern anything reaches for by default, while the half-brick
+ * stagger is specifically a wall, and reads as one at a glance.
+ *
+ * Drawn rather than photographed — one inlined SVG, no network request, and it
+ * scales to any viewport without a second asset. The joints are a fixed
+ * milk-alpha rather than a token because this band is dark in BOTH themes
+ * (--color-pan is #26301f light, #14100c dark), so one value serves both; the
+ * heat pool below does re-tint itself from --color-flame.
+ *
+ * It fades out downward. At full strength for the whole band it read as
+ * wallpaper; ending it below the headline makes it a wall lit from above, and
+ * keeps it away from the plate rail and taste board, which have their own
+ * surfaces to sit on.
+ */
+.pass-surface {
+  position: relative;
+  background-image:
+    radial-gradient(
+      58% 44% at 16% -14%,
+      color-mix(in oklab, var(--color-flame) 15%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      46% 36% at 90% 112%,
+      color-mix(in oklab, var(--color-flame) 8%, transparent),
+      transparent 66%
+    );
+}
+
+.pass-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Decoration only — it must never intercept a tap meant for the board. */
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22120%22%20height%3D%2260%22%3E%3Cg%20stroke%3D%22rgba%28238%2C240%2C228%2C0.07%29%22%20stroke-width%3D%221%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M0%200.5%20H120%20M0%2030.0%20H120%22%2F%3E%3Cpath%20d%3D%22M60.0%200%20V30.0%22%2F%3E%3Cpath%20d%3D%22M0.5%2030.0%20V60%20M119.5%2030.0%20V60%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 52%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 52%, transparent 100%);
+}
+
+/*
+ * Keep the bricks the same size on a phone.
+ *
+ * The tile has a fixed pixel size, so at 375px it spanned a third of the screen
+ * — about three bricks across, against eleven on a desktop. Same wall, read at
+ * three times the scale, which makes it shout on the device where the headline
+ * has the least room. Scaling the tile down restores the proportion.
+ */
+@media (max-width: 640px) {
+  .pass-surface::before {
+    background-size: 76px 38px;
+  }
+}
+
+/* Everything real in the band sits on top of the wall, not under it. */
+.pass-surface > * {
+  position: relative;
+  z-index: 1;
+}
+
 @media print {
   /* Force paper-on-white regardless of the reader's theme. Backgrounds don't
      print by default anyway, so dark mode would otherwise print pale text on

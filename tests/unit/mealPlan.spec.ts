@@ -151,3 +151,30 @@ describe('consolidateShoppingList — unit spelling', () => {
     expect(consolidateShoppingList([oil('cup', '1', 'A')] as never)[0].amounts).toEqual(['1 cup'])
   })
 })
+
+describe('consolidateShoppingList — fractional quantities', () => {
+  const oil = (title: string, quantity: string | null) => ({
+    slug: title.toLowerCase(),
+    title,
+    ingredients: [
+      { quantity, unit: 'cup', item: 'olive oil', canonicalId: 9, canonicalName: 'olive oil', canonicalSlug: 'olive-oil' },
+    ],
+  })
+
+  it('sums fractions by value, not by parseFloat truncation', () => {
+    // 1/2 + 3/4 is 1.25 cups. parseFloat read them as 1 and 3 and printed "4".
+    expect(consolidateShoppingList([oil('a', '1/2'), oil('b', '3/4')] as never)[0].amounts).toEqual(['1¼ cups'])
+  })
+
+  it('still sums whole numbers', () => {
+    expect(consolidateShoppingList([oil('a', '1'), oil('b', '2')] as never)[0].amounts).toEqual(['3 cups'])
+  })
+
+  it('keeps a no-quantity ingredient out of the numeric sum', () => {
+    // "salt, to taste" has no number — it must not be added as 0.
+    const lines = consolidateShoppingList([
+      { slug: 's', title: 'S', ingredients: [{ quantity: null, unit: null, item: 'salt', canonicalId: 5, canonicalName: 'salt', canonicalSlug: 'salt' }] },
+    ] as never)
+    expect(lines[0].amounts).toEqual([])
+  })
+})

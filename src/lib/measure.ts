@@ -1,4 +1,5 @@
 import { convertMeasure, humanizeQuantity, type UnitSystem } from '@/lib/units'
+import { parseQuantity } from '@/lib/nutrition'
 
 /**
  * Format one ingredient's measure, scaled to the chosen servings and converted
@@ -19,7 +20,12 @@ export function formatMeasure(
   ing: MeasurableIngredient,
   { factor, unitSystem }: { factor: number; unitSystem: UnitSystem },
 ): string {
-  const parsed = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
+  // parseQuantity, not parseFloat: parseFloat turns "1/2 cup" into "1 cup"
+  // and "3/4" into "3" on the recipe page and in cook mode — a reader would
+  // use double the intended amount. parseQuantity reads fractions and mixed
+  // numbers as the recipe means them.
+  // ?? NaN so the Number.isNaN guard below still catches a no-quantity row.
+  const parsed = parseQuantity(ing.quantity) ?? Number.NaN
   // Non-numeric ("a handful") is left verbatim — scaling it would be a lie.
   if (Number.isNaN(parsed)) return [ing.quantity, ing.unit].filter(Boolean).join(' ')
 

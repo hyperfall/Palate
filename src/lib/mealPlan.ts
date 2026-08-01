@@ -68,7 +68,11 @@ export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = 
       }
       g.recipes.add(recipe.title)
 
-      const qty = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
+      // parseQuantity, not parseFloat: parseFloat stops at the slash, so
+      // "1/2" reads as 1 and "3/4" as 3, overstating the whole buy-list for
+      // any recipe written with a fraction. parseQuantity is the same
+      // fraction-aware reader scaleQuantity below already uses.
+      const qty = parseQuantity(ing.quantity) ?? Number.NaN
       // Key on the CANONICAL unit, not the typed one. unit is free text, so the
       // same measure arrives spelled three ways across recipes and the list
       // printed each spelling as its own line — the exact opposite of what a

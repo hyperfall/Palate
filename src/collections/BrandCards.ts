@@ -22,7 +22,13 @@ export const BrandCards: CollectionConfig = {
       'Hand-curated partner placements. Swapping a card in or out is a CMS edit — rotation stays fair automatically.',
   },
   access: {
-    read: () => true,
+    // Payload auto-exposes GET /api/brandCards (and GraphQL). `() => true` made
+    // every card — including inactive drafts auto-created from unreviewed
+    // partner applications — world-readable there, bypassing the field curation
+    // the /brand-slot route does by hand. Anonymous callers now see only active
+    // cards; staff (a Payload session) see everything. The app's own rendering
+    // uses the local API with overrideAccess, so it is unaffected.
+    read: ({ req }) => (req.user ? true : { active: { equals: true } }),
   },
   fields: [
     {
@@ -166,6 +172,10 @@ export const BrandCards: CollectionConfig = {
               defaultValue: 50,
               min: 0,
               max: 100,
+              // Deal economics. Readable through the public REST/GraphQL API
+              // without this — a competitor or the partner themselves could read
+              // every card's split. Staff only.
+              access: { read: ({ req }) => Boolean(req.user) },
               admin: {
                 description:
                   'Percent of this card’s revenue shared with the recipe’s creator. Baseline 50 (platform keeps 50).',
@@ -176,6 +186,7 @@ export const BrandCards: CollectionConfig = {
               type: 'number',
               defaultValue: 0,
               min: 0,
+              access: { read: ({ req }) => Boolean(req.user) },
               admin: {
                 description:
                   'Revenue in cents per 1,000 impressions (CPM). Drives estimated creator earnings. 0 until a real rate is agreed with the partner.',

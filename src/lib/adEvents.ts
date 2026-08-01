@@ -1,3 +1,5 @@
+import { sql } from '@payloadcms/db-postgres/drizzle'
+
 import { getPayloadClient } from '@/lib/queries'
 
 /**
@@ -45,12 +47,17 @@ export async function logImpressions(
 async function countImpression(cardId: number | string): Promise<void> {
   try {
     const payload = await getPayloadClient()
-    const card = await payload.findByID({ collection: 'brandCards', id: cardId, depth: 0 })
-    await payload.update({
-      collection: 'brandCards',
-      id: cardId,
-      data: { impressionsServed: (card.impressionsServed ?? 0) + 1 },
-    })
+    // Atomic increment, not read-then-write. The old findByID + update raced:
+    // two concurrent slot renders both read the same value and both wrote it
+    // + 1, losing one count. The counter can only ever drift LOW that way, and
+    // isWithinBudget gates on impressionsServed < cap — so a lost count lets a
+    // capped campaign serve past the buy it was paid for. A single UPDATE ...
+    // SET x = x + 1 has no window to lose. The adEvents log is unaffected either
+    // way; this only keeps the denormalised counter honest.
+    const db = (payload.db as { drizzle: { execute: (q: unknown) => Promise<unknown> } }).drizzle
+    await db.execute(
+      sql`UPDATE brand_cards SET impressions_served = COALESCE(impressions_served, 0) + 1 WHERE id = ${Number(cardId)}`,
+    )
   } catch (err) {
     console.error('[adEvents] impression count failed:', err)
   }

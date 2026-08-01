@@ -1,3 +1,4 @@
+import { canonicalUnit, displayUnit } from './ingredients/parse'
 import { parseQuantity } from './nutrition'
 import { humanizeQuantity } from './units'
 
@@ -68,7 +69,11 @@ export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = 
       g.recipes.add(recipe.title)
 
       const qty = ing.quantity ? Number.parseFloat(ing.quantity) : Number.NaN
-      const unit = (ing.unit ?? '').trim()
+      // Key on the CANONICAL unit, not the typed one. unit is free text, so the
+      // same measure arrives spelled three ways across recipes and the list
+      // printed each spelling as its own line — the exact opposite of what a
+      // consolidated list is for.
+      const unit = canonicalUnit(ing.unit)
       if (!Number.isNaN(qty)) {
         // Sum per unit — different units can't be added, so they stay separate.
         g.numeric.set(unit, (g.numeric.get(unit) ?? 0) + qty)
@@ -82,7 +87,7 @@ export function consolidateShoppingList(recipes: PlanRecipe[], pantry: Pantry = 
   for (const [key, g] of groups) {
     const amounts: string[] = []
     for (const [unit, sum] of g.numeric) {
-      amounts.push([humanizeQuantity(sum), unit].filter(Boolean).join(' '))
+      amounts.push([humanizeQuantity(sum), displayUnit(unit, sum)].filter(Boolean).join(' '))
     }
     amounts.push(...g.freeform)
     lines.push({ key, name: g.name, slug: g.slug, amounts, recipes: [...g.recipes] })

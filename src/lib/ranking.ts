@@ -103,6 +103,15 @@ export function periodFor(grain: Grain, anchor: Date): Period {
 }
 
 /**
+ * Did Date.UTC keep the calendar date we asked for, or normalise it away?
+ *
+ * Month is 1-based here to match the URL segment it validates.
+ */
+function sameDate(d: Date, year: number, month: number, day: number): boolean {
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day
+}
+
+/**
  * Read a URL segment back into a period. Returns null for anything
  * unrecognisable, so a hand-typed URL 404s rather than silently showing today.
  */
@@ -112,14 +121,19 @@ export function parsePeriod(slug: string | undefined, now: Date): Period | null 
   const week = /^w(\d{4})-(\d{2})-(\d{2})$/.exec(slug)
   if (week) {
     const d = utc(+week[1], +week[2] - 1, +week[3])
-    if (Number.isNaN(d.getTime())) return null
+    // Same rejection as the day branch below. The Number.isNaN check that used
+    // to stand here was dead: Date.UTC never returns NaN for finite numbers, it
+    // rolls them over — so w2026-02-31 quietly served the 2 March board, and
+    // w2026-13-10 served a board in January 2027, each under a URL claiming
+    // something else. A leaderboard link has to show what it says or 404.
+    if (!sameDate(d, +week[1], +week[2], +week[3])) return null
     return periodFor('week', d)
   }
   const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(slug)
   if (day) {
     const d = utc(+day[1], +day[2] - 1, +day[3])
     // Reject impossible dates (2026-02-31) rather than let JS roll them over.
-    if (d.getUTCMonth() !== +day[2] - 1 || d.getUTCDate() !== +day[3]) return null
+    if (!sameDate(d, +day[1], +day[2], +day[3])) return null
     return periodFor('day', d)
   }
   const month = /^(\d{4})-(\d{2})$/.exec(slug)

@@ -11,7 +11,8 @@ export const Media: CollectionConfig = {
     // rather than shipping one oversized original to every viewport.
     // withoutEnlargement: a small source must never be stretched up into a
     // blurry variant — the original stays the quality ceiling, and the
-    // upscaler (images:upscale) is the only thing allowed to enlarge.
+    // original stays the quality ceiling. Nothing in this repo enlarges a
+    // source; `npm run remaster:heroes` only re-sharpens and re-encodes.
     imageSizes: [
       { name: 'thumbnail', width: 480, height: 360, position: 'centre', withoutEnlargement: true },
       { name: 'card', width: 800, height: 600, position: 'centre', withoutEnlargement: true },

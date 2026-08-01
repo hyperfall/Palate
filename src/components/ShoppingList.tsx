@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { slugify } from '@/fields/slug'
+
 import { Disclosure } from '@/components/Disclosure'
 import type { ShoppingLine, WeekShoppingList } from '@/lib/mealPlan'
 import { supabaseBrowser } from '@/lib/supabase/client'
 
-const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 
 /** One buy-list line. `onStaple` (interactive plan page only) adds a "have it"
  *  action that marks the ingredient a pantry staple; `showRecipes` prints which

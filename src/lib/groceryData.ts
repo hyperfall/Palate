@@ -1,7 +1,6 @@
 import { headers } from 'next/headers'
 
 import { countryFromHeaders } from '@/lib/geoHeaders'
-import { retailersForCountry } from '@/lib/grocery'
 import { RETAILERS } from '@/seed/groceryRetailerData'
 import { getPayloadClient } from '@/lib/queries'
 import type { GroceryRetailer } from '@/payload-types'
@@ -37,10 +36,6 @@ export async function viewerCountry(): Promise<string | null> {
 export async function countryWasDetected(): Promise<boolean> {
   const headerList = await headers()
   return countryFromHeaders((name) => headerList.get(name)) !== null
-}
-
-export async function getGroceryRetailers(country: string | null): Promise<GroceryRetailer[]> {
-  return retailersForCountry(await getAllGroceryRetailers(), country)
 }
 
 /**

@@ -109,3 +109,28 @@ describe('isFuture', () => {
     expect(isFuture(periodFor('month', now), now)).toBe(false)
   })
 })
+
+describe('parsePeriod — impossible week slugs', () => {
+  const now = new Date('2026-08-01T12:00:00Z')
+
+  it('rejects a week slug naming a date that does not exist', () => {
+    // Date.UTC never returns NaN for finite numbers — it rolls the value over —
+    // so the old Number.isNaN guard here was dead code and w2026-02-31 served
+    // the 2 March board under a URL claiming February.
+    expect(parsePeriod('w2026-02-31', now)).toBeNull()
+    expect(parsePeriod('w2026-04-31', now)).toBeNull()
+    expect(parsePeriod('w2025-02-29', now)).toBeNull()
+  })
+
+  it('rejects an out-of-range month rather than rolling into another year', () => {
+    // w2026-13-10 resolved to a board in January 2027 — a full year from what
+    // the URL said.
+    expect(parsePeriod('w2026-13-10', now)).toBeNull()
+    expect(parsePeriod('w2026-00-10', now)).toBeNull()
+  })
+
+  it('still accepts a real week, and a leap day that exists', () => {
+    expect(parsePeriod('w2026-07-27', now)?.slug).toBe('w2026-07-27')
+    expect(parsePeriod('2024-02-29', now)?.slug).toBe('2024-02-29')
+  })
+})

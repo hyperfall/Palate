@@ -27,7 +27,7 @@ describe('buildDishShoppingList', () => {
     expect(list.dishes).toHaveLength(1)
     expect(list.dishes[0].slug).toBe('butter-chicken')
     expect(list.dishes[0].lines.map((l) => l.name)).toEqual(['garlic'])
-    expect(list.dishes[0].lines[0].amounts).toEqual(['2 clove'])
+    expect(list.dishes[0].lines[0].amounts).toEqual(['2 cloves'])
   })
 
   it('nets the buy-list across dish instances (a dish planned twice counts twice)', () => {
@@ -40,7 +40,7 @@ describe('buildDishShoppingList', () => {
     )
     expect(list.netted).toHaveLength(1)
     expect(list.netted[0].name).toBe('garlic')
-    expect(list.netted[0].amounts).toEqual(['7 clove']) // 2 + 2 + 3
+    expect(list.netted[0].amounts).toEqual(['7 cloves']) // 2 + 2 + 3
   })
 
   it('per-dish shows full ingredients; the netted buy-list is pantry-aware', () => {

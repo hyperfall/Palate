@@ -14,7 +14,7 @@ describe('consolidateShoppingList', () => {
     ])
     expect(lines).toHaveLength(1)
     expect(lines[0].name).toBe('garlic')
-    expect(lines[0].amounts).toEqual(['5 clove'])
+    expect(lines[0].amounts).toEqual(['5 cloves'])
     expect(lines[0].recipes.sort()).toEqual(['Chana', 'Shakshuka'])
   })
 
@@ -100,5 +100,54 @@ describe('consolidateShoppingList — canonical slug', () => {
     expect(lines).toHaveLength(1)
     expect(lines[0].slug).toBe('garlic')
     expect(lines[0].recipes).toEqual(['One', 'Two'])
+  })
+})
+
+describe('consolidateShoppingList — unit spelling', () => {
+  const oil = (unit: string, quantity: string, title: string) => ({
+    slug: title.toLowerCase(),
+    title,
+    ingredients: [
+      {
+        quantity,
+        unit,
+        item: 'olive oil',
+        canonicalId: 42,
+        canonicalName: 'olive oil',
+        canonicalSlug: 'olive-oil',
+      },
+    ],
+  })
+
+  it('nets the same unit however the creator spelled it', () => {
+    // `unit` is a free-text field and the studio lets a creator type anything,
+    // so the same measure arrives as "tbsp", "Tbsp" and "tablespoons". Keying
+    // on the raw string printed each spelling as its own line — the opposite of
+    // what a consolidated list is for.
+    const cases: Array<[string, string]> = [
+      ['Tbsp', '3 tbsp'],
+      ['tablespoons', '3 tbsp'],
+      ['TBSP', '3 tbsp'],
+    ]
+    for (const [spelling, expected] of cases) {
+      const lines = consolidateShoppingList([
+        oil('tbsp', '2', 'A'),
+        oil(spelling, '1', 'B'),
+      ] as never)
+      expect(lines.map((l) => l.amounts)).toEqual([[expected]])
+    }
+  })
+
+  it('still refuses to add units it cannot convert between', () => {
+    // Netting tbsp into ml would need a real conversion; keeping them apart is
+    // the documented trade, and normalising spelling must not quietly change it.
+    const lines = consolidateShoppingList([oil('tbsp', '2', 'A'), oil('ml', '30', 'B')] as never)
+    expect(lines[0].amounts).toEqual(['2 tbsp', '30 ml'])
+  })
+
+  it('pluralises word units and leaves abbreviations alone', () => {
+    expect(consolidateShoppingList([oil('cup', '1', 'A'), oil('cups', '2', 'B')] as never)[0].amounts).toEqual(['3 cups'])
+    expect(consolidateShoppingList([oil('g', '100', 'A'), oil('g', '50', 'B')] as never)[0].amounts).toEqual(['150 g'])
+    expect(consolidateShoppingList([oil('cup', '1', 'A')] as never)[0].amounts).toEqual(['1 cup'])
   })
 })

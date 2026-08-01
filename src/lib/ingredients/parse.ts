@@ -36,6 +36,38 @@ const UNITS: Record<string, string> = {
   handful: 'handful', handfuls: 'handful', knob: 'knob', splash: 'splash',
 }
 
+/**
+ * Units that read as words and take an -s in the plural. The abbreviations
+ * (tsp, tbsp, g, ml, oz) never do — "3 tbsps" is wrong on a shopping list.
+ */
+const PLURALISES = new Set([
+  'cup', 'clove', 'can', 'tin', 'jar', 'slice', 'sprig', 'stick', 'bunch',
+  'pinch', 'dash', 'handful', 'knob', 'splash',
+])
+
+/**
+ * Fold a free-text unit to its canonical spelling, or '' if it is not a unit
+ * we know.
+ *
+ * `unit` is a free-text field in Payload and the studio lets a creator type
+ * whatever they like, so "Tbsp", "tablespoons" and "tbsp" all reach the
+ * database. Anything keying on the raw string treats those as three different
+ * units — which is how a shopping list ended up printing "2 tbsp" and "1 Tbsp"
+ * as separate lines for the same oil.
+ */
+export function canonicalUnit(raw: string | null | undefined): string {
+  const key = (raw ?? '').trim().toLowerCase()
+  if (!key) return ''
+  return UNITS[key] ?? key
+}
+
+/** The canonical unit as it should be printed for a given quantity. */
+export function displayUnit(canonical: string, quantity: number): string {
+  if (!canonical) return ''
+  const plural = quantity > 1 && PLURALISES.has(canonical)
+  return plural ? `${canonical}s` : canonical
+}
+
 const UF_CLASS = '½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞'
 const QUANTITY_RE =
   /^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.\d+|\d+)(\s*(?:-|–|to)\s*(?:\d+\/\d+|\d*\.\d+|\d+))?/

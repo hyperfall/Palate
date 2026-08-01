@@ -1,4 +1,5 @@
 import { getActiveHouseholdId } from './household'
+import { imageFrom } from './media'
 import { getPayloadClient } from './queries'
 import { supabaseServer } from './supabase/server'
 import type { PlanIngredient, Pantry } from './mealPlan'
@@ -36,6 +37,17 @@ export type PlanEntry = {
 
 export type PlannedRecipe = {
   title: string
+  /**
+   * The recipe's image as it is NOW.
+   *
+   * Supabase stores a copy of the image URL at the moment a recipe was added
+   * to a plan, which turns any later change to the media library into a wall
+   * of broken thumbnails — re-mastering nine hero photographs renamed their
+   * files and every row pointing at the old name started 500ing. The snapshot
+   * stays as a fallback for a recipe that has since been unpublished; when the
+   * recipe is still here, it is the authority on its own picture.
+   */
+  image: string | null
   ingredients: PlanIngredient[]
   costPerServing: number | null
   servings: number
@@ -166,6 +178,7 @@ export async function loadPlannedRecipes(slugs: string[]): Promise<Map<string, P
     })
     out.set(r.slug, {
       title: r.title,
+      image: imageFrom(r.heroImage, 'card')?.url ?? null,
       ingredients,
       costPerServing: r.costPerServing ?? null,
       servings: r.servings ?? 1,

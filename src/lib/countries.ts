@@ -15,3 +15,15 @@ export const ALL_COUNTRY_CODES: readonly string[] =
     'MH MK ML MM MN MO MQ MR MS MT MU MV MW MX MY MZ NA NC NE NG NI NL NO NP NR NZ OM PA PE PF PG ' +
     'PH PK PL PR PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SI SK SL SM SN SO SR SS ST SV SY SZ ' +
     'TD TG TH TJ TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VC VE VN VU WS YE ZA ZM ZW').split(' ')
+
+/**
+ * ISO-2 → readable name. Falls back to the code, which is still recognisable,
+ * rather than showing an empty option.
+ */
+export const countryName = (code: string): string => {
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code
+  } catch {
+    return code
+  }
+}

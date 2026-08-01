@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { CountryChooser } from '@/components/CountryChooser'
 import { CookieSettingsButton } from '@/components/ConsentManager'
 import { AXIS_COLOR } from '@/components/TasteGauge'
 import { SITE } from '@/lib/site'
@@ -128,7 +129,8 @@ export function SiteFooter() {
                 </Link>
               ))}
             </nav>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+              <CountryChooser />
               <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame" />
               <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame">
                 Do Not Sell or Share My Info

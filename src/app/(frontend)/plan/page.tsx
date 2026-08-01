@@ -139,7 +139,12 @@ export default async function PlanPage() {
 
       <div className="mt-8">
         <MealBoard
-          entries={withServings.map(({ entry, base, planned }) => ({ ...entry, servings: planned, baseServings: base }))}
+          entries={withServings.map(({ entry, base, planned, recipe }) => ({
+            ...entry,
+            image: recipe?.image ?? entry.image,
+            servings: planned,
+            baseServings: base,
+          }))}
         />
       </div>
 
@@ -147,14 +152,22 @@ export default async function PlanPage() {
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="text-[1.5rem]">Shopping list</h2>
+            {/*
+                This is the cost of COOKING the week — every plate counted at
+                its own estimate — and it sat unlabelled beside "Shopping list",
+                where it read as the price of the shop. It is not: the list
+                below nets overlapping ingredients to a single line and drops
+                everything already in the pantry, neither of which this number
+                knows about, so the actual shop is always less. Saying which
+                one it is costs a word.
+            */}
             {cost.covered > 0 && (
-              <span className="datum">
-                ≈ £{(cost.totalCents / 100).toFixed(2)}
-                {cost.covered < cost.total && (
-                  <span className="ml-1 font-mono text-[0.6875rem] text-slate">
-                    (from {cost.covered}/{cost.total})
-                  </span>
-                )}
+              <span className="text-right">
+                <span className="datum">≈ £{(cost.totalCents / 100).toFixed(2)}</span>
+                <span className="ml-1.5 font-mono text-[0.6875rem] tracking-[0.06em] text-slate uppercase">
+                  to cook
+                  {cost.covered < cost.total && ` · ${cost.covered}/${cost.total} priced`}
+                </span>
               </span>
             )}
           </div>

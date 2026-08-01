@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { Disclosure } from '@/components/Disclosure'
 import { retailersForCountry, shoppingListText } from '@/lib/grocery'
-import { ALL_COUNTRY_CODES } from '@/lib/countries'
+import { ALL_COUNTRY_CODES, countryName } from '@/lib/countries'
 import { retailerTile } from '@/lib/retailerBrand'
+import { readShopCountry, subscribeShopCountry, writeShopCountry } from '@/lib/shopCountry'
 import { SHOP_LOGOS } from '@/lib/shopLogos'
 
 export type ShopRetailer = {
@@ -18,16 +19,6 @@ export type ShopRetailer = {
 }
 export type ShopLine = { key: string; name: string; amounts: string[] }
 
-const COUNTRY_KEY = 'palate:shop-country'
-
-/** ISO-2 → readable name, for the picker. Falls back to the code itself. */
-const countryName = (code: string): string => {
-  try {
-    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? code
-  } catch {
-    return code
-  }
-}
 
 /**
  * The grocery handoff panel: pick a retailer, every netted shopping line
@@ -61,15 +52,17 @@ export function ShopThisList({
   // A remembered choice beats the header — read after mount so hydration
   // matches the server render of the header-detected default.
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(COUNTRY_KEY)
-      if (saved) {
-        setCountry(saved)
-        setOverridden(saved !== defaultCountry)
-      }
-    } catch {
-      /* storage unavailable — the header default stands */
+    const saved = readShopCountry()
+    if (saved) {
+      setCountry(saved)
+      setOverridden(saved !== defaultCountry)
     }
+    // The footer carries the same choice; a change there must move the shops
+    // in front of you rather than waiting for a reload.
+    return subscribeShopCountry((code) => {
+      setCountry(code ?? defaultCountry)
+      setOverridden(Boolean(code) && code !== defaultCountry)
+    })
   }, [defaultCountry])
 
   const eligible = useMemo(() => retailersForCountry(retailers, country), [retailers, country])
@@ -99,11 +92,7 @@ export function ShopThisList({
   const pickCountry = (code: string) => {
     setCountry(code)
     setOverridden(true)
-    try {
-      window.localStorage.setItem(COUNTRY_KEY, code)
-    } catch {
-      /* fine — the choice still applies for this visit */
-    }
+    writeShopCountry(code)
   }
 
   /**
@@ -117,11 +106,7 @@ export function ShopThisList({
   const useDetected = () => {
     setCountry(defaultCountry)
     setOverridden(false)
-    try {
-      window.localStorage.removeItem(COUNTRY_KEY)
-    } catch {
-      /* the reset still applies for this visit */
-    }
+    writeShopCountry(null)
   }
 
   if (lines.length === 0) return null

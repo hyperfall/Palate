@@ -140,7 +140,13 @@ function CookieBanner({
       role="dialog"
       aria-modal="false"
       aria-label="Cookie consent"
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-rule bg-paper/98 backdrop-blur-sm"
+      // Sits ABOVE the mobile tab bar rather than on top of it. At z-60 over a
+      // z-50 nav this banner is 301px on a 375x812 phone — 37% of the viewport
+      // — and it covered all four tabs, so a first-time visitor could not reach
+      // Home, Recipes, Saved or Account until they answered a cookie question.
+      // Consent should gate cookies, not navigation. Same offset the mobile
+      // nav's own drawer uses, so the two can never disagree.
+      className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-[60] border-t border-rule bg-paper/98 backdrop-blur-sm sm:bottom-0"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       <div className="shell flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">

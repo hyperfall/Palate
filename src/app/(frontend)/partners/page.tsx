@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { PartnerCardExample } from '@/components/PartnerCardExample'
 import { PartnerRequestForm } from '@/components/PartnerRequestForm'
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 
@@ -28,6 +29,30 @@ const HOW = [
   },
 ]
 
+/**
+ * Sample cards. Invented brands on purpose — showing a real company's name and
+ * mark here would imply a partnership that does not exist.
+ */
+const EXAMPLES = [
+  { brand: 'Ridgeway Mill', tagline: 'Stoneground flour, milled in Devon this week.', ctaLabel: 'Shop flour', swatch: '#7d5a3c' },
+  { brand: 'Copper & Co', tagline: 'Pans that outlive the recipes you cook in them.', ctaLabel: 'See the range', swatch: '#b4622f' },
+  { brand: 'Saltwick', tagline: 'Flaky sea salt, hand-harvested off the Norfolk coast.', ctaLabel: 'Try a box', swatch: '#3f5a63' },
+] as const
+
+/**
+ * What to send us. Sizes are the ones the media pipeline actually generates, so
+ * a partner supplying at the top of this range gets a sharp card on a retina
+ * screen instead of an upscale.
+ */
+const CREATIVE_SPEC: Array<[string, string]> = [
+  ['Images per campaign', 'Up to 8, rotated evenly'],
+  ['Image size', '800×600 or larger, square-safe'],
+  ['Format', 'JPG or PNG — no SVG'],
+  ['Tagline', 'One line, 160 characters'],
+  ['Button label', '2–3 words'],
+  ['Destination', 'https:// only'],
+]
+
 export default function PartnersPage() {
   return (
     <div className="shell py-8 lg:py-14">
@@ -52,7 +77,37 @@ export default function PartnersPage() {
         ))}
       </ol>
 
-      <section className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+      {/*
+          Show the placement. A brand was being asked to commit budget and
+          artwork to something described only in prose — three examples make the
+          format, the label and the one-line limit concrete, and demonstrate the
+          set of creatives a single campaign can rotate.
+      */}
+      <section className="mt-14 border-t-2 border-ink pt-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h2 className="font-display text-[1.375rem]">This is the placement</h2>
+          <p className="m-0 max-w-[46ch] text-[0.9375rem] text-slate">
+            One card, in the margin beside the method — where a reader is already
+            deciding what to buy. Supply several images and we rotate them evenly.
+          </p>
+        </div>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {EXAMPLES.map((e) => (
+            <PartnerCardExample key={e.brand} {...e} />
+          ))}
+        </div>
+        <dl className="mt-8 grid max-w-[62ch] gap-2.5">
+          {CREATIVE_SPEC.map(([label, value]) => (
+            <div key={label} className="leader">
+              <dt className="eyebrow">{label}</dt>
+              <span className="leader__dots" aria-hidden="true" />
+              <dd className="datum m-0">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div>
           <h2 className="font-display text-[1.375rem]">Request a placement</h2>
           <p className="mt-2 max-w-[56ch] text-slate">

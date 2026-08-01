@@ -29,6 +29,15 @@ export type BrandCardInput = {
   targetRegions?: Array<{ code: string }> | null
   assignedCuisines?: BrandCardId[] | null
   assignedRecipes?: BrandCardId[] | null
+  /** Stop serving after this many impressions. Null or absent means uncapped. */
+  maxImpressions?: number | null
+  /** Impressions already served against that cap. */
+  impressionsServed?: number | null
+  /**
+   * Images for this campaign, rotated per visitor. Empty falls back to whatever
+   * single image the card carries.
+   */
+  creatives?: Array<{ id?: string | null; active?: boolean | null }> | null
 }
 
 export type RecipeContext = {
@@ -55,6 +64,22 @@ export type SelectBrandCardsArgs = {
 }
 
 const key = (id: BrandCardId): string => String(id)
+
+/**
+ * Has this card served its whole buy?
+ *
+ * A flight that can only be stopped by a date or by someone remembering to
+ * switch it off is not a campaign anyone controls. A cap makes a fixed buy end
+ * itself, which is what an advertiser is actually paying for.
+ */
+function isWithinBudget(card: BrandCardInput): boolean {
+  const cap = card.maxImpressions
+  if (cap === null || cap === undefined) return true
+  // A cap of zero means zero, not "unlimited" — the falsy check that would
+  // treat them the same is exactly how a paused campaign starts serving again.
+  if (!Number.isFinite(cap) || cap < 0) return true
+  return (card.impressionsServed ?? 0) < cap
+}
 
 function isWithinFlight(card: BrandCardInput, now: Date): boolean {
   if (card.startsAt) {
@@ -162,6 +187,7 @@ export function selectBrandCards({
     (card) =>
       card.active &&
       card.weight > 0 &&
+      isWithinBudget(card) &&
       isWithinFlight(card, now) &&
       isTargetedAtRecipe(card, recipe) &&
       matchesRegion(card, region),

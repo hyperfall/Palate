@@ -687,7 +687,30 @@ export interface Author {
 export interface BrandCard {
   id: number;
   brand: string;
+  /**
+   * The brand mark. One per brand — used when a creative has no image of its own.
+   */
   logo?: (number | null) | Media;
+  /**
+   * One or more images for this campaign. Several are rotated evenly per visitor, so a brand can run a set rather than a single picture, and a tired creative can be retired without pausing the card. Leave empty to fall back to the brand logo.
+   */
+  creatives?:
+    | {
+        image: number | Media;
+        /**
+         * Optional line for THIS image. Leave empty to use the campaign tagline below.
+         */
+        tagline?: string | null;
+        /**
+         * Retire one image without touching the rest of the campaign.
+         */
+        active?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Legacy single image. Cards created before creatives existed still render from this; prefer Creatives above.
+   */
   productImage?: (number | null) | Media;
   /**
    * One line. This is a card, not a banner.
@@ -736,6 +759,14 @@ export interface BrandCard {
    * Optional. Card is ineligible after this moment.
    */
   endsAt?: string | null;
+  /**
+   * Stop serving after this many impressions. Empty means no cap. A flight that can only be ended by a date or by remembering to switch it off is not a campaign you control — this is how a fixed buy stops itself.
+   */
+  maxImpressions?: number | null;
+  /**
+   * Counted from the impression log. Read-only.
+   */
+  impressionsServed?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1480,6 +1511,14 @@ export interface AuthorsSelect<T extends boolean = true> {
 export interface BrandCardsSelect<T extends boolean = true> {
   brand?: T;
   logo?: T;
+  creatives?:
+    | T
+    | {
+        image?: T;
+        tagline?: T;
+        active?: T;
+        id?: T;
+      };
   productImage?: T;
   tagline?: T;
   ctaLabel?: T;
@@ -1498,6 +1537,8 @@ export interface BrandCardsSelect<T extends boolean = true> {
   active?: T;
   startsAt?: T;
   endsAt?: T;
+  maxImpressions?: T;
+  impressionsServed?: T;
   updatedAt?: T;
   createdAt?: T;
 }

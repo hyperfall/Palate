@@ -2,6 +2,7 @@ import { cookies, headers } from 'next/headers'
 
 import type { BrandCard, Recipe } from '@/payload-types'
 import { VISITOR_COOKIE } from '@/proxy'
+import { countryFromHeaders } from '@/lib/geoHeaders'
 import { findActiveBrandCards } from '@/lib/queries'
 import { selectBrandCards, type BrandCardInput, type RecipeContext } from './select'
 
@@ -34,6 +35,9 @@ export function toBrandCardInput(card: BrandCard): BrandCardInput {
     assignedRecipes: (card.assignedRecipes ?? [])
       .map(idOf)
       .filter((id): id is string | number => id !== undefined),
+    maxImpressions: card.maxImpressions ?? null,
+    impressionsServed: card.impressionsServed ?? 0,
+    creatives: (card.creatives ?? []).map((c) => ({ id: c.id, active: c.active })),
   }
 }
 
@@ -54,7 +58,11 @@ export function toRecipeContext(recipe: Recipe): RecipeContext {
  */
 async function getRegion(): Promise<string | null> {
   const headerList = await headers()
-  return headerList.get('x-vercel-ip-country') ?? null
+  // Was Vercel's header alone, which meant region targeting silently resolved
+  // to "unknown" behind any other edge — and an unknown region serves only
+  // globally-targeted cards, so every regional campaign quietly stopped
+  // delivering. Same resolver the shop panel uses.
+  return countryFromHeaders((name) => headerList.get(name))
 }
 
 async function getRotationState() {

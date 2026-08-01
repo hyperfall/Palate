@@ -233,3 +233,40 @@ describe('selectBrandCards — rotation behaviour (spec §6 step 3)', () => {
     expect(withoutCursor).toEqual(withZero)
   })
 })
+
+describe('selectBrandCards — delivery cap', () => {
+  // Assigned to the fixture recipe's cuisine, so the ONLY thing under test is
+  // the cap. An unassigned card is ineligible whatever its budget says.
+  const capped = (over: Partial<BrandCardInput>): BrandCardInput[] => [
+    {
+      id: 'a',
+      brand: 'Maldon',
+      weight: 1,
+      active: true,
+      assignedCuisines: ['c1'],
+      assignedRecipes: [],
+      ...over,
+    },
+  ]
+
+  it('serves while the buy has room', () => {
+    expect(select(capped({ maxImpressions: 1000, impressionsServed: 999 }))).toHaveLength(1)
+  })
+
+  it('stops the moment the buy is spent', () => {
+    // The point of a cap: a fixed buy ends itself rather than depending on
+    // someone remembering to switch it off.
+    expect(select(capped({ maxImpressions: 1000, impressionsServed: 1000 }))).toHaveLength(0)
+    expect(select(capped({ maxImpressions: 1000, impressionsServed: 4000 }))).toHaveLength(0)
+  })
+
+  it('treats a cap of zero as zero, not as unlimited', () => {
+    // A falsy check here would quietly restart a paused campaign.
+    expect(select(capped({ maxImpressions: 0, impressionsServed: 0 }))).toHaveLength(0)
+  })
+
+  it('leaves an uncapped card uncapped', () => {
+    expect(select(capped({ impressionsServed: 5_000_000 }))).toHaveLength(1)
+    expect(select(capped({ maxImpressions: null, impressionsServed: 999 }))).toHaveLength(1)
+  })
+})

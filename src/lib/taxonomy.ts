@@ -101,8 +101,6 @@ export const DIETARY_TAGS = [
   { label: 'Shellfish-free', value: 'shellfish-free' },
 ] as const
 
-export type DietaryTag = (typeof DIETARY_TAGS)[number]['value']
-
 /**
  * The dietary tags that are allergen *free-of* claims, re-framed for an
  * "Avoiding…" filter. The stored value is unchanged (`nut-free`); only the

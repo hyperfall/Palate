@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { formatPlatePrice } from '@/lib/format'
 import { GroceryPanel } from '@/components/GroceryPanel'
 import { MealBoard } from '@/components/MealBoard'
 import { ShoppingModeLauncher } from '@/components/ShoppingMode'
@@ -163,7 +164,7 @@ export default async function PlanPage() {
             */}
             {cost.covered > 0 && (
               <span className="text-right">
-                <span className="datum">≈ £{(cost.totalCents / 100).toFixed(2)}</span>
+                <span className="datum">≈ {formatPlatePrice(cost.totalCents)}</span>
                 <span className="ml-1.5 font-mono text-[0.6875rem] tracking-[0.06em] text-slate uppercase">
                   to cook
                   {cost.covered < cost.total && ` · ${cost.covered}/${cost.total} priced`}

@@ -14,6 +14,31 @@ export const revalidate = 300
 
 type Props = { params: Promise<{ period?: string[] }> }
 
+/**
+ * Prerender the boards people actually land on.
+ *
+ * An optional catch-all with no generateStaticParams is rendered on demand,
+ * every time — so `revalidate = 300` above was dead config and this page ran a
+ * full vote aggregation against the database on every single view. Naming the
+ * common periods turns that into ISR: each board is computed at most once per
+ * window, and any other period a visitor asks for is still rendered on demand
+ * and then cached the same way.
+ *
+ * The current-period slugs are resolved at build, so tomorrow's board is not in
+ * this list — it does not need to be. It renders once on first request and
+ * joins the cache.
+ */
+export function generateStaticParams(): Array<{ period?: string[] }> {
+  const now = new Date()
+  return [
+    { period: [] },
+    { period: ['all'] },
+    ...(['day', 'week', 'month', 'year'] as const).map((grain) => ({
+      period: [periodFor(grain, now).slug],
+    })),
+  ]
+}
+
 const GRAINS: Array<{ grain: Grain; label: string }> = [
   { grain: 'day', label: 'Today' },
   { grain: 'week', label: 'This week' },

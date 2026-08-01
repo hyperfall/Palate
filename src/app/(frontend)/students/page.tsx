@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { unstable_cache } from 'next/cache'
 import Link from 'next/link'
 
 import { StudentBudgetBoard } from '@/components/StudentBudgetBoard'
@@ -14,7 +15,16 @@ export const metadata: Metadata = {
     'Proper food for tight budgets, busy weeks, and whoever turns up. Quick solo dinners, batch cooks, and feed-the-flat meals that scale.',
 }
 
-export const revalidate = 3600
+/**
+ * Not cacheable as a page, and it was pretending otherwise.
+ *
+ * This route reads searchParams (?mode=), which makes it dynamic no matter what
+ * `revalidate` says — the export that used to sit here never took effect. What
+ * IS worth caching is the expensive half: the same catalog query runs for every
+ * visitor on a given mode and the answer changes about as often as the catalog
+ * does. So the query is cached instead of the page, which is where the original
+ * hour actually belonged.
+ */
 
 /**
  * The student landing page. Not "budget cooking" branding — smart, capable,
@@ -80,6 +90,17 @@ const LEFTOVER_CHAINS = [
   { first: 'A tray of roast veg', then: 'blitz half into tomorrow’s soup or wrap.' },
 ]
 
+/** The catalog half of a mode, cached across visitors for an hour. */
+const pickFor = (key: ModeKey) =>
+  unstable_cache(
+    async () => {
+      const mode = MODES.find((m) => m.key === key) ?? MODES[0]
+      return findRecipes(parseFilters(mode.query ?? {}), { limit: 60 })
+    },
+    ['students-mode', key],
+    { revalidate: 3600, tags: ['recipes'] },
+  )()
+
 export default async function StudentsPage({
   searchParams,
 }: {
@@ -92,7 +113,7 @@ export default async function StudentsPage({
   // rather than fetching 250 rows at depth 1 and discarding all but eight. The
   // JS predicate still runs — it also checks servings, which the catalog filter
   // grammar doesn't express — so the selection is unchanged, just cheaper.
-  const { recipes } = await findRecipes(parseFilters(mode.query ?? {}), { limit: 60 })
+  const { recipes } = await pickFor(mode.key)
   const picks = recipes.filter(mode.filter).slice(0, 8)
 
   return (

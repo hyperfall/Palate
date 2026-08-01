@@ -12,6 +12,10 @@ import { absoluteUrl } from '@/lib/site'
 // broken to the person who just voted.
 export const revalidate = 300
 
+/** Fewer ranked dishes than this and the board reads as thin rather than
+ *  authoritative, so it drops the winner-hero for a plain honest list. */
+const MIN_BOARD = 3
+
 type Props = { params: Promise<{ period?: string[] }> }
 
 /**
@@ -86,6 +90,11 @@ export default async function RankingPage({ params }: Props) {
   const older = shiftPeriod(period, -1)
   const newer = shiftPeriod(period, 1)
   const [winner, ...rest] = ranked
+  // Below this, there is no field to rank — crowning "Nº1 Most voted, all time"
+  // over a single dish with one vote at one star undersells the whole site to a
+  // visitor who lands here from the nav. Show the real recipes, just without the
+  // champion's plinth, until the board has a race to report.
+  const tooFewToCrown = ranked.length > 0 && ranked.length < MIN_BOARD
 
   return (
     <div className="shell py-10 lg:py-14">
@@ -177,6 +186,42 @@ export default async function RankingPage({ params }: Props) {
             </Link>
           </div>
         </div>
+      ) : tooFewToCrown ? (
+        <section className="mt-10">
+          <p className="m-0 max-w-[52ch] font-display text-[1.5rem] text-ink">
+            The board is still filling.
+          </p>
+          <p className="mt-2 max-w-[52ch] text-slate">
+            {ranked.length === 1
+              ? 'One dish has been scored so far. A ranking needs a race — cook another and cast the vote that starts it.'
+              : `${ranked.length} dishes have been scored so far. A few more votes and this becomes a real leaderboard.`}
+          </p>
+          <ol className="m-0 mt-6 grid max-w-[46rem] list-none gap-y-0 p-0">
+            {ranked.map((entry, i) => (
+              <li key={entry.recipe.id} className="border-b border-rule">
+                <Link
+                  href={`/recipes/${entry.recipe.slug}`}
+                  className="group flex items-baseline gap-4 py-3 no-underline"
+                >
+                  <span className="w-8 shrink-0 font-display text-[1.25rem] leading-none text-slate/60 tabular-nums group-hover:text-flame">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[1.0625rem] text-ink group-hover:text-flame">
+                    {entry.recipe.title}
+                  </span>
+                  <span className="shrink-0 font-mono text-[0.8125rem] tabular-nums text-slate">
+                    {entry.votes} {entry.votes === 1 ? 'vote' : 'votes'} · {entry.average.toFixed(1)}★
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/recipes" className="btn-primary">
+              Find something to cook →
+            </Link>
+          </div>
+        </section>
       ) : (
         <>
           {/* First place: rank numeral, the card, and a tally that fills its

@@ -43,13 +43,18 @@ const countryName = (code: string): string => {
 export function ShopThisList({
   retailers,
   defaultCountry,
+  detected = false,
   lines,
 }: {
   retailers: ShopRetailer[]
   defaultCountry: string | null
+  /** Whether defaultCountry came from the edge or is just the fallback. */
+  detected?: boolean
   lines: ShopLine[]
 }) {
   const [country, setCountry] = useState<string | null>(defaultCountry)
+  // Whether a saved pick is currently overriding the detected country.
+  const [overridden, setOverridden] = useState(false)
   const [active, setActive] = useState<ShopRetailer | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -58,11 +63,14 @@ export function ShopThisList({
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(COUNTRY_KEY)
-      if (saved) setCountry(saved)
+      if (saved) {
+        setCountry(saved)
+        setOverridden(saved !== defaultCountry)
+      }
     } catch {
       /* storage unavailable — the header default stands */
     }
-  }, [])
+  }, [defaultCountry])
 
   const eligible = useMemo(() => retailersForCountry(retailers, country), [retailers, country])
 
@@ -90,10 +98,29 @@ export function ShopThisList({
 
   const pickCountry = (code: string) => {
     setCountry(code)
+    setOverridden(true)
     try {
       window.localStorage.setItem(COUNTRY_KEY, code)
     } catch {
       /* fine — the choice still applies for this visit */
+    }
+  }
+
+  /**
+   * Forget the saved choice and go back to where the edge says you are.
+   *
+   * Without this, the first pick was permanent. Moving country — or turning on
+   * a VPN — left the panel showing the old shops with no way back short of
+   * clearing site data, which reads as "it didn't detect my location" because
+   * from the outside that is exactly what it looks like.
+   */
+  const useDetected = () => {
+    setCountry(defaultCountry)
+    setOverridden(false)
+    try {
+      window.localStorage.removeItem(COUNTRY_KEY)
+    } catch {
+      /* the reset still applies for this visit */
     }
   }
 
@@ -227,6 +254,15 @@ export function ShopThisList({
           {copied ? 'Copied ✓' : 'Copy list'}
         </button>
         <label className="flex flex-wrap items-center gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+          {detected && overridden && defaultCountry ? (
+            <button
+              type="button"
+              onClick={useDetected}
+              className="rounded border border-rule px-2 py-1 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase hover:border-flame hover:text-flame"
+            >
+              Use {countryName(defaultCountry)}
+            </button>
+          ) : null}
           Shopping somewhere else?
           <select
             value={country ?? ''}

@@ -1,6 +1,11 @@
 import { ShopThisList, type ShopLine, type ShopRetailer } from '@/components/ShopThisList'
 import { retailersForCountry } from '@/lib/grocery'
-import { getAllGroceryRetailers, logGroceryImpressions, viewerCountry } from '@/lib/groceryData'
+import {
+  countryWasDetected,
+  getAllGroceryRetailers,
+  logGroceryImpressions,
+  viewerCountry,
+} from '@/lib/groceryData'
 
 /**
  * Server wrapper for "Shop this list". The IP header only proposes the
@@ -17,6 +22,7 @@ export async function GroceryPanel({ lines }: { lines: ShopLine[] }) {
   if (lines.length === 0) return null
 
   const country = await viewerCountry()
+  const detected = await countryWasDetected()
   const all = await getAllGroceryRetailers()
 
   // Impressions for the default-country set — the view most readers get.
@@ -41,6 +47,7 @@ export async function GroceryPanel({ lines }: { lines: ShopLine[] }) {
     <ShopThisList
       retailers={slim}
       defaultCountry={country}
+      detected={detected}
       lines={lines.map(({ key, name, amounts }) => ({ key, name, amounts }))}
     />
   )

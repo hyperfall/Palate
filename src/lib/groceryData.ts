@@ -1,20 +1,42 @@
 import { headers } from 'next/headers'
 
+import { countryFromHeaders } from '@/lib/geoHeaders'
 import { retailersForCountry } from '@/lib/grocery'
 import { RETAILERS } from '@/seed/groceryRetailerData'
 import { getPayloadClient } from '@/lib/queries'
 import type { GroceryRetailer } from '@/payload-types'
 
 /**
- * Server-side "Shop this list" selection: viewer country (Vercel geo header,
- * env fallback for dev) → eligible retailers, with one impression event logged
- * per retailer shown. Best-effort throughout — a broken registry must never
- * break the plan page.
+ * Server-side "Shop this list" selection: viewer country (edge geo header, env
+ * fallback for dev) → eligible retailers, with one impression event logged per
+ * retailer shown. Best-effort throughout — a broken registry must never break
+ * the plan page.
  */
 
+/**
+ * The country to propose. Never the last word — the panel's picker owns the
+ * decision, because this is absent in dev, wrong behind a VPN, and unhelpful
+ * for a traveller.
+ */
 export async function viewerCountry(): Promise<string | null> {
   const headerList = await headers()
-  return headerList.get('x-vercel-ip-country') ?? process.env.GROCERY_DEFAULT_COUNTRY ?? 'GB'
+  return (
+    countryFromHeaders((name) => headerList.get(name)) ??
+    process.env.GROCERY_DEFAULT_COUNTRY ??
+    'GB'
+  )
+}
+
+/**
+ * Did the edge actually tell us, or is this the fallback wearing its clothes?
+ *
+ * The panel needs to know: offering "use my detected location" is a promise,
+ * and in development — or behind a proxy that strips geo headers — there is no
+ * detection to return to.
+ */
+export async function countryWasDetected(): Promise<boolean> {
+  const headerList = await headers()
+  return countryFromHeaders((name) => headerList.get(name)) !== null
 }
 
 export async function getGroceryRetailers(country: string | null): Promise<GroceryRetailer[]> {

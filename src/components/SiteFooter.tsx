@@ -117,6 +117,11 @@ export function SiteFooter() {
           <p className="eyebrow m-0 text-milk/80">
             Partner cards on this site are marked. We take no money to change a recipe.
           </p>
+          {/* The operating company, named where a reader looks for it. The
+              wordmark above is the product; this is who runs it. */}
+          <p className="eyebrow m-0 text-milk/50">
+            © {new Date().getFullYear()} {SITE.company} — the company behind {SITE.name}.
+          </p>
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <nav aria-label="Company" className="flex flex-wrap items-center gap-x-5 gap-y-2">
               {COMPANY_LINKS.map((link) => (

@@ -153,17 +153,24 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
           <HeroAnnotations items={recipe.heroAnnotations as HeroPin[] | null} />
 
           {/* Type block is inert to the pointer so the annotation layer beneath it
-              still catches hover/tap on the photo; only the controls opt back in. */}
+              still catches hover/tap on the photo; the controls — and the words
+              themselves — opt back in. Text under pointer-events:none cannot be
+              selected at all, so the title and the decision line were
+              uncopyable: fine for the photo, wrong for a recipe title someone
+              wants to paste into a message. Only the two text elements take the
+              pointer back, not the whole band, so the reveal target keeps the
+              rest of its area. The annotation pins sit at z-40, above this
+              block, and are unaffected. */}
           <div className="shell pointer-events-none relative z-30 flex min-h-[56vh] flex-col justify-end py-12 lg:min-h-[64vh]">
             <div data-hero-type className="max-w-[min(100%,44rem)]">
               <span className="mb-4 block h-[3px] w-12 bg-flame" aria-hidden="true" />
-              <h1 className="max-w-[15ch] text-[clamp(2.75rem,8vw,6rem)] leading-[0.9] tracking-[-0.01em] text-balance text-milk">
+              <h1 className="pointer-events-auto max-w-[15ch] text-[clamp(2.75rem,8vw,6rem)] leading-[0.9] tracking-[-0.01em] text-balance text-milk select-text">
                 {recipe.title}
               </h1>
               {/* The decision line — cuisine, time, servings, difficulty. It sat at
                   13px under a 96px title, a 7:1 jump that left the actual
                   decision-making information whispering. */}
-              <p className="mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[clamp(0.875rem,1.05vw,1.0625rem)] tracking-[0.02em] text-milk">
+              <p className="pointer-events-auto mt-5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[clamp(0.875rem,1.05vw,1.0625rem)] tracking-[0.02em] text-milk select-text">
                 {cuisine && (
                   <>
                     <Link

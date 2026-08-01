@@ -7,6 +7,13 @@
  */
 export const SITE = {
   name: 'Palate',
+  /**
+   * The company behind the site. Palate is the product; Endarc Limited is who
+   * you are actually contracting with and who answers a data request — which
+   * is why it belongs in the terms, the privacy note and the footer rather
+   * than only in a filing somewhere.
+   */
+  company: 'Endarc Limited',
   tagline: 'Cook first. Read later, if you feel like it.',
   description:
     'A recipe site built the other way round: the recipe is at the top, filtered by how it actually tastes.',

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { SITE } from '@/lib/site'
+
 export const metadata: Metadata = {
   title: 'Privacy',
   description:
@@ -20,8 +22,9 @@ export default function PrivacyPage() {
 
       <div className="mt-8 grid gap-7 text-[1rem] leading-relaxed text-slate">
         <p>
-          We try to collect as little as possible. This note explains what we do collect and why, in
-          plain English. It isn’t legal advice.
+          Palate is operated by {SITE.company}, which is the data controller for the information
+          described here. We try to collect as little as possible. This note explains what we do
+          collect and why, in plain English. It isn’t legal advice.
         </p>
 
         <section className="grid gap-2">

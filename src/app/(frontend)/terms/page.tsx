@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
+import { SITE } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Terms of Use',
@@ -21,9 +22,9 @@ export default function TermsPage() {
 
       <div className="mt-8 grid gap-7 text-[1rem] leading-relaxed text-slate">
         <p>
-          These terms govern your use of Palate. By using the site you agree to them. If you don’t
-          agree, please don’t use the site. This is a plain-English summary of how we operate — not a
-          substitute for legal advice.
+          These terms govern your use of Palate, a service operated by {SITE.company}. By using the
+          site you agree to them. If you don’t agree, please don’t use the site. This is a
+          plain-English summary of how we operate — not a substitute for legal advice.
         </p>
 
         <section className="grid gap-2">

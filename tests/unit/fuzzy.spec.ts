@@ -77,3 +77,25 @@ describe('fuzzyMatches', () => {
     expect(fuzzyMatches('Butter Chicken', '   ')).toBe(false)
   })
 })
+
+describe('fuzzyMatches — catalog fallback shape', () => {
+  // The catalog's second pass matches against "<title> <cuisine name>", so a
+  // misspelling of either has to land. These pin the cases that were broken.
+  const hay = (title: string, cuisine: string) => `${title} ${cuisine}`
+
+  it('recovers a misspelled dish name', () => {
+    expect(fuzzyMatches(hay('Weeknight Shakshuka', 'Levantine'), 'shakshouka')).toBe(true)
+    expect(fuzzyMatches(hay('Bibimbap with Gochujang Sauce', 'Korean'), 'bibimbop')).toBe(true)
+  })
+
+  it('recovers a misspelled cuisine', () => {
+    expect(fuzzyMatches(hay('Oyakodon', 'Japanese'), 'japanse')).toBe(true)
+  })
+
+  it('still refuses a query that is simply not there', () => {
+    // The fallback must be able to return nothing, or the catalog would answer
+    // every nonsense query with an arbitrary recipe.
+    expect(fuzzyMatches(hay('Butter Chicken', 'Indian'), 'xyzzy')).toBe(false)
+    expect(fuzzyMatches(hay('Mapo Tofu', 'Chinese'), 'lasagne')).toBe(false)
+  })
+})

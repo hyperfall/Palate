@@ -8,6 +8,7 @@ import type { Author, BrandCard, Cuisine, Recipe } from '@/payload-types'
 import { buildWhere, sortExpression, type CatalogFilters } from './filters'
 import { scoreRecipe, bandRecipes, type Have, type Bands, type RequiredIngredient } from './pantry'
 import { distance } from './tasteProfile'
+import { fuzzyMatches } from '@/lib/fuzzy'
 
 /**
  * Read-side data access, via Payload's local API straight against Postgres
@@ -27,6 +28,13 @@ export type CatalogPage = {
   totalDocs: number
   totalPages: number
   page: number
+  /**
+   * Set when the exact search found nothing and these are near-misses instead.
+   * The page says so rather than quietly pretending the typo was the query —
+   * a search that silently answers a different question is worse than one that
+   * admits it guessed.
+   */
+  correctedFrom?: string
 }
 
 export async function findRecipes(
@@ -100,11 +108,84 @@ export async function findRecipes(
     limit,
   })
 
+  // Nothing matched a search term? Try again forgiving the spelling.
+  //
+  // `like` cannot do this — it is substring matching, so "shakshouka" misses
+  // "Shakshuka" by one letter and the catalog says the site has no such recipe.
+  // Postgres could answer it with pg_trgm, but that means an extension and an
+  // index the owner has to enable on their host, and it would still only cover
+  // the fields the query touches. Doing it in the app reuses the same fuzzy
+  // matcher the nav search already uses, needs nothing installed, and costs a
+  // second query only on the path that was about to show an empty page.
+  if (result.totalDocs === 0 && filters.q) {
+    const near = await findRecipesNearQuery(filters, { page, limit })
+    if (near) return near
+  }
+
   return {
     recipes: result.docs,
     totalDocs: result.totalDocs,
     totalPages: result.totalPages,
     page: result.page ?? 1,
+  }
+}
+
+/**
+ * The fuzzy second pass. Returns null when nothing is close enough, so the
+ * caller keeps its honest empty state.
+ *
+ * Every other filter still applies: this replaces the free-text term with the
+ * slugs it resolved to, it does not widen the search. Someone who has narrowed
+ * to Korean under 30 minutes and then mistypes the dish should get Korean
+ * under-30-minute results, not the whole catalogue.
+ */
+async function findRecipesNearQuery(
+  filters: CatalogFilters,
+  { page, limit }: { page: number; limit: number },
+): Promise<CatalogPage | null> {
+  const payload = await getPayloadClient()
+
+  // Titles and cuisine names only. Ingredients would mean pulling every row's
+  // ingredient array to fuzzy-match a term that is rarely what gets misspelled;
+  // the dish name is.
+  const [candidates, cuisines] = await Promise.all([
+    payload.find({
+      collection: 'recipes',
+      where: PUBLISHED as never,
+      depth: 0,
+      pagination: false,
+      select: { title: true, slug: true, cuisine: true },
+    }),
+    payload.find({ collection: 'cuisines', depth: 0, pagination: false, select: { name: true } }),
+  ])
+  const cuisineName = new Map(cuisines.docs.map((c) => [c.id, String(c.name)]))
+
+  const slugs: string[] = []
+  for (const r of candidates.docs) {
+    const cuisineId = typeof r.cuisine === 'object' && r.cuisine ? r.cuisine.id : r.cuisine
+    const haystack = `${r.title} ${cuisineName.get(cuisineId as number) ?? ''}`
+    if (fuzzyMatches(haystack, filters.q)) slugs.push(String(r.slug))
+  }
+  if (slugs.length === 0) return null
+
+  const where = buildWhere({ ...filters, q: '' })
+  const and = (where.and as Record<string, unknown>[]) ?? []
+  const result = await payload.find({
+    collection: 'recipes',
+    where: { and: [...and, { slug: { in: slugs } }] } as never,
+    sort: sortExpression(filters.sort),
+    depth: 1,
+    page,
+    limit,
+  })
+  if (result.totalDocs === 0) return null
+
+  return {
+    recipes: result.docs,
+    totalDocs: result.totalDocs,
+    totalPages: result.totalPages,
+    page: result.page ?? 1,
+    correctedFrom: filters.q,
   }
 }
 

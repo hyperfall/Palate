@@ -47,7 +47,7 @@ export default async function CatalogPage({
   }
   const feedQuery = feedPairs.toString()
 
-  const [{ recipes, totalDocs, totalPages, page }, cuisines, cuisineCounts, dietCounts] =
+  const [{ recipes, totalDocs, totalPages, page, correctedFrom }, cuisines, cuisineCounts, dietCounts] =
     await Promise.all([
       findRecipes(filters, { page: filters.page, limit: PAGE_SIZE }),
       findCuisines(),
@@ -113,8 +113,20 @@ export default async function CatalogPage({
           {/* Announced to screen readers on every filter change, at all
               breakpoints (the visible count below is desktop-only + aria-hidden). */}
           <p className="sr-only" role="status" aria-live="polite">
-            {totalDocs} {totalDocs === 1 ? 'recipe' : 'recipes'} match your filters
+            {correctedFrom
+              ? `No exact match for ${correctedFrom}. Showing ${totalDocs} close ${totalDocs === 1 ? 'match' : 'matches'}.`
+              : `${totalDocs} ${totalDocs === 1 ? 'recipe' : 'recipes'} match your filters`}
           </p>
+
+          {/* Say that the spelling was forgiven. Silently answering a different
+              question than the one typed is how a search loses trust — and the
+              exact term still deserves to be shown, in case the guess is wrong. */}
+          {correctedFrom && (
+            <p className="mb-4 text-note text-slate">
+              Nothing matched <span className="text-ink">“{correctedFrom}”</span> exactly — showing
+              the closest {totalDocs === 1 ? 'recipe' : 'recipes'}.
+            </p>
+          )}
           <div className="hidden flex-wrap items-baseline justify-between gap-4 pb-4 lg:flex">
             <p className="datum m-0" aria-hidden="true">
               {totalDocs} {totalDocs === 1 ? 'recipe' : 'recipes'}

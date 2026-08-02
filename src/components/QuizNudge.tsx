@@ -1,10 +1,23 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useDialogFocus } from '@/lib/useDialogFocus'
-import { TasteNight } from './TasteNight'
+/**
+ * The quiz itself loads on the click that opens it, not on every page.
+ *
+ * QuizNudge lives in the root layout, so anything it imports statically ships
+ * with every route. TasteNight is the whole quiz — and it only ever renders
+ * inside the `open` guard below, which most readers never trip. Deferring it
+ * takes the quiz off the critical path for every page on the site.
+ */
+const TasteNight = dynamic(() => import('./TasteNight').then((m) => m.TasteNight), {
+  // It appears inside an already-open modal, so a brief empty beat is fine —
+  // and the loader it would otherwise show is itself part of the chunk.
+  ssr: false,
+})
 
 type QuizDish = { title: string; image: string | null; cuisine: string | null; totalLabel: string }
 

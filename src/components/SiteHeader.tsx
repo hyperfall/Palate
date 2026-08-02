@@ -30,11 +30,18 @@ export function SiteHeader() {
 
         <nav aria-label="Main" className="ml-auto flex items-center gap-4 sm:ml-0">
           {/*
-            The full destination list lives up top on desktop; on phones these
+            The full destination list lives up top on desktop; below that these
             move to the bottom tab bar, leaving a slim wordmark + search + theme
             top bar. Only the theme toggle (no bottom-bar equivalent) stays.
+
+            It appears at lg, not sm. Eight links and a toggle measure ~727px,
+            and at sm they were being shown into 680px of shell — so from 640px
+            to about 780px the row ran off the right edge and took the whole
+            document's horizontal scroll with it. iPad portrait (768px) sat
+            squarely in that gap. The tighter gap at lg buys the search field
+            room back on a 1024px screen, where the row is at its most crowded.
           */}
-          <div className="hidden items-center gap-x-7 sm:flex">
+          <div className="hidden items-center gap-x-5 lg:flex xl:gap-x-7">
             <HeaderNav />
             <NavAccount />
             {/* Theme lives in the mobile menu drawer, so it's desktop-only here. */}

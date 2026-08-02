@@ -12,7 +12,7 @@ import { ThemeToggle } from './ThemeToggle'
  * The mobile app-shell nav: a fixed bottom bar with four thumb tabs and a
  * center chevron that expands the full menu as a bottom sheet (all destinations,
  * auth actions, and appearance) — one surface, nothing hidden off-screen. Phones
- * only (sm:hidden); desktop uses the inline top nav.
+ * only (lg:hidden); desktop uses the inline top nav.
  */
 
 const stroke = {
@@ -66,6 +66,20 @@ const NAV: NavItem[] = [
         <path d="M4 11h16l-1.4 7.2a2 2 0 0 1-2 1.8H7.4a2 2 0 0 1-2-1.8z" />
         <path d="M6 11a6 6 0 0 1 12 0" />
         <path d="M12 3v3" />
+      </svg>
+    ),
+  },
+  {
+    // The planner is a top-level destination on desktop but had no entry here
+    // at all, so on any screen using this menu the whole meal planner was
+    // reachable only by typing the URL. A week grid: seven days, one marked.
+    href: '/plan',
+    label: 'Plan',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M3 10h18M8 3v4M16 3v4" />
+        <rect x="6.5" y="13" width="4" height="4" rx="0.75" />
       </svg>
     ),
   },
@@ -206,7 +220,7 @@ export function MobileNav() {
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           />
           <div
             ref={sheetRef}
@@ -214,7 +228,7 @@ export function MobileNav() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-50 max-h-[74vh] overflow-y-auto rounded-t-2xl border-t border-rule bg-paper text-ink shadow-block sm:hidden"
+            className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-50 max-h-[74vh] overflow-y-auto rounded-t-2xl border-t border-rule bg-paper text-ink shadow-block lg:hidden"
           >
             <div className="mx-auto mt-2.5 h-1 w-9 rounded-full bg-rule" />
             <div className="flex items-center justify-between px-5 pt-2 pb-1">
@@ -338,7 +352,7 @@ export function MobileNav() {
       {/* The bar itself — always above the backdrop so the chevron can close. */}
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-pan-line bg-pan text-milk sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-pan-line bg-pan text-milk lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <ul className="m-0 grid list-none grid-cols-5 p-0">

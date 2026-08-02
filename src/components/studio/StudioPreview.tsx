@@ -208,9 +208,9 @@ export function StudioPreview({
           type="button"
           onClick={() => onOpen()}
           aria-haspopup="dialog"
-          // Clear the fixed bottom nav on phones (it's ~3.25rem tall, sm:hidden);
-          // on tablets there's no bottom bar, so sit closer to the edge.
-          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-caption font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
+          // Clear the fixed bottom nav (it's ~3.25rem tall, lg:hidden); from lg
+          // up there's no bottom bar, so sit closer to the edge.
+          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-caption font-semibold tracking-[0.12em] text-paper uppercase shadow-lg lg:bottom-6 xl:hidden"
         >
           <span aria-hidden="true">◉</span> Live preview
         </button>

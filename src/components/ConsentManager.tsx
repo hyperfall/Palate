@@ -146,7 +146,7 @@ function CookieBanner({
       // Home, Recipes, Saved or Account until they answered a cookie question.
       // Consent should gate cookies, not navigation. Same offset the mobile
       // nav's own drawer uses, so the two can never disagree.
-      className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-[60] border-t border-rule bg-paper/98 backdrop-blur-sm sm:bottom-0"
+      className="fixed inset-x-0 bottom-[calc(3.25rem+env(safe-area-inset-bottom))] z-[60] border-t border-rule bg-paper/98 backdrop-blur-sm lg:bottom-0"
       style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}
     >
       <div className="shell flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">

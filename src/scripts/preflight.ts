@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { readdirSync } from 'node:fs'
 
 /**
  * Is this configuration safe to deploy?
@@ -127,6 +128,30 @@ if (!has('BLOB_READ_WRITE_TOKEN')) {
     detail: 'Unset. Uploads write to local disk, which most hosts wipe on redeploy — creator photos would vanish.',
   })
 } else ok.push('BLOB_READ_WRITE_TOKEN — set')
+
+// --- Can the end-to-end suite actually run? --------------------------------
+
+// A test suite that cannot start is a test suite nobody runs. Playwright's
+// browsers are a separate ~170 MB download that `npm install` does not fetch,
+// so `npm run test:e2e` fails with a browser-not-found error rather than a test
+// failure — and every journey it covers goes unverified without anything
+// saying so.
+const browsersInstalled = (() => {
+  try {
+    const home = process.env.HOME ?? ''
+    if (!home) return false
+    const root = `${home}/.cache/ms-playwright`
+    return readdirSync(root).some((d) => d.startsWith('chromium'))
+  } catch {
+    return false
+  }
+})()
+if (!browsersInstalled) {
+  warnings.push({
+    name: 'Playwright browsers',
+    detail: 'Not installed, so `npm run test:e2e` cannot start and every journey it covers is unverified. Run `npx playwright install chromium`.',
+  })
+} else ok.push('Playwright browsers — installed')
 
 // --- Report ---------------------------------------------------------------
 

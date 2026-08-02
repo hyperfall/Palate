@@ -344,6 +344,11 @@ export default async function HomePage() {
 
       {/* House rules — the promise, stated once, as ticket lines. */}
       <section className="shell py-14">
+        {/* The three rules below are h3s. Without a heading of their own they
+            attach to the previous section, so anyone navigating by heading hears
+            "Kitchen-tested" as part of "By cuisine". The design deliberately has
+            no visible title here, so the heading is for assistive tech only. */}
+        <h2 className="sr-only">House rules</h2>
         <div className="grid gap-x-16 gap-y-8 md:grid-cols-3">
           {[
             {

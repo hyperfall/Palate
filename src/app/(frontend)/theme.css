@@ -42,16 +42,12 @@
      stays the same warm ember, one notch richer; the dark value already passed
      and is unchanged. */
   --color-flame: light-dark(#bd4019, #f2683c);
-  --color-flame-deep: light-dark(#a5340f, #ff7d4d);
   /* Text set on a flame SURFACE. Now near-white on the light side: with flame
      deepened, a dark label no longer has the contrast, so on-flame flips to
      paper-white (4.68:1 on the new flame). The dark side keeps its near-black. */
   --color-on-flame: light-dark(#fbfcf7, #160d06);
   /* Flame as small TEXT on the dark pan — lifted for AA contrast (≥6:1). */
   --color-flame-text: light-dark(#ff9068, #ff9a70);
-
-  /* Kitchen-tape yellow by day; deep amber tape after close. Ticker only. */
-  --color-butter: light-dark(#e9b44c, #241a0f);
 
   /* Card surface — a step off the paper (lighter than paper in the dark). */
   --color-card: light-dark(#fbfcf7, #201a13);

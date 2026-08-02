@@ -43,7 +43,7 @@ export function CountryChooser({ className = '' }: { className?: string }) {
           setCountry(code || null)
           writeShopCountry(code || null)
         }}
-        className="max-w-[11rem] cursor-pointer truncate rounded border border-pan-line bg-transparent px-2 py-1 font-mono text-[0.75rem] text-milk hover:border-flame focus:border-flame focus:outline-none"
+        className="max-w-[11rem] cursor-pointer truncate rounded border border-milk/40 bg-transparent px-2 py-1 font-mono text-[0.75rem] text-milk hover:border-flame focus:border-flame focus:outline-none"
       >
         {/* "Wherever I am" is the honest label for the default: the edge
             proposes a country per request, so there is no single place to name. */}

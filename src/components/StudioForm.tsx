@@ -35,7 +35,7 @@ import {
  */
 
 const inputCls =
-  'w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none'
+  'w-full rounded border border-edge bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none'
 // grid-cols-1 (minmax(0,1fr)) rather than a bare `grid` (implicit auto column):
 // an auto column sizes to its content's max-content and overflows a narrow phone
 // column; minmax(0,1fr) makes every stacked field fill — and never exceed — its
@@ -617,7 +617,7 @@ export function StudioForm({
           required
           placeholder="Birria Tacos"
           aria-label="Recipe title"
-          className="w-full border-0 border-b-2 border-rule bg-transparent px-0 pb-2 font-display text-[clamp(1.5rem,3.5vw,2.25rem)] leading-tight text-ink placeholder:text-slate/40 focus:border-flame focus:outline-none"
+          className="w-full border-0 border-b-2 border-edge bg-transparent px-0 pb-2 font-display text-[clamp(1.5rem,3.5vw,2.25rem)] leading-tight text-ink placeholder:text-slate/40 focus:border-flame focus:outline-none"
         />
       </div>
 

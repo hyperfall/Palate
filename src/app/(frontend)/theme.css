@@ -19,6 +19,13 @@
   --color-paper: light-dark(#f1f2ec, #171310);
   --color-wash: light-dark(#e7e9df, #1e1813);
   --color-rule: light-dark(#d3d6c8, #372c22);
+  /* Interactive-border token, new in palette A. `rule` is deliberately soft
+     (~1.3:1) for decorative hairlines between sections — forcing those to 3:1
+     would make every card read boxy. But a control a user has to find — an
+     unselected chip, a text field, a select — needs a border that meets WCAG's
+     3:1 for UI components. `edge` is that border: 3.4:1 on paper, 3.1:1 in the
+     dark, tinted to each theme's neutral so it never reads as a hard grey line. */
+  --color-edge: light-dark(#868c78, #746651);
   --color-slate: light-dark(#5d6455, #ab9f8f);
   --color-ink: light-dark(#1a1d15, #ece6da);
 
@@ -29,11 +36,17 @@
   --color-pan-line: light-dark(#3a4630, #2c2219);
   --color-milk: light-dark(#eef0e4, #ece6da); /* text on the pan */
 
-  /* The single action accent — ember warm in both themes (never cools off). */
-  --color-flame: light-dark(#e4572e, #f2683c);
-  --color-flame-deep: light-dark(#c33f1a, #ff7d4d);
-  /* Text set on a flame surface. */
-  --color-on-flame: light-dark(#1a1d15, #160d06);
+  /* The single action accent — ember warm in both themes (never cools off).
+     The light value is deepened from the old #e4572e so it clears AA (4.5:1) as
+     link TEXT on paper, where the brighter orange sat at 3.27 and failed. It
+     stays the same warm ember, one notch richer; the dark value already passed
+     and is unchanged. */
+  --color-flame: light-dark(#bd4019, #f2683c);
+  --color-flame-deep: light-dark(#a5340f, #ff7d4d);
+  /* Text set on a flame SURFACE. Now near-white on the light side: with flame
+     deepened, a dark label no longer has the contrast, so on-flame flips to
+     paper-white (4.68:1 on the new flame). The dark side keeps its near-black. */
+  --color-on-flame: light-dark(#fbfcf7, #160d06);
   /* Flame as small TEXT on the dark pan — lifted for AA contrast (≥6:1). */
   --color-flame-text: light-dark(#ff9068, #ff9a70);
 

@@ -498,7 +498,7 @@ export function FilterPanel({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search recipes…"
-            className="w-full rounded border border-rule bg-transparent px-3.5 py-2.5 font-mono text-[0.8125rem] text-ink placeholder:text-slate focus:border-ink focus:outline-none"
+            className="w-full rounded border border-edge bg-transparent px-3.5 py-2.5 font-mono text-[0.8125rem] text-ink placeholder:text-slate focus:border-ink focus:outline-none"
           />
         </label>
 
@@ -884,7 +884,7 @@ export function SortSelect({ filters }: { filters: CatalogFilters }) {
             d.tasteVector = tv
           })
         }}
-        className="cursor-pointer appearance-none rounded border border-rule bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-[0.8125rem] font-medium text-ink focus:border-flame focus:outline-none"
+        className="cursor-pointer appearance-none rounded border border-edge bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-[0.8125rem] font-medium text-ink focus:border-flame focus:outline-none"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E\")",

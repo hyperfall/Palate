@@ -256,7 +256,7 @@ export function NavSearch() {
           }}
           onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
-          className="w-full rounded border border-milk/25 bg-transparent py-2 pr-9 pl-9 font-mono text-[0.8125rem] text-milk placeholder:text-milk/75 focus:border-flame focus:outline-none"
+          className="w-full rounded border border-milk/40 bg-transparent py-2 pr-9 pl-9 font-mono text-[0.8125rem] text-milk placeholder:text-milk/75 focus:border-flame focus:outline-none"
         />
         {!focused && !query && (
           <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-milk/25 px-1.5 py-0.5 font-mono text-[0.8125rem] text-milk/55 sm:block">

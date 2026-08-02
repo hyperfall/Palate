@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { Select } from '@/components/controls'
 import { supabaseBrowser } from '@/lib/supabase/client'
@@ -40,6 +40,10 @@ export function PantryFinder({
   const [noMatch, setNoMatch] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  // aria-controls has to name a unique element, so the id is generated rather
+  // than a constant — two pantry finders on one page would otherwise both
+  // point at the same list.
+  const suggestionsId = useId()
   const haveSlugs = new Set(initialHave.map((h) => h.slug))
 
   useEffect(() => {
@@ -166,6 +170,17 @@ export function PantryFinder({
           <input
             type="text"
             value={query}
+            // A placeholder was doing the work of a label, and it cannot: it
+            // vanishes the moment someone types, and it is not reliably read
+            // out as the field's name. The rest is what makes the suggestion
+            // list exist for a screen reader — without role and aria-expanded,
+            // options appeared and disappeared below a plain text box with
+            // nothing announcing that anything had happened.
+            aria-label="Add an ingredient you have"
+            role="combobox"
+            aria-expanded={open && suggestions.length > 0}
+            aria-controls={suggestionsId}
+            aria-autocomplete="list"
             onKeyDown={(e) => {
               if (e.key !== 'Enter') return
               e.preventDefault()
@@ -192,6 +207,7 @@ export function PantryFinder({
           )}
           {open && suggestions.length > 0 && (
             <ul
+              id={suggestionsId}
               role="listbox"
               aria-label="Ingredient suggestions"
               className="scroll-rail absolute top-full left-0 z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-md border border-ink/30 bg-card p-1.5 text-ink shadow-(--shadow-block)"

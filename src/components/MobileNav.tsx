@@ -139,7 +139,7 @@ function Tab({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? 'page' : undefined}
       className={`flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-1.5 no-underline transition-colors ${
-        active ? 'text-flame' : 'text-milk/65 hover:text-milk'
+        active ? 'text-flame-text' : 'text-milk/65 hover:text-milk'
       }`}
     >
       {item.icon}
@@ -351,7 +351,7 @@ export function MobileNav() {
               aria-expanded={open}
               aria-label={open ? 'Close menu' : 'Open menu'}
               className={`flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-0.5 py-1.5 transition-colors ${
-                open ? 'text-flame' : 'text-milk/80 hover:text-milk'
+                open ? 'text-flame-text' : 'text-milk/80 hover:text-milk'
               }`}
             >
               <svg

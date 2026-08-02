@@ -46,7 +46,11 @@
      deepened, a dark label no longer has the contrast, so on-flame flips to
      paper-white (4.68:1 on the new flame). The dark side keeps its near-black. */
   --color-on-flame: light-dark(#fbfcf7, #160d06);
-  /* Flame as small TEXT on the dark pan — lifted for AA contrast (≥6:1). */
+  /* Flame as TEXT on the dark pan. Two surfaces pull the accent in opposite
+     directions: palette A deepened flame so it clears AA on paper (4.77), and
+     that same deepening drops it to 2.56 against the pan. One value cannot
+     serve both, so the chrome keeps its own lifted token (6.19 light, 9.11
+     dark). Use text-flame on paper/card; text-flame-text on pan. */
   --color-flame-text: light-dark(#ff9068, #ff9a70);
 
   /* Card surface — a step off the paper (lighter than paper in the dark). */

@@ -39,7 +39,7 @@ function LeaderLink({ href, label, datum }: { href: string; label: string; datum
   return (
     <li>
       <Link href={href} className="leader group py-1 no-underline">
-        <span className="font-mono text-detail text-milk group-hover:text-flame">
+        <span className="font-mono text-detail text-milk group-hover:text-flame-text">
           {label}
         </span>
         <span className="leader__dots border-milk/20" aria-hidden="true" />
@@ -86,7 +86,7 @@ export function SiteFooter() {
             {TASTE_AXES.map((axis) => (
               <li key={axis}>
                 <Link href={`/recipes?sort=${axis}`} className="leader group py-1 no-underline">
-                  <span className="inline-flex items-center gap-2 font-mono text-detail text-milk group-hover:text-flame">
+                  <span className="inline-flex items-center gap-2 font-mono text-detail text-milk group-hover:text-flame-text">
                     <span
                       aria-hidden="true"
                       className="inline-block h-2 w-2 rounded-[2px]"
@@ -128,7 +128,7 @@ export function SiteFooter() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="eyebrow m-0 text-milk/70 uppercase no-underline hover:text-flame"
+                  className="eyebrow m-0 text-milk/70 uppercase no-underline hover:text-flame-text"
                 >
                   {link.label}
                 </Link>
@@ -136,8 +136,8 @@ export function SiteFooter() {
             </nav>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               <CountryChooser />
-              <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame" />
-              <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame">
+              <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame-text" />
+              <CookieSettingsButton className="eyebrow m-0 cursor-pointer border-none bg-transparent p-0 text-milk/70 uppercase hover:text-flame-text">
                 Do Not Sell or Share My Info
               </CookieSettingsButton>
             </div>

@@ -175,7 +175,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                   <>
                     <Link
                       href={`/cuisine/${cuisine.slug}`}
-                      className="pointer-events-auto text-flame no-underline hover:underline"
+                      className="pointer-events-auto text-flame-text no-underline hover:underline"
                     >
                       {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
                       {cuisine.name}

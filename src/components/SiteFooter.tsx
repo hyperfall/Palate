@@ -119,7 +119,11 @@ export function SiteFooter() {
           </p>
           {/* The operating company, named where a reader looks for it. The
               wordmark above is the product; this is who runs it. */}
-          <p className="eyebrow m-0 text-milk/50">
+          {/* milk/60, not /50: at 14px this is body text and needs 4.5:1. On the pan
+              /50 measures 4.19 in light — it reads fine on a good screen and fails
+              for anyone who needs the contrast. /60 clears it at 5.33 and stays
+              quieter than the links above at /70. */}
+          <p className="eyebrow m-0 text-milk/60">
             © {new Date().getFullYear()} {SITE.company} — the company behind {SITE.name}.
           </p>
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">

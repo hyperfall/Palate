@@ -5,6 +5,7 @@ import { formatMinutes } from '@/lib/format'
 import { imageFrom } from '@/lib/media'
 import { tasteLabel } from '@/lib/taxonomy'
 import { limited } from '@/lib/rateLimit'
+import { fuzzyMatches } from '@/lib/fuzzy'
 
 /**
  * Navbar search completions, served from an in-memory index.
@@ -170,20 +171,26 @@ export async function GET(request: NextRequest) {
   const prefix: IndexedRecipe[] = []
   const wordStart: IndexedRecipe[] = []
   const anywhere: IndexedRecipe[] = []
+  // Last tier: a near-miss. "shakshouka" is not a typo so much as the other
+  // correct spelling, and it used to return nothing at all. Anything that
+  // matched strictly still outranks these — a near-miss fills an empty list, it
+  // never pushes an exact match down.
+  const near: IndexedRecipe[] = []
 
   for (const entry of index) {
     if (entry.titleLower.startsWith(q)) prefix.push(entry)
     else if (entry.titleLower.includes(` ${q}`)) wordStart.push(entry)
     else if (entry.titleLower.includes(q)) anywhere.push(entry)
+    else if (fuzzyMatches(entry.title, q)) near.push(entry)
     if (prefix.length >= 6) break
   }
 
-  const results = [...prefix, ...wordStart, ...anywhere]
+  const results = [...prefix, ...wordStart, ...anywhere, ...near]
     .slice(0, 6)
     .map(({ slug, title, facts, image }) => ({ slug, title, facts, image }))
 
   const cuisines = cuisineIndex
-    .filter((c) => c.nameLower.includes(q))
+    .filter((c) => c.nameLower.includes(q) || fuzzyMatches(c.name, q))
     .sort((a, b) => Number(b.nameLower.startsWith(q)) - Number(a.nameLower.startsWith(q)))
     .slice(0, 2)
     .map(({ slug, name, flag, count }) => ({ slug, name, flag, count }))
@@ -191,7 +198,7 @@ export async function GET(request: NextRequest) {
   // Ranked by how many recipes use it, so "chilli" offers the one that actually
   // appears in the catalog rather than an alphabetical accident.
   const ingredients = ingredientIndex
-    .filter((i) => i.nameLower.includes(q))
+    .filter((i) => i.nameLower.includes(q) || fuzzyMatches(i.name, q))
     .sort(
       (a, b) =>
         Number(b.nameLower.startsWith(q)) - Number(a.nameLower.startsWith(q)) ||

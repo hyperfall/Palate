@@ -228,6 +228,10 @@ export function sortExpression(sort: SortKey): string[] {
  * the collection's access control enforces this for HTTP callers, but the local
  * API runs with access overridden, so public queries must say so explicitly.
  */
+/** Words honoured in one query. q is capped at 80 chars; this bounds the
+ *  number of OR groups a pathological query can build. */
+const TERM_LIMIT = 6
+
 export function buildWhere(filters: CatalogFilters): Record<string, unknown> {
   const and: Record<string, unknown>[] = [{ status: { equals: 'published' } }]
 
@@ -236,13 +240,24 @@ export function buildWhere(filters: CatalogFilters): Record<string, unknown> {
     // though a Korean cuisine hub with recipes sat one filter away, because no
     // recipe carries the word in its title. A search term can name the dish,
     // the cuisine, or something in it.
-    and.push({
-      or: [
-        { title: { like: filters.q } },
-        { 'cuisine.name': { like: filters.q } },
-        { 'ingredients.item': { like: filters.q } },
-      ],
-    })
+    //
+    // Match each WORD independently across those fields, rather than handing
+    // the whole phrase to each one. Payload's `like` already ANDs the words of
+    // a phrase, but only within a single field — so "tofu chinese" found
+    // nothing, because no one field holds both words, even though Mapo Tofu is
+    // Chinese and made of tofu. ("tofu" alone returned it; "chinese" alone
+    // returned it; together, nothing.) Now every word has to appear SOMEWHERE,
+    // which is what a person typing two words about one dish means.
+    const terms = filters.q.split(/\s+/).filter(Boolean).slice(0, TERM_LIMIT)
+    for (const term of terms) {
+      and.push({
+        or: [
+          { title: { like: term } },
+          { 'cuisine.name': { like: term } },
+          { 'ingredients.item': { like: term } },
+        ],
+      })
+    }
   }
 
   if (filters.cuisines.length > 0) {

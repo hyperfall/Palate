@@ -13,15 +13,35 @@ export const VISITOR_COOKIE = 'palate_rotation'
  * re-rolling on every render (which clumps). Nothing reads it but the rotation.
  */
 /**
- * Per-request Content-Security-Policy with a nonce. Locks scripts to our own
- * nonce'd tags (Next propagates the nonce to its scripts automatically) so an
- * injected inline script can't run — the main XSS defence. Sourced for what the
- * app actually loads: Supabase (REST + realtime websocket), Google Analytics,
- * the video-embed providers, and same-origin/blob/https images. The Payload
- * admin + API are excluded by the matcher below, so its inline assets are never
- * constrained. In dev we allow eval for HMR; prod uses strict-dynamic.
+ * Content-Security-Policy for a statically-rendered site.
+ *
+ * This used to issue a per-request nonce and pair it with 'strict-dynamic',
+ * which is the stronger policy and the one every guide recommends — and it
+ * silently broke almost the whole site. A nonce has to differ on every
+ * response, so it cannot be baked into HTML that was rendered once at build
+ * time and served from the cache. Next omits it there, leaving prerendered
+ * pages with no nonce on any script; 'strict-dynamic' then ignores 'self' and
+ * blocks all of them. React's hydration payload never ran, so every cached
+ * page rendered as a static picture of itself: no menu, no theme toggle, no
+ * client navigation, and any page waiting on a Suspense boundary sat on its
+ * loading skeleton forever. Dynamic routes were fine, which is exactly why it
+ * was easy to miss — /recipes worked while /about was inert.
+ *
+ * So the choice is nonce-based CSP *or* static rendering, not both. This site
+ * is static-first, so the nonce goes. 'unsafe-inline' is the cost, and it is a
+ * real one: it is what a nonce exists to avoid. Note that it cannot be hedged
+ * — a nonce or hash anywhere in script-src makes browsers ignore
+ * 'unsafe-inline' entirely, which is why the theme-boot script's sha256 is
+ * gone too. Everything that does not depend on per-request state still holds
+ * the line: scripts only from this origin and the analytics host, no plugins,
+ * no framing, forms and <base> pinned to self.
+ *
+ * Sourced for what the app actually loads: Supabase (REST + realtime
+ * websocket), Google Analytics, the video-embed providers, and
+ * same-origin/blob/https images. The Payload admin + API are excluded by the
+ * matcher below, so its inline assets are never constrained.
  */
-function buildCsp(nonce: string): string {
+export function buildCsp(): string {
   const isProd = process.env.NODE_ENV === 'production'
 
   let supaHttp = ''
@@ -43,9 +63,10 @@ function buildCsp(nonce: string): string {
     `object-src 'none'`,
     `frame-ancestors 'self'`,
     `form-action 'self'`,
-    // nonce → Next's own scripts; the sha256 is our static theme-boot script
-    // (hashed, not nonced, so server/client HTML match — no hydration mismatch).
-    `script-src 'self' 'nonce-${nonce}' 'sha256-SPCKtJb7vbkE0oGUlUkbSW9lKlfV2+hrafPs14RM2sA=' ${isProd ? "'strict-dynamic' https:" : "'unsafe-eval'"}`,
+    // 'unsafe-inline' covers React's hydration and streaming scripts and our
+    // theme-boot script; the analytics host is named because without
+    // 'strict-dynamic' it is no longer implied. Dev also needs eval for HMR.
+    `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com${isProd ? '' : " 'unsafe-eval'"}`,
     // Next + Tailwind inject inline <style>; nonces aren't propagated to styles.
     `style-src 'self' 'unsafe-inline'`,
     // Recipe/creator photos (Blob + /media), avatars, markdown + social images.
@@ -65,16 +86,13 @@ function buildCsp(nonce: string): string {
 }
 
 export async function proxy(request: NextRequest) {
-  // A fresh nonce per response; Next reads it off the request CSP header and
-  // stamps it onto its own scripts.
-  const nonce = btoa(crypto.randomUUID())
-  const csp = buildCsp(nonce)
+  const csp = buildCsp()
 
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
-  requestHeaders.set('content-security-policy', csp)
-
-  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  // The CSP is deliberately NOT set on the request headers. That is the hook
+  // Next uses to detect a nonce and stamp it onto its scripts, and doing so
+  // opts the route out of static rendering — the very combination that broke
+  // hydration on every cached page.
+  const response = NextResponse.next()
   response.headers.set('Content-Security-Policy', csp)
   // Names the 'csp' report-to group used by the CSP above.
   response.headers.set('Reporting-Endpoints', 'csp="/csp-report"')

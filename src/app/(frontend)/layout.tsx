@@ -116,9 +116,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           sees opaque innerHTML — no script element, no hydration warning.
         */}
         {/*
-          Static, so allowed by its sha256 hash in the CSP (see src/proxy.ts) —
-          not a nonce, which would differ between server and client and trip a
-          hydration mismatch. If the script text below changes, recompute the hash.
+          Allowed by 'unsafe-inline' in the CSP (see src/proxy.ts for why this
+          site cannot use a nonce or a hash). It no longer has a hash of its
+          own to keep in sync, so editing the script text below is safe.
         */}
         <div
           hidden

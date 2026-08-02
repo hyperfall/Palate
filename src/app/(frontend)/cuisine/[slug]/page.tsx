@@ -36,16 +36,29 @@ export async function generateMetadata({
 
   // An empty hub is thin content — keep it out of the index until it fills.
   // (Payload treats limit:0 as "unlimited", so use 1 and read totalDocs.)
-  const { totalDocs } = await findRecipes(
+  const { recipes, totalDocs } = await findRecipes(
     { ...parseFilters({}), cuisines: [cuisine.slug] },
     { limit: 1 },
   )
+
+  // Share the food, not the wordmark. Declaring openGraph at all replaces the
+  // site-wide card from opengraph-image.tsx rather than merging with it, so
+  // without an image here a shared cuisine hub posted with no picture at all.
+  // The hub's own top recipe is a better answer than restoring the generic
+  // card anyway: a link to "Indian recipes" should look like Indian food.
+  const top = recipes[0]
+  const og = top ? imageFrom(top.ogImage ?? top.heroImage, 'og') : null
 
   return {
     title: `${cuisine.name} recipes`,
     description,
     alternates: { canonical },
-    openGraph: { title: `${cuisine.name} recipes`, description, url: canonical },
+    openGraph: {
+      title: `${cuisine.name} recipes`,
+      description,
+      url: canonical,
+      ...(og ? { images: [{ url: og.url, width: og.width, height: og.height }] } : {}),
+    },
     ...(totalDocs === 0 ? { robots: { index: false, follow: true } } : {}),
   }
 }

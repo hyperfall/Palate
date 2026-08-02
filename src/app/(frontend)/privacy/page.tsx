@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { SITE } from '@/lib/site'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacy' },
   title: 'Privacy',
   description:
     'What Palate collects and why: account data, a rotation cookie, and coarse country from your IP to target partner cards. We don’t sell your data.',

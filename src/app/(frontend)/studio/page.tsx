@@ -5,6 +5,7 @@ import { findCuisines } from '@/lib/queries'
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/studio' },
   title: 'Creator Studio',
   description: 'Publish your recipes on Palate — your food, your name, your links.',
 }

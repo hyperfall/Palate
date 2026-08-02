@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { COLLECTIONS } from '@/lib/collections'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/browse' },
   // Not "Collections": that word already names the folders a user builds at
   // /collections, and two unrelated features sharing a noun is how someone
   // ends up on the wrong page. This one is the editorial cut of the catalog,

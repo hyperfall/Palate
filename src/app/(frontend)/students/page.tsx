@@ -10,6 +10,7 @@ import { findRecipes } from '@/lib/queries'
 import type { Recipe } from '@/payload-types'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/students' },
   title: 'Studying hard?',
   description:
     'Proper food for tight budgets, busy weeks, and whoever turns up. Quick solo dinners, batch cooks, and feed-the-flat meals that scale.',

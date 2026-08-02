@@ -8,6 +8,7 @@ import { countRecipesByCuisine, findCuisines } from '@/lib/queries'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/cuisines' },
   title: 'Cuisines',
   description: 'Browse the catalog by cuisine.',
 }

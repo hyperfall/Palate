@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/about' },
   title: 'About',
   description:
     'Palate is a recipe-first platform: cook first, read later. Creator-authored recipes, honest advertising, and a taste-led way to decide what to make.',

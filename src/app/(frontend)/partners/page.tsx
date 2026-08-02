@@ -6,6 +6,7 @@ import { PartnerRequestForm } from '@/components/PartnerRequestForm'
 import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/partners' },
   title: 'Advertise with us',
   description:
     'Reach cooks at the moment they’re choosing what to make — one labelled partner card per recipe, targeted by country and dish. Request a placement.',

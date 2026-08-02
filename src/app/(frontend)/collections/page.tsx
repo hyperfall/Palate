@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { CollectionsBoard } from '@/components/CollectionsBoard'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/collections' },
   title: 'My collections',
   description: 'Every recipe you’ve saved, in collections you named yourself.',
   // Private to each signed-in user — never index.

@@ -5,6 +5,7 @@ import { DEFAULT_CREATOR_REV_SHARE } from '@/lib/partners'
 import { SITE } from '@/lib/site'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/terms' },
   title: 'Terms of Use',
   description: 'The terms that govern using Palate, publishing recipes, and advertising with us.',
 }

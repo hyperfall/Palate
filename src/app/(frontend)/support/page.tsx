@@ -6,6 +6,7 @@ import { stripeConfigured, SUPPORTER_PRICE_LABEL } from '@/lib/stripe'
 import { serverUser } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/support' },
   title: 'Become a supporter',
   description:
     'Support Palate — a recipe-first, honestly-monetised platform. Unlock Household mode and the perks to come, and help keep the recipe at the top.',

@@ -14,6 +14,7 @@ import { imageFrom } from '@/lib/media'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/cook-from' },
   // Personalised and sign-in gated: to a crawler this is a thin sign-in
   // prompt, so keep it out of the index like every other private page.
   robots: { index: false, follow: false },

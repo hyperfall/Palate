@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -9,6 +10,16 @@ import { HoverVideo } from '@/components/HoverVideo'
 import { animatedUrlFor } from '@/lib/animated'
 import { countRecipesByCuisine, findCuisines, findFeaturedRecipes } from '@/lib/queries'
 import { TASTE_AXES, TASTE_AXIS_LABELS, tasteLabel, type TasteAxis } from '@/lib/taxonomy'
+
+// Title and description come from the root layout's defaults; the canonical
+// cannot, because a layout does not know which path it is rendering. Without
+// it the home page is reachable at more addresses than it looks — with and
+// without a trailing slash, and behind any tracking parameter a shared link
+// picks up — and each is a separate URL competing with the others for the
+// same page's ranking.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 export const revalidate = 3600
 

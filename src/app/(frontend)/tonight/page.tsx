@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { TonightPicker } from '@/components/TonightPicker'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/tonight' },
   title: 'Pick dinner for me',
   description:
     'Five quick taps — heat, sweetness, richness, effort, and time — and Palate hands you one dinner, stated with confidence.',

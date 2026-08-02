@@ -84,8 +84,23 @@ export function humanizeQuantity(
     }
   }
   if (frac < 0.05) return String(whole)
+
+  // Precision follows how BIG the unit is, not just how big the number is.
+  //
+  // Scaling 400 g to serve four gave "533.33 g" — a number no kitchen scale can
+  // show and no cook would write, because a gram is small enough that the tail
+  // is below the resolution it would be weighed on. An ounce is not: 0.7 oz is
+  // about 20 g, so rounding "10.7 oz" to "11" would throw away a real amount.
+  // Only the fine units lose their decimals, and only once they are big enough
+  // for the tail to be noise.
+  if (FINE_UNITS.has((opts.unit ?? '').toLowerCase()) && value >= 10) {
+    return String(Math.round(value))
+  }
   return String(Math.round(value * 100) / 100)
 }
+
+/** Units small enough that a fraction of one is below what a cook can measure. */
+const FINE_UNITS = new Set(['g', 'ml'])
 
 const TEMP_RE = /(\d+(?:\.\d+)?)\s*°?\s*([CF])\b/gi
 

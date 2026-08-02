@@ -37,6 +37,22 @@ describe('humanizeQuantity', () => {
     expect(humanizeQuantity(2.6, { countable: true })).toBe('3')
     expect(humanizeQuantity(0.4, { countable: true })).toBe('1') // never rounds a real ingredient to zero
   })
+  it('drops the meaningless tail on fine metric units', () => {
+    // Scaling 400 g to serve four rendered "533.33 g" on the recipe page — a
+    // number no kitchen scale shows. A gram is small enough that the tail is
+    // below what anyone can weigh.
+    expect(humanizeQuantity(533.3333, { unit: 'g' })).toBe('533')
+    expect(humanizeQuantity(53.333, { unit: 'g' })).toBe('53')
+    expect(humanizeQuantity(2.6667, { unit: 'ml' })).toBe('2.67')
+  })
+
+  it('keeps the decimal on units where one of them is a real amount', () => {
+    // 0.7 oz is about 20 g — rounding it away would lose a genuine quantity,
+    // which is why the rule keys on the unit and not just the number.
+    expect(humanizeQuantity(10.66, { unit: 'oz' })).toBe('10.66')
+    expect(humanizeQuantity(1.42)).toBe('1.42')
+  })
+
   it('rounds messy decimals to two places', () => {
     expect(humanizeQuantity(0.333)).toBe('⅓')
     expect(humanizeQuantity(1.42)).toBe('1.42')

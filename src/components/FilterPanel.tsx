@@ -384,32 +384,6 @@ export function FilterPanel({
   const drawerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // The desktop rail scrolls independently of the page, so it can look "cut off"
-  // with no sign there's more below. Track whether content overflows above/below
-  // the viewport and fade the edges to signal it.
-  const railRef = useRef<HTMLDivElement>(null)
-  const [rail, setRail] = useState({ top: false, bottom: false })
-  useEffect(() => {
-    const el = railRef.current
-    if (!el) return
-    const update = () =>
-      setRail({
-        top: el.scrollTop > 4,
-        bottom: el.scrollTop + el.clientHeight < el.scrollHeight - 4,
-      })
-    update()
-    el.addEventListener('scroll', update, { passive: true })
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    if (el.firstElementChild) ro.observe(el.firstElementChild)
-    window.addEventListener('resize', update)
-    return () => {
-      el.removeEventListener('scroll', update)
-      ro.disconnect()
-      window.removeEventListener('resize', update)
-    }
-  }, [])
-
   useEffect(() => {
     if (!open) return
     const prevOverflow = document.body.style.overflow
@@ -829,10 +803,24 @@ export function FilterPanel({
         </div>
       )}
 
-      {/* Desktop: a sticky station. The Filter/Clear header stays pinned while the
-          facet groups scroll beneath it, so "Clear" is always reachable. */}
+      {/*
+        Desktop: the whole filter column stands at full height and the PAGE
+        scrolls past it.
+
+        It used to be a viewport-tall box with its own inner scrollbar and a
+        "more ↓" hint. Every facet was rendered, but you could only ever see a
+        slice of them — the cuisine list alone ran past the fold, so which
+        kitchens the catalogue offered was a thing you had to discover by
+        scrolling a panel most people never realised scrolled. A filter's job is
+        to show what is on offer.
+
+        `sticky top-20` still holds it in view while the grid scrolls, but with
+        no max-height it simply unsticks and scrolls away once the column is
+        taller than the viewport, which is the behaviour every large catalogue
+        uses. No inner scroll, no fades, no hint needed.
+      */}
       <div className="hidden lg:block">
-        <div className="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
+        <div className="sticky top-20">
           <div className="flex items-baseline justify-between gap-3 border-b border-rule pb-3">
             <p className="eyebrow m-0 text-ink">Filter</p>
             {activeCount > 0 && (
@@ -841,25 +829,7 @@ export function FilterPanel({
               </button>
             )}
           </div>
-          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div ref={railRef} className="scroll-rail min-h-0 flex-1 overflow-y-auto pr-2 pt-4 pb-4">
-              {panelBody}
-            </div>
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-paper to-transparent transition-opacity duration-200 ${rail.top ? 'opacity-100' : 'opacity-0'}`}
-            />
-            <div
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-paper to-transparent transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
-            />
-            <span
-              aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-0 bottom-1 text-center font-mono text-micro tracking-[0.12em] text-slate/70 uppercase transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
-            >
-              more ↓
-            </span>
-          </div>
+          <div className="pt-4 pb-4">{panelBody}</div>
         </div>
       </div>
     </aside>

@@ -14,6 +14,7 @@ import { PreferencesSection } from '@/components/account/PreferencesSection'
 import { SecuritySection } from '@/components/account/SecuritySection'
 import { DangerZone } from '@/components/account/DangerZone'
 import { SettingsSection } from '@/components/account/SettingsSection'
+import { formatMonthYear } from '@/lib/format'
 
 type Mode = 'sign-in' | 'sign-up' | 'forgot' | 'recovery'
 
@@ -234,10 +235,7 @@ export function AccountPanel() {
               <dt className="eyebrow">On the pass since</dt>
               <span className="leader__dots" aria-hidden="true" />
               <dd className="datum m-0">
-                {new Date(session.since).toLocaleDateString('en-GB', {
-                  month: 'short',
-                  year: 'numeric',
-                })}
+                {formatMonthYear(session.since)}
               </dd>
             </div>
           )}

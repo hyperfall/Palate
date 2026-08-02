@@ -7,6 +7,7 @@ import { getHouseholdContext } from '@/lib/household'
 import { getPlanEntries } from '@/lib/planData'
 import { withLiveImages } from '@/lib/recipeImages'
 import { isCreator, serverUser, supabaseServer } from '@/lib/supabase/server'
+import { formatDayMonth } from '@/lib/format'
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -172,7 +173,7 @@ export default async function DashboardPage() {
                     {c.title}
                   </Link>
                   <span className="font-mono text-caption tracking-[0.06em] text-slate">
-                    {new Date(c.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    {formatDayMonth(c.at)}
                   </span>
                 </div>
                 {/* Their own note back to them — never leaves this page. */}

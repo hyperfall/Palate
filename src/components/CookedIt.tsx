@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { formatDate } from '@/lib/format'
 
 /**
  * Record that this recipe was actually cooked.
@@ -164,7 +165,7 @@ export function CookedIt({
       )}
       {lastCooked && state === 'idle' && (
         <p className={`m-0 font-mono text-tag tracking-[0.06em] uppercase ${muted}`}>
-          Last cooked {new Date(lastCooked).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          Last cooked {formatDate(lastCooked)}
         </p>
       )}
       {error && (

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 import { supabaseBrowser } from '@/lib/supabase/client'
+import { formatDate } from '@/lib/format'
 
 type Submission = {
   id: number | string
@@ -35,7 +36,7 @@ const FILTERS = [
 
 const fmtDate = (iso: string) => {
   try {
-    return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+    return formatDate(iso)
   } catch {
     return ''
   }

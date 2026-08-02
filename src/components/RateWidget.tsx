@@ -127,7 +127,7 @@ export function RateWidget({
               )
             })}
           </div>
-          <p className={`m-0 font-mono text-[0.75rem] ${mutedCls}`}>
+          <p className={`m-0 font-mono text-caption ${mutedCls}`}>
             {yourStars
               ? `You rated this ${yourStars}★.`
               : hasRatings
@@ -140,7 +140,7 @@ export function RateWidget({
             )}
           </p>
           {error && (
-            <p role="alert" className="m-0 font-mono text-[0.75rem] text-heat">
+            <p role="alert" className="m-0 font-mono text-caption text-heat">
               {error}
             </p>
           )}
@@ -150,9 +150,9 @@ export function RateWidget({
           {hasRatings ? (
             <StarRating value={average} count={count} size="lg" />
           ) : (
-            <p className={`m-0 font-mono text-[0.8125rem] ${mutedCls}`}>No ratings yet.</p>
+            <p className={`m-0 font-mono text-detail ${mutedCls}`}>No ratings yet.</p>
           )}
-          <p className={`m-0 font-mono text-[0.75rem] ${mutedCls}`}>
+          <p className={`m-0 font-mono text-caption ${mutedCls}`}>
             <Link href="/account" className="text-flame no-underline hover:underline">
               Sign in
             </Link>{' '}

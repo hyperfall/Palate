@@ -136,7 +136,7 @@ function CuisineCard({ cuisine, sound, autoplay }: { cuisine: CuisineCardData; s
         )}
         <div className="relative p-5">
           <div className="leader">
-            <h2 className="text-[1.25rem] text-ink group-hover:underline">
+            <h2 className="text-title text-ink group-hover:underline">
               {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
               {cuisine.name}
             </h2>
@@ -146,7 +146,7 @@ function CuisineCard({ cuisine, sound, autoplay }: { cuisine: CuisineCardData; s
             </span>
           </div>
           {cuisine.description && (
-            <p className="mt-2 max-w-[46ch] text-[0.9375rem] leading-snug text-slate">
+            <p className="mt-2 max-w-[46ch] text-note leading-snug text-slate">
               {cuisine.description}
             </p>
           )}

@@ -84,7 +84,7 @@ export function TasteTags({
             className="inline-block h-2 w-2 shrink-0 rounded-[1px]"
             style={{ background: AXIS_COLOR[axis] }}
           />
-          <span className="font-mono text-[0.8125rem] font-medium tracking-[0.04em] text-slate uppercase">
+          <span className="font-mono text-detail font-medium tracking-[0.04em] text-slate uppercase">
             <span className="sr-only">{TASTE_AXIS_LABELS[axis].title}: </span>
             {tasteLabel(axis, recipe[axis])}
           </span>

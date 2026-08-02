@@ -83,7 +83,7 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
           )
         })}
       </dl>
-      <p className="mt-2.5 font-mono text-[0.6875rem] tracking-[0.08em] text-slate/70 uppercase">
+      <p className="mt-2.5 font-mono text-tag tracking-[0.08em] text-slate/70 uppercase">
         Estimated from ingredients · % of a 2,000 kcal reference day
         {grams ? ` · serving ≈ ${grams} g` : ''}
       </p>

@@ -76,7 +76,7 @@ export function MarkdownStory({
           <li key={h.id} className={h.depth === 3 ? 'pl-4' : undefined}>
             <a
               href={`#${h.id}`}
-              className="text-[0.9375rem] leading-snug text-slate no-underline hover:text-flame hover:underline hover:underline-offset-4"
+              className="text-note leading-snug text-slate no-underline hover:text-flame hover:underline hover:underline-offset-4"
             >
               {h.text}
             </a>
@@ -100,13 +100,13 @@ export function MarkdownStory({
           screen readers and on narrow screens; the grid moves it right at xl. */}
       {contents && <div className={railed ? 'xl:order-2' : undefined}>{contents}</div>}
       <div
-        className={`story-prose max-w-[65ch] text-[1.0625rem] leading-relaxed text-ink ${railed ? 'xl:order-1' : ''}`}
+        className={`story-prose max-w-[65ch] text-read leading-relaxed text-ink ${railed ? 'xl:order-1' : ''}`}
       >
         {/* Every story says how long it is. Only the CONTENTS is conditional —
             a short note still deserves the estimate, and it lived inside the
             nav at first, so stories under the threshold silently lost it. */}
         {!showContents && minutes && (
-          <p className="m-0 mb-4 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+          <p className="m-0 mb-4 font-mono text-tag tracking-[0.08em] text-slate uppercase">
             {minutes}
           </p>
         )}
@@ -126,7 +126,7 @@ export function MarkdownStory({
           h3: ({ children, ...props }) => (
             <h3
               id={headingId(textOf(children))}
-              className="mt-6 mb-2 scroll-mt-24 font-display text-[1.25rem] text-ink"
+              className="mt-6 mb-2 scroll-mt-24 font-display text-title text-ink"
               {...props}
             >
               {children}

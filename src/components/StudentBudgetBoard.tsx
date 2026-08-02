@@ -81,7 +81,7 @@ export function StudentBudgetBoard({
           Custom
         </button>
         {custom && (
-          <label className="flex items-center gap-1 font-mono text-[0.8125rem] text-ink">
+          <label className="flex items-center gap-1 font-mono text-detail text-ink">
             <span aria-hidden="true">≤ £</span>
             <input
               type="number"
@@ -104,7 +104,7 @@ export function StudentBudgetBoard({
           </label>
         )}
         {cheapest != null && (
-          <span className="ml-auto font-mono text-[0.75rem] tracking-[0.06em] text-slate">
+          <span className="ml-auto font-mono text-caption tracking-[0.06em] text-slate">
             cheapest plate {gbp(cheapest)}
             {avg != null && shown.length > 1 ? ` · average ${gbp(avg)}` : ''}
           </span>
@@ -138,14 +138,14 @@ export function StudentBudgetBoard({
                   />
                 )}
                 {p.cost != null && (
-                  <span className="absolute right-2 bottom-2 rounded bg-pan-deep/80 px-2 py-0.5 font-mono text-[0.6875rem] font-semibold tracking-[0.04em] text-milk">
+                  <span className="absolute right-2 bottom-2 rounded bg-pan-deep/80 px-2 py-0.5 font-mono text-tag font-semibold tracking-[0.04em] text-milk">
                     ≈ {gbp(p.cost)} a plate
                   </span>
                 )}
               </div>
               <div className="p-4">
-                <h3 className="text-[1.0625rem] leading-tight text-ink group-hover:underline">{p.title}</h3>
-                <p className="mt-1.5 flex flex-wrap gap-x-2 font-mono text-[0.6875rem] tracking-[0.06em] text-slate uppercase">
+                <h3 className="text-read leading-tight text-ink group-hover:underline">{p.title}</h3>
+                <p className="mt-1.5 flex flex-wrap gap-x-2 font-mono text-tag tracking-[0.06em] text-slate uppercase">
                   {p.minutes != null && <span>{p.minutes} min</span>}
                   {servingsHint && p.cost != null && (
                     <span className="text-flame">

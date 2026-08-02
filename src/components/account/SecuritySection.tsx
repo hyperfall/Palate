@@ -56,7 +56,7 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
     >
       <div className="grid items-start gap-4 lg:grid-cols-2">
       <label className="grid gap-1">
-        <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Email</span>
+        <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">Email</span>
         <input
           type="email"
           value={email}
@@ -65,10 +65,10 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
             setEmail(e.target.value)
             setEmailStatus('idle')
           }}
-          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
+          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink focus:border-flame focus:outline-none"
         />
         {emailStatus === 'sent' ? (
-          <span className="font-mono text-[0.75rem] text-richness" role="status">
+          <span className="font-mono text-caption text-richness" role="status">
             Confirmation links sent to both addresses — the change applies once confirmed.
           </span>
         ) : (
@@ -84,12 +84,12 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
 
       <label className="grid gap-1">
         <span className="flex items-baseline justify-between">
-          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">New password</span>
+          <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">New password</span>
           {password && (
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase hover:text-ink"
+              className="cursor-pointer border-none bg-transparent p-0 font-mono text-caption tracking-[0.1em] text-slate uppercase hover:text-ink"
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
@@ -105,7 +105,7 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
             setPassword(e.target.value)
             setPwStatus('idle')
           }}
-          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+          className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
         />
         {password && (
           <div className="grid gap-1.5">
@@ -132,7 +132,7 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
       </div>
 
       {error && (
-        <p className="m-0 font-mono text-[0.75rem] text-heat" role="alert">
+        <p className="m-0 font-mono text-caption text-heat" role="alert">
           {error}
         </p>
       )}

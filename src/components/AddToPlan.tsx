@@ -207,7 +207,7 @@ export function AddToPlan({
                 type="button"
                 onClick={() => setMeal(m)}
                 aria-pressed={meal === m}
-                className="flex-1 cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.6875rem] font-medium text-ink transition-colors hover:border-flame aria-pressed:border-flame aria-pressed:bg-flame/10 aria-pressed:text-flame"
+                className="flex-1 cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-tag font-medium text-ink transition-colors hover:border-flame aria-pressed:border-flame aria-pressed:bg-flame/10 aria-pressed:text-flame"
               >
                 {MEAL_LABELS[m]}
               </button>
@@ -225,7 +225,7 @@ export function AddToPlan({
                   disabled={busy}
                   onClick={() => void toggle(day)}
                   data-added={on}
-                  className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-[0.75rem] font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:bg-flame/10 data-[added=true]:text-flame"
+                  className="cursor-pointer rounded border border-rule bg-transparent px-1 py-1.5 font-mono text-caption font-medium text-ink transition-colors hover:border-flame disabled:opacity-50 data-[added=true]:border-flame data-[added=true]:bg-flame/10 data-[added=true]:text-flame"
                 >
                   {on ? '✓ ' : ''}
                   {label}
@@ -235,14 +235,14 @@ export function AddToPlan({
           </div>
 
           {error && (
-            <p className="mt-2 mb-0 font-mono text-[0.6875rem] leading-snug text-heat" role="alert">
+            <p className="mt-2 mb-0 font-mono text-tag leading-snug text-heat" role="alert">
               Couldn’t update your plan: {error}
             </p>
           )}
 
           <Link
             href="/plan"
-            className="mt-3 block font-mono text-[0.75rem] tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+            className="mt-3 block font-mono text-caption tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
           >
             View your week →
           </Link>

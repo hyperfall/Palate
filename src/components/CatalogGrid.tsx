@@ -112,13 +112,13 @@ export function CatalogGrid({
       {hasMore && <div ref={sentinelRef} aria-hidden="true" className="h-px" />}
 
       {loading && (
-        <p aria-live="polite" className="mt-6 text-center font-mono text-[0.6875rem] tracking-[0.14em] text-slate uppercase">
+        <p aria-live="polite" className="mt-6 text-center font-mono text-tag tracking-[0.14em] text-slate uppercase">
           Plating more…
         </p>
       )}
 
       {failed && (
-        <p className="mt-6 text-center font-mono text-[0.75rem] tracking-[0.08em] text-heat uppercase">
+        <p className="mt-6 text-center font-mono text-caption tracking-[0.08em] text-heat uppercase">
           Couldn’t load more — scroll to retry.
         </p>
       )}

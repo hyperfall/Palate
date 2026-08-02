@@ -157,7 +157,7 @@ export function SaveRecipe({
         <div className="absolute top-full left-0 z-50 mt-2 w-[19rem] rounded-md border border-ink/30 bg-card p-4 text-ink shadow-(--shadow-block)">
           <p className="eyebrow m-0">Save to</p>
           {error && (
-            <p role="alert" className="mt-1 mb-0 font-mono text-[0.6875rem] text-heat">
+            <p role="alert" className="mt-1 mb-0 font-mono text-tag text-heat">
               {error}
             </p>
           )}
@@ -170,7 +170,7 @@ export function SaveRecipe({
                     type="button"
                     onClick={() => void toggle(collection.id)}
                     disabled={busy}
-                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded border-none bg-transparent px-2 py-1.5 text-left font-mono text-[0.8125rem] font-medium text-ink hover:bg-wash"
+                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded border-none bg-transparent px-2 py-1.5 text-left font-mono text-detail font-medium text-ink hover:bg-wash"
                   >
                     <span className="truncate">{collection.name}</span>
                     <span className={memberOf.has(collection.id) ? 'text-flame' : 'text-rule'}>
@@ -181,7 +181,7 @@ export function SaveRecipe({
               ))}
             </ul>
           ) : (
-            <p className="mt-2 mb-0 text-[0.8125rem] text-slate">
+            <p className="mt-2 mb-0 text-detail text-slate">
               No collections yet — name your first one.
             </p>
           )}
@@ -193,7 +193,7 @@ export function SaveRecipe({
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Weeknight bangers"
               maxLength={60}
-              className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2.5 py-1.5 font-mono text-[0.8125rem] text-ink focus:border-flame focus:outline-none"
+              className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2.5 py-1.5 font-mono text-detail text-ink focus:border-flame focus:outline-none"
             />
             <button
               type="submit"

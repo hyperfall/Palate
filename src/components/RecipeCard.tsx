@@ -89,7 +89,7 @@ export function RecipeCard({
                 orphan separator. */}
             <p
               className={`eyebrow m-0 flex items-baseline gap-x-1.5 overflow-hidden whitespace-nowrap ${
-                featured ? 'sm:text-[0.9375rem]' : ''
+                featured ? 'sm:text-note' : ''
               }`}
             >
               {cuisine && (

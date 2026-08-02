@@ -96,7 +96,7 @@ export function IngredientsPanel({
           >
             −
           </button>
-          <span className="inline-flex min-w-[5rem] items-baseline justify-center gap-1 font-mono text-[0.8125rem] font-semibold tabular-nums">
+          <span className="inline-flex min-w-[5rem] items-baseline justify-center gap-1 font-mono text-detail font-semibold tabular-nums">
             <input
               type="text"
               inputMode="numeric"
@@ -142,7 +142,7 @@ export function IngredientsPanel({
               type="button"
               onClick={() => setUnitSystem(sys)}
               aria-pressed={unitSystem === sys}
-              className={`cursor-pointer rounded-sm border-none px-2.5 py-1.5 font-mono text-[0.75rem] font-semibold uppercase tracking-[0.08em] transition-colors ${
+              className={`cursor-pointer rounded-sm border-none px-2.5 py-1.5 font-mono text-caption font-semibold uppercase tracking-[0.08em] transition-colors ${
                 unitSystem === sys ? 'bg-flame text-paper' : 'bg-transparent text-slate hover:text-ink'
               }`}
             >
@@ -166,7 +166,7 @@ export function IngredientsPanel({
       )}
 
       {factor >= 2 && (
-        <p className="mt-1.5 text-[0.8125rem] leading-snug text-slate">
+        <p className="mt-1.5 text-detail leading-snug text-slate">
           At {Math.round(factor * 10) / 10}×, use a wider pan and expect a little extra cooking time —
           scaled amounts are a starting point, taste as you go.
         </p>
@@ -190,7 +190,7 @@ export function IngredientsPanel({
           }
 
           return (
-            <li key={ingredient.id ?? index} className="leader text-[1.0625rem] leading-snug">
+            <li key={ingredient.id ?? index} className="leader text-read leading-snug">
               {(() => {
                 const canonical =
                   ingredient.ingredient && typeof ingredient.ingredient === 'object' ? ingredient.ingredient : null

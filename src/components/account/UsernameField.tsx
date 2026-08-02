@@ -93,10 +93,10 @@ export function UsernameField({
         aria-invalid={check.kind === 'taken' || check.kind === 'invalid'}
         onChange={(e) => setValue(normalizeUsername(e.target.value))}
         onBlur={commit}
-        className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
+        className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink focus:border-flame focus:outline-none"
       />
       {message && (
-        <span className={`font-mono text-[0.75rem] ${tone}`} role="status" aria-live="polite">
+        <span className={`font-mono text-caption ${tone}`} role="status" aria-live="polite">
           {message}
         </span>
       )}

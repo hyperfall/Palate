@@ -130,7 +130,7 @@ export function PeriodPicker({
         className="flex items-center gap-2 rounded border border-rule bg-transparent px-3 py-1.5 font-display text-[1.125rem] text-ink transition-colors hover:border-ink"
       >
         {label}
-        <span aria-hidden="true" className="font-mono text-[0.75rem] text-slate">
+        <span aria-hidden="true" className="font-mono text-caption text-slate">
           ▾
         </span>
       </button>
@@ -155,7 +155,7 @@ export function PeriodPicker({
             <button
               type="button"
               onClick={() => go(String(viewYear))}
-              className="font-display text-[1.25rem] text-ink underline-offset-4 hover:text-flame hover:underline"
+              className="font-display text-title text-ink underline-offset-4 hover:text-flame hover:underline"
             >
               {viewYear}
             </button>
@@ -182,7 +182,7 @@ export function PeriodPicker({
                   type="button"
                   disabled={future}
                   onClick={() => (showsDays ? setViewMonth(i) : go(`${viewYear}-${pad(i + 1)}`))}
-                  className={`rounded py-1.5 font-mono text-[0.6875rem] tracking-[0.04em] uppercase transition-colors disabled:opacity-25 ${
+                  className={`rounded py-1.5 font-mono text-tag tracking-[0.04em] uppercase transition-colors disabled:opacity-25 ${
                     isView && showsDays
                       ? 'bg-ink text-paper'
                       : 'text-ink hover:bg-wash disabled:hover:bg-transparent'
@@ -201,7 +201,7 @@ export function PeriodPicker({
                   <span
                     key={i}
                     aria-hidden="true"
-                    className="py-1 text-center font-mono text-[0.625rem] tracking-[0.08em] text-slate/60 uppercase"
+                    className="py-1 text-center font-mono text-micro tracking-[0.08em] text-slate/60 uppercase"
                   >
                     {d}
                   </span>
@@ -224,7 +224,7 @@ export function PeriodPicker({
                       onClick={() => go(grain === 'week' ? periodFor('week', d).slug : iso)}
                       aria-label={`${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}${votes ? `, ${votes} ${votes === 1 ? 'vote' : 'votes'}` : ', no votes'}`}
                       aria-current={selected ? 'date' : undefined}
-                      className={`relative grid h-8 place-items-center rounded font-mono text-[0.8125rem] tabular-nums transition-colors disabled:opacity-25 ${
+                      className={`relative grid h-8 place-items-center rounded font-mono text-detail tabular-nums transition-colors disabled:opacity-25 ${
                         selected
                           ? 'bg-ink text-paper'
                           : isToday

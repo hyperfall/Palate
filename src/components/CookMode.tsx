@@ -47,7 +47,7 @@ export function CookModeLauncher({
       </button>
       <a
         href="#method"
-        className="font-mono text-[0.8125rem] font-medium tracking-[0.12em] text-milk/80 uppercase underline underline-offset-4 hover:text-flame"
+        className="font-mono text-detail font-medium tracking-[0.12em] text-milk/80 uppercase underline underline-offset-4 hover:text-flame"
       >
         Read it first ↓
       </a>

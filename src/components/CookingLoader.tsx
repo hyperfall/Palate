@@ -43,7 +43,7 @@ export function CookingLoader({
         />
       </svg>
       {label && (
-        <span className="font-mono text-[0.8125rem] tracking-[0.08em] text-slate uppercase">
+        <span className="font-mono text-detail tracking-[0.08em] text-slate uppercase">
           {label}
         </span>
       )}

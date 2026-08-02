@@ -46,7 +46,7 @@ export function SharePlan({ week }: { week: WeekSnapshot }) {
             readOnly
             value={url}
             onFocus={(e) => e.currentTarget.select()}
-            className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink"
+            className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-caption text-ink"
           />
           <button
             type="button"

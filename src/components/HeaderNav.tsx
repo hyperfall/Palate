@@ -35,7 +35,7 @@ export function HeaderNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? 'page' : undefined}
-            className={`font-mono text-[0.8125rem] font-medium tracking-[0.14em] uppercase no-underline transition-colors ${
+            className={`font-mono text-detail font-medium tracking-[0.14em] uppercase no-underline transition-colors ${
               active ? 'text-flame' : 'text-milk/70 hover:text-milk'
             }`}
           >

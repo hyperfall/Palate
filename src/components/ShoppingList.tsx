@@ -27,7 +27,7 @@ function LineRow({
   return (
     <li className="grid gap-0.5 border-b border-rule py-2 last:border-b-0">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[1.0625rem]">
+        <span className="text-read">
           {/* You buy a bunch, a recipe wants two sprigs. The ingredient page is
               where the rest of it stops being waste. */}
           {line.slug ? (
@@ -49,14 +49,14 @@ function LineRow({
             disabled={busy}
             onClick={() => onStaple(line)}
             title="I always have this — hide it from the list"
-            className="shrink-0 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline disabled:opacity-50"
+            className="shrink-0 cursor-pointer border-none bg-transparent p-0 font-mono text-tag tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline disabled:opacity-50"
           >
             have it
           </button>
         )}
       </div>
       {showRecipes && line.recipes.length > 1 && (
-        <span className="font-mono text-[0.6875rem] text-slate/70">for {line.recipes.join(', ')}</span>
+        <span className="font-mono text-tag text-slate/70">for {line.recipes.join(', ')}</span>
       )}
     </li>
   )
@@ -104,7 +104,7 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
 
   if (list.dishes.length === 0) {
     return (
-      <p className="mt-4 text-[0.9375rem] text-slate">
+      <p className="mt-4 text-note text-slate">
         {interactive ? 'Nothing to buy — add recipes to your week.' : 'No dishes in this week.'}
       </p>
     )
@@ -116,18 +116,18 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
   return (
     <div className="mt-4 border-t border-rule">
       {error && (
-        <p role="alert" className="mt-2 font-mono text-[0.75rem] text-heat">
+        <p role="alert" className="mt-2 font-mono text-caption text-heat">
           {error}
         </p>
       )}
       {/* Netted buy-list — collapsed by default: the per-dish sections are the
           working view while planning; this expands when it's shopping time. */}
       <Disclosure
-        title={<span className="font-display text-[1.0625rem] text-ink">Everything to buy</span>}
+        title={<span className="font-display text-read text-ink">Everything to buy</span>}
         meta={`${visibleNetted.length} ${visibleNetted.length === 1 ? 'item' : 'items'}`}
       >
         {visibleNetted.length === 0 ? (
-          <p className="text-[0.9375rem] text-slate">All set — every ingredient is a pantry staple.</p>
+          <p className="text-note text-slate">All set — every ingredient is a pantry staple.</p>
         ) : (
           <ul className="grid list-none gap-0 p-0">
             {visibleNetted.map((line) => (
@@ -151,13 +151,13 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
                   ◵
                 </span>
               )}
-              <span className="min-w-0 truncate font-display text-[1.0625rem] text-ink">{dish.title}</span>
+              <span className="min-w-0 truncate font-display text-read text-ink">{dish.title}</span>
             </span>
           }
           meta={`${dish.lines.length} ${dish.lines.length === 1 ? 'item' : 'items'}`}
         >
           {dish.lines.length === 0 ? (
-            <p className="text-[0.9375rem] text-slate">No ingredients recorded.</p>
+            <p className="text-note text-slate">No ingredients recorded.</p>
           ) : (
             <ul className="grid list-none gap-0 p-0">
               {dish.lines.map((line) => (

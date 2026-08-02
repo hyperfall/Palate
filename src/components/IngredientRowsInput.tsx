@@ -133,7 +133,7 @@ function UnitCombobox({
                 aria-selected={oi === hi}
                 onMouseEnter={() => setHi(oi)}
                 onClick={() => choose(u)}
-                className={`block w-full px-3 py-1 text-left font-mono text-[0.8125rem] transition-colors ${
+                className={`block w-full px-3 py-1 text-left font-mono text-detail transition-colors ${
                   oi === hi ? 'bg-flame/10 text-flame' : 'text-ink hover:bg-wash'
                 }`}
               >
@@ -296,7 +296,7 @@ export function IngredientRowsInput({
       <button
         type="button"
         onClick={() => addRow(value.length)}
-        className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+        className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-caption font-medium tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
       >
         + Add ingredient
       </button>

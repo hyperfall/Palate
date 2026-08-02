@@ -45,7 +45,7 @@ export function ThemeToggle({ colorClass = 'border-milk/30 text-milk' }: { color
       type="button"
       onClick={toggle}
       aria-label="Switch between light and dark theme"
-      className={`grid h-8 w-8 cursor-pointer place-items-center rounded border bg-transparent font-mono text-[0.9375rem] leading-none transition-colors hover:border-flame hover:text-flame ${colorClass}`}
+      className={`grid h-8 w-8 cursor-pointer place-items-center rounded border bg-transparent font-mono text-note leading-none transition-colors hover:border-flame hover:text-flame ${colorClass}`}
     >
       <span className="light-only" aria-hidden="true">
         ☾

@@ -69,7 +69,7 @@ export function VideoEmbed({ url, title }: { url: string; title: string }) {
         href={url}
         target="_blank"
         rel="noopener nofollow"
-        className="inline-flex items-center gap-2 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-flame uppercase underline underline-offset-4"
+        className="inline-flex items-center gap-2 font-mono text-detail font-medium tracking-[0.08em] text-flame uppercase underline underline-offset-4"
       >
         Watch on {host} ↗
       </a>

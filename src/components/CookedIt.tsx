@@ -101,7 +101,7 @@ export function CookedIt({
 
   if (!signedIn) {
     return (
-      <p className={`m-0 font-mono text-[0.75rem] tracking-[0.08em] uppercase ${muted}`}>
+      <p className={`m-0 font-mono text-caption tracking-[0.08em] uppercase ${muted}`}>
         <Link href="/account" className="underline underline-offset-4 hover:text-flame">
           Sign in
         </Link>{' '}
@@ -112,7 +112,7 @@ export function CookedIt({
 
   if (state === 'logged') {
     return (
-      <p className={`m-0 font-mono text-[0.75rem] tracking-[0.08em] uppercase ${muted}`}>
+      <p className={`m-0 font-mono text-caption tracking-[0.08em] uppercase ${muted}`}>
         ✓ Logged. It’s on your shelf of things you actually made.
       </p>
     )
@@ -123,7 +123,7 @@ export function CookedIt({
       {state === 'noting' ? (
         <div className="grid max-w-[26rem] gap-2">
           <label className="grid gap-1">
-            <span className={`font-mono text-[0.6875rem] tracking-[0.08em] uppercase ${muted}`}>
+            <span className={`font-mono text-tag tracking-[0.08em] uppercase ${muted}`}>
               Anything to remember? (optional, only you see it)
             </span>
             <input
@@ -136,7 +136,7 @@ export function CookedIt({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') void log()
               }}
-              className="rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+              className="rounded border border-rule bg-transparent px-3 py-2 font-body text-note text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
             />
           </label>
           <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export function CookedIt({
             <button
               type="button"
               onClick={() => void log()}
-              className={`cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.1em] uppercase underline-offset-4 hover:underline ${muted}`}
+              className={`cursor-pointer border-none bg-transparent p-0 font-mono text-caption tracking-[0.1em] uppercase underline-offset-4 hover:underline ${muted}`}
             >
               Skip the note
             </button>
@@ -163,12 +163,12 @@ export function CookedIt({
         </button>
       )}
       {lastCooked && state === 'idle' && (
-        <p className={`m-0 font-mono text-[0.6875rem] tracking-[0.06em] uppercase ${muted}`}>
+        <p className={`m-0 font-mono text-tag tracking-[0.06em] uppercase ${muted}`}>
           Last cooked {new Date(lastCooked).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       )}
       {error && (
-        <p role="alert" className="m-0 font-mono text-[0.75rem] text-heat">
+        <p role="alert" className="m-0 font-mono text-caption text-heat">
           {error}
         </p>
       )}

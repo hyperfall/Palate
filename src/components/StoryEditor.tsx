@@ -152,7 +152,7 @@ export function StoryEditor({
         <button
           type="button"
           onClick={() => setPreview((p) => !p)}
-          className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase hover:text-flame"
+          className="font-mono text-tag tracking-[0.1em] text-slate uppercase hover:text-flame"
         >
           {preview ? 'Edit' : 'Preview'}
         </button>
@@ -201,7 +201,7 @@ export function StoryEditor({
           {value.trim() ? (
             <MarkdownStory markdown={value} contentsLayout="stacked" />
           ) : (
-            <p className="m-0 text-[0.875rem] text-slate/60">Nothing to preview yet.</p>
+            <p className="m-0 text-eyebrow text-slate/60">Nothing to preview yet.</p>
           )}
         </div>
       ) : (
@@ -221,22 +221,22 @@ export function StoryEditor({
             }
           }}
           onDragLeave={() => setDragOver(false)}
-          className={`w-full resize-y rounded-b border border-t-0 bg-transparent px-3 py-2 font-mono text-[0.875rem] leading-relaxed text-ink placeholder:text-slate/50 focus:outline-none ${
+          className={`w-full resize-y rounded-b border border-t-0 bg-transparent px-3 py-2 font-mono text-eyebrow leading-relaxed text-ink placeholder:text-slate/50 focus:outline-none ${
             dragOver ? 'border-flame bg-flame/5' : 'border-rule focus:border-flame'
           }`}
         />
       )}
 
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[0.6875rem] text-slate">
+        <span className="font-mono text-tag text-slate">
           Replaces the instructions behind a toggle — opt-in reading.
         </span>
-        <span className="font-mono text-[0.6875rem] text-slate tabular-nums">
+        <span className="font-mono text-tag text-slate tabular-nums">
           {value.length}/{STORY_MARKDOWN_CAP}
         </span>
       </div>
       {error && (
-        <span role="alert" className="font-mono text-[0.75rem] text-heat">
+        <span role="alert" className="font-mono text-caption text-heat">
           {error}
         </span>
       )}

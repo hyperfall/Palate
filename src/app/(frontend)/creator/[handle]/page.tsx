@@ -105,7 +105,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ handle
                   </span>
                 )}
               </h1>
-              <p className="mt-1 font-mono text-[0.9375rem] text-milk/70">@{author.handle}</p>
+              <p className="mt-1 font-mono text-note text-milk/70">@{author.handle}</p>
             </div>
           </div>
 

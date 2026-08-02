@@ -18,7 +18,7 @@ export default function AboutPage() {
         </h1>
       </header>
 
-      <div className="mt-8 grid gap-6 text-[1.0625rem] leading-relaxed text-slate">
+      <div className="mt-8 grid gap-6 text-read leading-relaxed text-slate">
         <p>
           Most recipe sites bury the food under a life story, a wall of ads, and a photo of someone’s
           childhood kitchen. Palate is the opposite bet: the recipe comes first, measured on the few

@@ -93,7 +93,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
           ingredient, so it's the same answer wherever it's asked. */}
       {subs.length > 0 && (
         <section className="mt-10 border-t border-rule pt-6">
-          <h2 className="m-0 text-[1.25rem]">Out of it? Use</h2>
+          <h2 className="m-0 text-title">Out of it? Use</h2>
           <ul className="mt-4 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {subs.map((s, i) => {
               const label = subLabel(s)
@@ -103,7 +103,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
                   : null
               return (
                 <li key={i} className="ticket-card is-static p-4">
-                  <p className="m-0 text-[1.0625rem] font-semibold text-ink">
+                  <p className="m-0 text-read font-semibold text-ink">
                     {href ? (
                       <Link href={href} className="text-ink no-underline hover:text-flame">
                         {label}
@@ -112,11 +112,11 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
                       label
                     )}
                   </p>
-                  <p className="mt-1 m-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                  <p className="mt-1 m-0 font-mono text-tag tracking-[0.08em] text-slate uppercase">
                     {KIND_COPY[s.kind] ?? s.kind}
                     {s.ratio ? ` · ${s.ratio}` : ''}
                   </p>
-                  {s.note && <p className="mt-2 m-0 text-[0.875rem] leading-snug text-slate">{s.note}</p>}
+                  {s.note && <p className="mt-2 m-0 text-eyebrow leading-snug text-slate">{s.note}</p>}
                 </li>
               )
             })}
@@ -128,8 +128,8 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
           backbone is what makes this answerable at all. */}
       {pairsWith.length > 0 && (
         <section className="mt-10 border-t border-rule pt-6">
-          <h2 className="m-0 text-[1.25rem]">Cooked alongside</h2>
-          <p className="mt-1 text-[0.875rem] text-slate">
+          <h2 className="m-0 text-title">Cooked alongside</h2>
+          <p className="mt-1 text-eyebrow text-slate">
             Counted from the recipes themselves — the number is how many share it.
           </p>
           <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
@@ -154,7 +154,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
 
       {recipes.length > 0 && (
         <section className="mt-10 border-t border-rule pt-6">
-          <h2 className="m-0 text-[1.25rem]">On the board</h2>
+          <h2 className="m-0 text-title">On the board</h2>
           <div className="mt-5 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {recipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
@@ -165,7 +165,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
 
       {n?.kcalPer100g != null && (
         <section className="mt-10 border-t border-rule pt-6">
-          <h2 className="m-0 text-[1.25rem]">Per 100 g</h2>
+          <h2 className="m-0 text-title">Per 100 g</h2>
           <dl className="mt-4 grid max-w-[30rem] gap-2">
             {[
               ['Energy', `${Math.round(n.kcalPer100g)} kcal`],
@@ -182,7 +182,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
                 </div>
               ))}
           </dl>
-          <p className="mt-3 text-[0.8125rem] text-slate">Reference values, not a measured sample.</p>
+          <p className="mt-3 text-detail text-slate">Reference values, not a measured sample.</p>
         </section>
       )}
     </div>

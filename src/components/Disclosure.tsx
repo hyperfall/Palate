@@ -32,12 +32,12 @@ export function Disclosure({
       >
         <span
           aria-hidden="true"
-          className={`shrink-0 font-mono text-[0.8125rem] leading-none text-slate transition-transform duration-150 ${open ? 'rotate-90' : ''}`}
+          className={`shrink-0 font-mono text-detail leading-none text-slate transition-transform duration-150 ${open ? 'rotate-90' : ''}`}
         >
           ▸
         </span>
         <span className="min-w-0 flex-1">{title}</span>
-        {meta != null && <span className="shrink-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">{meta}</span>}
+        {meta != null && <span className="shrink-0 font-mono text-tag tracking-[0.08em] text-slate uppercase">{meta}</span>}
       </button>
       {open && (
         <div id={panelId} className="pb-3 pl-[1.4rem]">

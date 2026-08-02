@@ -38,7 +38,7 @@ export function StarRating({
         </span>
       </span>
       {count !== undefined && count > 0 && (
-        <span className="font-mono text-[0.75rem] tabular-nums text-slate">
+        <span className="font-mono text-caption tabular-nums text-slate">
           {value.toFixed(1)} <span className="text-slate/70">({count})</span>
         </span>
       )}

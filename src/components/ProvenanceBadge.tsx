@@ -94,11 +94,11 @@ export function ProvenanceBadge({
         className={`inline-flex w-fit items-stretch overflow-hidden rounded border ${mark.label}`}
       >
         <span className={`grid shrink-0 place-items-center px-1.5 ${mark.plate}`}>{mark.icon}</span>
-        <span className="px-2 py-1 font-mono text-[0.75rem] font-semibold tracking-[0.1em] uppercase">
+        <span className="px-2 py-1 font-mono text-caption font-semibold tracking-[0.1em] uppercase">
           {badge.label}
         </span>
       </span>
-      <span className="max-w-[38ch] text-[0.8125rem] leading-snug text-slate">
+      <span className="max-w-[38ch] text-detail leading-snug text-slate">
         {badge.blurb}
         {provenance === 'api-imported' && attribution?.sourceName && (
           <>

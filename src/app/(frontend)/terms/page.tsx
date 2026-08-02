@@ -28,7 +28,7 @@ export default function TermsPage() {
         </p>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Using the site</h2>
+          <h2 className="font-display text-title text-ink">Using the site</h2>
           <p>
             You may browse, cook from, and save recipes for personal, non-commercial use. Don’t
             scrape, resell, or bulk-copy the catalog, and don’t misuse the site or interfere with how
@@ -37,7 +37,7 @@ export default function TermsPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Accounts</h2>
+          <h2 className="font-display text-title text-ink">Accounts</h2>
           <p>
             You’re responsible for what happens under your account and for keeping your login secure.
             You can ask us to close your account at any time.
@@ -45,7 +45,7 @@ export default function TermsPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Creator content</h2>
+          <h2 className="font-display text-title text-ink">Creator content</h2>
           <p>
             Recipes you submit stay yours. By publishing on Palate you grant us a licence to host,
             display, and promote your recipe on the platform and in related materials, with
@@ -56,11 +56,11 @@ export default function TermsPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Advertising &amp; partners</h2>
+          <h2 className="font-display text-title text-ink">Advertising &amp; partners</h2>
           <p>
             Palate may show a single, clearly-labelled partner card alongside a recipe, matched to the
             dish and the reader’s country. Every partner card is marked “Partner” and its links carry{' '}
-            <code className="font-mono text-[0.875rem]">rel=&quot;sponsored nofollow&quot;</code>. We
+            <code className="font-mono text-eyebrow">rel=&quot;sponsored nofollow&quot;</code>. We
             do not take payment to alter, favour, or reorder recipes — advertising never changes the
             food.
           </p>
@@ -83,7 +83,7 @@ export default function TermsPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">No warranty</h2>
+          <h2 className="font-display text-title text-ink">No warranty</h2>
           <p>
             Recipes and nutrition figures are provided in good faith but as-is. Cooking involves
             judgement, heat, and allergens — use your own. We’re not liable for outcomes from using
@@ -92,7 +92,7 @@ export default function TermsPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Changes &amp; contact</h2>
+          <h2 className="font-display text-title text-ink">Changes &amp; contact</h2>
           <p>
             We may update these terms; material changes will be reflected by the date above. Questions
             about these terms or a partnership can be sent through our{' '}

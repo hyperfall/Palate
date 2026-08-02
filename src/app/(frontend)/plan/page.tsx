@@ -99,7 +99,7 @@ export default async function PlanPage() {
         <div className="mt-5">
           <Link
             href="/household"
-            className={`group inline-flex min-h-[2.125rem] items-center gap-2 rounded-[4px] border px-3 py-[0.4375rem] font-mono text-[0.75rem] font-medium tracking-[0.06em] uppercase no-underline transition-colors ${
+            className={`group inline-flex min-h-[2.125rem] items-center gap-2 rounded-[4px] border px-3 py-[0.4375rem] font-mono text-caption font-medium tracking-[0.06em] uppercase no-underline transition-colors ${
               household
                 ? 'border-rule bg-wash text-ink hover:border-ink'
                 : 'border-flame/40 bg-flame/10 text-flame hover:border-flame hover:bg-flame hover:text-on-flame'
@@ -165,7 +165,7 @@ export default async function PlanPage() {
             {cost.covered > 0 && (
               <span className="text-right">
                 <span className="datum">≈ {formatPlatePrice(cost.totalCents)}</span>
-                <span className="ml-1.5 font-mono text-[0.6875rem] tracking-[0.06em] text-slate uppercase">
+                <span className="ml-1.5 font-mono text-tag tracking-[0.06em] text-slate uppercase">
                   to cook
                   {cost.covered < cost.total && ` · ${cost.covered}/${cost.total} priced`}
                 </span>
@@ -182,7 +182,7 @@ export default async function PlanPage() {
             <p className="eyebrow m-0">Leftover chains</p>
             <ul className="mt-3 grid list-none gap-2.5 p-0">
               {leftovers.map((l) => (
-                <li key={l.title} className="text-[0.9375rem] leading-snug">
+                <li key={l.title} className="text-note leading-snug">
                   <span className="font-semibold">{l.title}</span> →{' '}
                   <span className="text-slate">{l.idea}</span>
                 </li>

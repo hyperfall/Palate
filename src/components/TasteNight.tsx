@@ -303,7 +303,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
                   .filter(Boolean)
                   .join(' · ')}
               </span>
-              <span className="mt-1 block font-display text-[1.25rem] text-ink">{pick.title}</span>
+              <span className="mt-1 block font-display text-title text-ink">{pick.title}</span>
             </span>
           </Link>
         ) : (
@@ -321,7 +321,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
+            className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
           >
             Play again
           </button>
@@ -367,7 +367,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
               type="button"
               onClick={() => choose(i)}
               disabled={chosen !== null}
-              className={`ticket-card cursor-pointer p-4 text-left font-mono text-[0.875rem] font-semibold disabled:cursor-default ${
+              className={`ticket-card cursor-pointer p-4 text-left font-mono text-eyebrow font-semibold disabled:cursor-default ${
                 revealed && isAnswer ? 'outline-2 outline-richness' : ''
               } ${revealed && chosen === i && !isAnswer ? 'outline-2 outline-heat' : ''} ${
                 chosen === i && question.answer < 0 ? 'outline-2 outline-flame' : ''
@@ -381,7 +381,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
 
       {chosen !== null && (
         <div className="mt-6 border-t-2 border-ink pt-4">
-          <p className="m-0 max-w-[58ch] text-[0.9375rem] leading-relaxed text-slate">
+          <p className="m-0 max-w-[58ch] text-note leading-relaxed text-slate">
             {question.lesson}
           </p>
           <button type="button" onClick={() => void advance()} className="btn-primary mt-5">

@@ -39,11 +39,11 @@ function LeaderLink({ href, label, datum }: { href: string; label: string; datum
   return (
     <li>
       <Link href={href} className="leader group py-1 no-underline">
-        <span className="font-mono text-[0.8125rem] text-milk group-hover:text-flame">
+        <span className="font-mono text-detail text-milk group-hover:text-flame">
           {label}
         </span>
         <span className="leader__dots border-milk/20" aria-hidden="true" />
-        <span className="font-mono text-[0.8125rem] tracking-[0.08em] text-milk/75 uppercase">
+        <span className="font-mono text-detail tracking-[0.08em] text-milk/75 uppercase">
           {datum}
         </span>
       </Link>
@@ -57,7 +57,7 @@ export function SiteFooter() {
       <div className="shell grid gap-x-14 gap-y-10 py-14 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div>
           <p className="m-0 font-display text-[1.75rem] leading-tight">That’s service.</p>
-          <p className="mt-3 max-w-[34ch] font-body text-[0.9375rem] leading-relaxed text-milk/85">
+          <p className="mt-3 max-w-[34ch] font-body text-note leading-relaxed text-milk/85">
             {SITE.description}
           </p>
         </div>
@@ -86,7 +86,7 @@ export function SiteFooter() {
             {TASTE_AXES.map((axis) => (
               <li key={axis}>
                 <Link href={`/recipes?sort=${axis}`} className="leader group py-1 no-underline">
-                  <span className="inline-flex items-center gap-2 font-mono text-[0.8125rem] text-milk group-hover:text-flame">
+                  <span className="inline-flex items-center gap-2 font-mono text-detail text-milk group-hover:text-flame">
                     <span
                       aria-hidden="true"
                       className="inline-block h-2 w-2 rounded-[2px]"
@@ -95,7 +95,7 @@ export function SiteFooter() {
                     {TASTE_AXIS_LABELS[axis].title}
                   </span>
                   <span className="leader__dots border-milk/20" aria-hidden="true" />
-                  <span className="font-mono text-[0.8125rem] tracking-[0.08em] text-milk/75 uppercase">
+                  <span className="font-mono text-detail tracking-[0.08em] text-milk/75 uppercase">
                     most first
                   </span>
                 </Link>

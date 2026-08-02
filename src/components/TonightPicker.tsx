@@ -120,7 +120,7 @@ export function TonightPicker() {
       <div>
         <p className="eyebrow m-0 text-flame">Question {stepNumber} of 5</p>
         {prefilled && (
-          <p className="mt-2 font-mono text-[0.75rem] text-slate">
+          <p className="mt-2 font-mono text-caption text-slate">
             Prefilled from your taste profile ·{' '}
             <button
               type="button"
@@ -156,7 +156,7 @@ export function TonightPicker() {
                     className="h-3 w-3 shrink-0 rounded-[2px]"
                     style={{ background: AXIS_COLOR[axis], opacity: 0.25 + level * 0.15 }}
                   />
-                  <span className="font-mono text-[0.875rem] font-semibold">{word}</span>
+                  <span className="font-mono text-eyebrow font-semibold">{word}</span>
                 </button>
               ))}
             </div>
@@ -173,7 +173,7 @@ export function TonightPicker() {
                     setTime(choice.value)
                     void fetchPick(answers, choice.value, [])
                   }}
-                  className="ticket-card cursor-pointer p-4 text-left font-mono text-[0.875rem] font-semibold"
+                  className="ticket-card cursor-pointer p-4 text-left font-mono text-eyebrow font-semibold"
                 >
                   {choice.label}
                 </button>
@@ -202,7 +202,7 @@ export function TonightPicker() {
                 })
               }
             }}
-            className="mt-8 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
+            className="mt-8 cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
           >
             ← Back
           </button>
@@ -267,7 +267,7 @@ export function TonightPicker() {
               <button
                 type="button"
                 onClick={() => void fetchPick(answers, time ?? null, seen)}
-                className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.12em] text-ink uppercase underline-offset-4 hover:underline"
+                className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail font-medium tracking-[0.12em] text-ink uppercase underline-offset-4 hover:underline"
               >
                 Show me another
               </button>
@@ -275,7 +275,7 @@ export function TonightPicker() {
             <button
               type="button"
               onClick={reset}
-              className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
+              className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:underline"
             >
               Start over
             </button>

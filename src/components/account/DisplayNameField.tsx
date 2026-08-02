@@ -46,15 +46,15 @@ export function DisplayNameField({ initial, onSaved }: { initial: string | null;
         // The chip stays as the visible affordance and for anyone who expects
         // an explicit save.
         onBlur={() => void save()}
-        className="rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+        className="rounded border border-rule bg-transparent px-3 py-2 font-body text-note text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
       />
       {dirty && <SaveChip status={status} label="Save name" onClick={() => void save()} />}
       {!dirty && status === 'saved' && (
-        <span role="status" className="font-mono text-[0.75rem] text-richness">
+        <span role="status" className="font-mono text-caption text-richness">
           Saved.
         </span>
       )}
-      {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
+      {error && <span className="font-mono text-caption text-heat">{error}</span>}
     </label>
   )
 }

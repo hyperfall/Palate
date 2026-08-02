@@ -22,7 +22,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
       <header className="border-b-2 border-ink bg-pan px-8 py-7 text-milk">
         <div className="flex items-baseline justify-between gap-4">
           <p className="eyebrow m-0 text-flame">This week&rsquo;s service</p>
-          <p className="m-0 font-mono text-[0.75rem] tracking-[0.12em] text-milk/60 uppercase">
+          <p className="m-0 font-mono text-caption tracking-[0.12em] text-milk/60 uppercase">
             {count} {count === 1 ? 'dish' : 'dishes'}
           </p>
         </div>
@@ -44,7 +44,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
               className="grid grid-cols-[3.25rem_minmax(0,1fr)] items-start gap-4 border-b border-rule px-8 py-4 last:border-b-0"
             >
               <span
-                className={`pt-1 font-mono text-[0.8125rem] font-semibold tracking-[0.12em] uppercase ${
+                className={`pt-1 font-mono text-detail font-semibold tracking-[0.12em] uppercase ${
                   empty ? 'text-slate/40' : 'text-flame'
                 }`}
               >
@@ -52,14 +52,14 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
               </span>
 
               {empty ? (
-                <span className="pt-1 font-mono text-[0.8125rem] tracking-[0.08em] text-slate/40 uppercase">
+                <span className="pt-1 font-mono text-detail tracking-[0.08em] text-slate/40 uppercase">
                   — open —
                 </span>
               ) : (
                 <div className="grid gap-3.5">
                   {slot.meals.map((meal) => (
                     <div key={meal.meal}>
-                      <p className="m-0 font-mono text-[0.6875rem] font-medium tracking-[0.14em] text-slate uppercase">
+                      <p className="m-0 font-mono text-tag font-medium tracking-[0.14em] text-slate uppercase">
                         {MEAL_LABELS[meal.meal]}
                       </p>
                       <div className="mt-1.5 grid gap-2.5">
@@ -92,7 +92,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
                                 {dish.title}
                               </Link>
                               {dish.servings != null && (
-                                <span className="ml-2 font-mono text-[0.625rem] tracking-[0.1em] text-slate uppercase">
+                                <span className="ml-2 font-mono text-micro tracking-[0.1em] text-slate uppercase">
                                   serves {dish.servings}
                                 </span>
                               )}
@@ -112,7 +112,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
       {/* Foot — the loop home */}
       <footer className="mt-auto flex items-center justify-between gap-4 border-t-2 border-ink bg-wash px-8 py-4">
         <span className="font-display text-[1.375rem] leading-none text-ink">{SITE.name}</span>
-        <span className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase">
+        <span className="font-mono text-caption tracking-[0.1em] text-slate uppercase">
           Plan your week — cook first
         </span>
       </footer>

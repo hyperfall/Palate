@@ -443,7 +443,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
               <section id="notes" className="mt-14 max-w-[70ch] scroll-mt-20 border-t border-rule pt-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4">
                   <p className="eyebrow m-0">Notes, if you feel like it</p>
-                  <p className="m-0 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                  <p className="m-0 font-mono text-tag tracking-[0.08em] text-slate uppercase">
                     {readingTime(storyParagraphs.join(' '))}
                   </p>
                 </div>
@@ -451,7 +451,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                     a single block by the flattener's whitespace collapse. */}
                 <div className="mt-3 grid gap-3.5">
                   {storyParagraphs.map((para, i) => (
-                    <p key={i} className="m-0 text-[1.0625rem] leading-relaxed text-slate">
+                    <p key={i} className="m-0 text-read leading-relaxed text-slate">
                       {para}
                     </p>
                   ))}
@@ -470,7 +470,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 </h2>
                 <Link
                   href={cuisine ? `/cuisine/${cuisine.slug}` : '/recipes'}
-                  className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+                  className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
                 >
                   See the station →
                 </Link>

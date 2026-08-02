@@ -24,16 +24,16 @@ function CreatorChip({ author }: { author: Author }) {
         // eslint-disable-next-line @next/next/no-img-element -- small avatar
         <img src={avatar.url} alt="" className="h-9 w-9 shrink-0 rounded-full border border-rule object-cover" />
       ) : (
-        <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rule bg-wash font-display text-[0.9375rem] text-ink">
+        <span aria-hidden="true" className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rule bg-wash font-display text-note text-ink">
           {author.name?.[0]?.toUpperCase() ?? '?'}
         </span>
       )}
       <span className="min-w-0">
-        <span className="block truncate text-[0.9375rem] font-semibold text-ink group-hover:text-flame">
+        <span className="block truncate text-note font-semibold text-ink group-hover:text-flame">
           {author.name}
         </span>
         {author.handle && (
-          <span className="block font-mono text-[0.6875rem] text-slate">@{author.handle}</span>
+          <span className="block font-mono text-tag text-slate">@{author.handle}</span>
         )}
       </span>
     </Link>

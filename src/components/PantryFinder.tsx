@@ -157,7 +157,7 @@ export function PantryFinder({
           </span>
         ))}
         {initialHave.length === 0 && (
-          <span className="text-[0.9375rem] text-slate/70">Add what’s in your kitchen…</span>
+          <span className="text-note text-slate/70">Add what’s in your kitchen…</span>
         )}
       </div>
 
@@ -185,7 +185,7 @@ export function PantryFinder({
             className="w-full rounded border border-rule bg-transparent px-3 py-2 font-body text-[1rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
           />
           {noMatch && (
-            <p role="status" className="mt-1.5 m-0 font-mono text-[0.75rem] text-slate">
+            <p role="status" className="mt-1.5 m-0 font-mono text-caption text-slate">
               Nothing in the pantry called “{noMatch}” — try a simpler word, like the
               ingredient on its own.
             </p>
@@ -205,7 +205,7 @@ export function PantryFinder({
                       e.preventDefault()
                       void add(s)
                     }}
-                    className="w-full cursor-pointer rounded p-2 text-left font-mono text-[0.8125rem] text-ink hover:bg-wash"
+                    className="w-full cursor-pointer rounded p-2 text-left font-mono text-detail text-ink hover:bg-wash"
                   >
                     {s.name}
                   </button>

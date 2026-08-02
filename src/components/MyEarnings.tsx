@@ -37,7 +37,7 @@ export function MyEarnings() {
     <section className="mb-10 max-w-[52rem]">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <p className="eyebrow m-0">Estimated earnings</p>
-        <p className="m-0 font-mono text-[0.75rem] text-slate">
+        <p className="m-0 font-mono text-caption text-slate">
           your share · paid as the partner program launches
         </p>
       </div>
@@ -49,8 +49,8 @@ export function MyEarnings() {
             key={r.slug}
             className="flex items-center justify-between gap-4 border-b border-rule py-2.5"
           >
-            <span className="min-w-0 truncate font-body text-[0.9375rem] text-ink">{r.title}</span>
-            <span className="shrink-0 font-mono text-[0.75rem] text-slate tabular-nums">
+            <span className="min-w-0 truncate font-body text-note text-ink">{r.title}</span>
+            <span className="shrink-0 font-mono text-caption text-slate tabular-nums">
               {r.impressions.toLocaleString()} imp · {r.clicks} clk ·{' '}
               <span className="text-ink">{usd(r.earningsCents)}</span>
             </span>

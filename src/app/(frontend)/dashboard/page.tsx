@@ -163,20 +163,20 @@ export default async function DashboardPage() {
 
       {cooked.length > 0 && (
         <div className="mt-12 border-t border-rule pt-8">
-          <h2 className="m-0 text-[1.25rem]">You cooked</h2>
+          <h2 className="m-0 text-title">You cooked</h2>
           <ul className="mt-5 grid list-none gap-0 p-0">
             {cooked.map((c, i) => (
               <li key={`${c.slug}-${c.at}-${i}`} className="border-b border-rule py-3 last:border-b-0">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <Link href={`/recipes/${c.slug}`} className="text-[1.0625rem] text-ink no-underline hover:text-flame">
+                  <Link href={`/recipes/${c.slug}`} className="text-read text-ink no-underline hover:text-flame">
                     {c.title}
                   </Link>
-                  <span className="font-mono text-[0.75rem] tracking-[0.06em] text-slate">
+                  <span className="font-mono text-caption tracking-[0.06em] text-slate">
                     {new Date(c.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
                 {/* Their own note back to them — never leaves this page. */}
-                {c.note && <p className="mt-1 m-0 text-[0.875rem] leading-snug text-slate">“{c.note}”</p>}
+                {c.note && <p className="mt-1 m-0 text-eyebrow leading-snug text-slate">“{c.note}”</p>}
               </li>
             ))}
           </ul>
@@ -186,10 +186,10 @@ export default async function DashboardPage() {
       {recent.length > 0 && (
         <div className="mt-12 border-t border-rule pt-8">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="m-0 text-[1.25rem]">Recently saved</h2>
+            <h2 className="m-0 text-title">Recently saved</h2>
             <Link
               href="/collections"
-              className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+              className="font-mono text-caption tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
             >
               All shelves →
             </Link>
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
                 ) : (
                   <div aria-hidden="true" className="aspect-[4/3] w-full bg-wash" />
                 )}
-                <p className="m-0 p-3 text-[0.9375rem] leading-snug font-semibold text-ink group-hover:text-flame">
+                <p className="m-0 p-3 text-note leading-snug font-semibold text-ink group-hover:text-flame">
                   {r.title}
                 </p>
               </Link>
@@ -254,7 +254,7 @@ function OverviewCard({ href, label, value, hint }: { href: string; label: strin
       <span className="truncate font-display text-[1.75rem] leading-none text-ink group-hover:text-flame">
         {value}
       </span>
-      <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-slate">{hint}</span>
+      <span className="font-mono text-tag tracking-[0.06em] text-slate">{hint}</span>
     </Link>
   )
 }

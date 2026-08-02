@@ -92,7 +92,7 @@ export default async function CatalogPage({
             Filter by taste, not just by ingredient.
           </h1>
         </div>
-        <p className="m-0 max-w-[44ch] text-[0.9375rem] leading-snug text-slate max-sm:hidden">
+        <p className="m-0 max-w-[44ch] text-note leading-snug text-slate max-sm:hidden">
           Every recipe is measured on four axes. Pick the band you actually want tonight — from
           “no heat at all” to “nothing short of fiery”.
         </p>
@@ -122,7 +122,7 @@ export default async function CatalogPage({
                   user-journey agent looked for the other six and found no hint
                   that scrolling was the answer. */}
               {totalDocs > recipes.length && (
-                <span className="ml-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                <span className="ml-2 font-mono text-tag tracking-[0.08em] text-slate uppercase">
                   showing {recipes.length} — more load as you scroll
                 </span>
               )}
@@ -152,7 +152,7 @@ export default async function CatalogPage({
                 <div className="mt-4">
                   <Link
                     href="/recipes"
-                    className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+                    className="font-mono text-caption tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
                   >
                     Clear everything
                   </Link>

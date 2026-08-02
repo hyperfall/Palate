@@ -221,7 +221,7 @@ export function NavSearch() {
   const sectionLabel = (text: string) => (
     <li
       aria-hidden="true"
-      className="px-2 pt-2.5 pb-1 font-mono text-[0.8125rem] font-semibold tracking-[0.16em] text-slate uppercase first:pt-1"
+      className="px-2 pt-2.5 pb-1 font-mono text-detail font-semibold tracking-[0.16em] text-slate uppercase first:pt-1"
     >
       {text}
     </li>
@@ -256,10 +256,10 @@ export function NavSearch() {
           }}
           onBlur={() => setFocused(false)}
           onKeyDown={onKeyDown}
-          className="w-full rounded border border-milk/40 bg-transparent py-2 pr-9 pl-9 font-mono text-[0.8125rem] text-milk placeholder:text-milk/75 focus:border-flame focus:outline-none"
+          className="w-full rounded border border-milk/40 bg-transparent py-2 pr-9 pl-9 font-mono text-detail text-milk placeholder:text-milk/75 focus:border-flame focus:outline-none"
         />
         {!focused && !query && (
-          <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-milk/25 px-1.5 py-0.5 font-mono text-[0.8125rem] text-milk/55 sm:block">
+          <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded border border-milk/25 px-1.5 py-0.5 font-mono text-detail text-milk/55 sm:block">
             /
           </kbd>
         )}
@@ -290,7 +290,7 @@ export function NavSearch() {
                         inputRef.current?.focus()
                       }}
                     >
-                      <span className="truncate font-mono text-[0.8125rem] text-ink">↻ {term}</span>
+                      <span className="truncate font-mono text-detail text-ink">↻ {term}</span>
                     </li>
                   ))}
                   <li className="px-2 pb-1">
@@ -303,7 +303,7 @@ export function NavSearch() {
                           localStorage.removeItem(RECENTS_KEY)
                         } catch {}
                       }}
-                      className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase hover:underline"
+                      className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.12em] text-slate uppercase hover:underline"
                     >
                       Clear recent
                     </button>
@@ -314,7 +314,7 @@ export function NavSearch() {
               {QUICK_LINKS.map((link) => (
                 <li
                   key={link.href}
-                  className="cursor-pointer rounded p-2 font-mono text-[0.8125rem] text-ink hover:bg-wash"
+                  className="cursor-pointer rounded p-2 font-mono text-detail text-ink hover:bg-wash"
                   onPointerDown={(e) => e.preventDefault()}
                   onClick={() => {
                     setOpen(false)
@@ -327,7 +327,7 @@ export function NavSearch() {
             </ul>
           ) : empty ? (
             <div className="p-3">
-              <p className="m-0 font-mono text-[0.8125rem] text-slate">
+              <p className="m-0 font-mono text-detail text-slate">
                 Nothing on the board matches “{q}”.
               </p>
               <button
@@ -336,7 +336,7 @@ export function NavSearch() {
                 onClick={() => {
                   go({ key: 'all', href: `/recipes?q=${encodeURIComponent(q)}`, query: q })
                 }}
-                className="mt-2 cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.12em] text-flame uppercase hover:underline"
+                className="mt-2 cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.12em] text-flame uppercase hover:underline"
               >
                 Search the whole board anyway →
               </button>
@@ -358,10 +358,10 @@ export function NavSearch() {
                       {cuisine.flag ?? '◈'}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate font-body text-[0.9375rem] font-medium">
+                      <span className="block truncate font-body text-note font-medium">
                         <Highlight text={cuisine.name} q={q} /> cuisine
                       </span>
-                      <span className="mt-0.5 block font-mono text-[0.8125rem] tracking-[0.06em] text-slate uppercase">
+                      <span className="mt-0.5 block font-mono text-detail tracking-[0.06em] text-slate uppercase">
                         {cuisine.count} recipes · hub page
                       </span>
                     </span>
@@ -378,14 +378,14 @@ export function NavSearch() {
                       href: `/ingredients/${ing.slug}`,
                     })}
                   >
-                    <span className="grid h-[33px] w-[44px] shrink-0 place-items-center rounded-sm bg-wash font-mono text-[0.9375rem] text-slate">
+                    <span className="grid h-[33px] w-[44px] shrink-0 place-items-center rounded-sm bg-wash font-mono text-note text-slate">
                       ◍
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate font-body text-[0.9375rem] font-medium">
+                      <span className="block truncate font-body text-note font-medium">
                         <Highlight text={ing.name} q={q} />
                       </span>
-                      <span className="mt-0.5 block font-mono text-[0.8125rem] tracking-[0.06em] text-slate uppercase">
+                      <span className="mt-0.5 block font-mono text-detail tracking-[0.06em] text-slate uppercase">
                         {ing.count} {ing.count === 1 ? 'recipe' : 'recipes'} · what to cook with it
                       </span>
                     </span>
@@ -414,10 +414,10 @@ export function NavSearch() {
                       <span aria-hidden="true" className="h-[33px] w-[44px] shrink-0 rounded-sm bg-wash" />
                     )}
                     <span className="min-w-0">
-                      <span className="block truncate font-body text-[0.9375rem] font-medium">
+                      <span className="block truncate font-body text-note font-medium">
                         <Highlight text={recipe.title} q={q} />
                       </span>
-                      <span className="mt-0.5 block truncate font-mono text-[0.8125rem] tracking-[0.06em] text-slate uppercase">
+                      <span className="mt-0.5 block truncate font-mono text-detail tracking-[0.06em] text-slate uppercase">
                         {recipe.facts.join(' · ')}
                       </span>
                     </span>
@@ -431,10 +431,10 @@ export function NavSearch() {
                     className={rowClass(`p-${page.href}`)}
                     {...rowProps(`p-${page.href}`, { key: `p-${page.href}`, href: page.href })}
                   >
-                    <span className="grid h-[33px] w-[44px] shrink-0 place-items-center rounded-sm bg-wash font-mono text-[0.8125rem]">
+                    <span className="grid h-[33px] w-[44px] shrink-0 place-items-center rounded-sm bg-wash font-mono text-detail">
                       ↦
                     </span>
-                    <span className="font-body text-[0.9375rem] font-medium">
+                    <span className="font-body text-note font-medium">
                       <Highlight text={page.title} q={q} />
                     </span>
                   </li>
@@ -448,7 +448,7 @@ export function NavSearch() {
                     query: q,
                   })}
                 >
-                  <span className="font-mono text-[0.8125rem] tracking-[0.12em] text-flame uppercase">
+                  <span className="font-mono text-detail tracking-[0.12em] text-flame uppercase">
                     All results for “{q}” →
                   </span>
                 </li>
@@ -458,7 +458,7 @@ export function NavSearch() {
 
           <div
             aria-hidden="true"
-            className="mt-1 flex items-center gap-3 border-t border-rule px-2 pt-1.5 pb-0.5 font-mono text-[0.8125rem] tracking-[0.08em] text-slate"
+            className="mt-1 flex items-center gap-3 border-t border-rule px-2 pt-1.5 pb-0.5 font-mono text-detail tracking-[0.08em] text-slate"
           >
             <span>↑↓ move</span>
             <span>↵ open</span>

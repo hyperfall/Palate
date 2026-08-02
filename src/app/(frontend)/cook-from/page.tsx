@@ -38,7 +38,7 @@ function Band({ title, items, haveCount }: { title: string; items: Scored<Recipe
         {items.map((s) => (
           <div key={s.recipe.id}>
             <RecipeCard recipe={s.recipe} />
-            <div className="mt-2 grid gap-0.5 font-mono text-[0.75rem] text-slate">
+            <div className="mt-2 grid gap-0.5 font-mono text-caption text-slate">
               <p className="m-0 text-flame">
                 Uses {s.usedCount} of your {haveCount}
               </p>
@@ -117,7 +117,7 @@ export default async function CookFromPage({
 
           {guestBands ? (
             <>
-              <p className="mt-6 font-mono text-[0.8125rem] text-slate">
+              <p className="mt-6 font-mono text-detail text-slate">
                 {guestTotal === 0
                   ? 'Nothing matches yet — add another ingredient.'
                   : `${guestTotal} ${guestTotal === 1 ? 'recipe' : 'recipes'} from ${guestHave.length} ${guestHave.length === 1 ? 'ingredient' : 'ingredients'}.`}
@@ -135,7 +135,7 @@ export default async function CookFromPage({
             </p>
           )}
 
-          <p className="mt-12 border-t border-rule pt-6 text-[0.9375rem] text-slate">
+          <p className="mt-12 border-t border-rule pt-6 text-note text-slate">
             This pantry lasts as long as the page.{' '}
             <Link href="/account" className="text-flame underline underline-offset-4">
               Sign in

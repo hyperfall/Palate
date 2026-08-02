@@ -143,7 +143,7 @@ function Tab({ item, active }: { item: NavItem; active: boolean }) {
       }`}
     >
       {item.icon}
-      <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
+      <span className="font-mono text-micro font-medium tracking-[0.06em] uppercase">
         {item.label}
       </span>
     </Link>
@@ -218,7 +218,7 @@ export function MobileNav() {
           >
             <div className="mx-auto mt-2.5 h-1 w-9 rounded-full bg-rule" />
             <div className="flex items-center justify-between px-5 pt-2 pb-1">
-              <span className="font-display text-[1.25rem]">Palate</span>
+              <span className="font-display text-title">Palate</span>
               <button
                 type="button"
                 aria-label="Close"
@@ -247,7 +247,7 @@ export function MobileNav() {
                         }`}
                       >
                         <span className={active ? 'text-flame' : 'text-slate'}>{item.icon}</span>
-                        <span className="text-[1.0625rem] font-medium">{item.label}</span>
+                        <span className="text-read font-medium">{item.label}</span>
                       </Link>
                     </li>
                   )
@@ -276,7 +276,7 @@ export function MobileNav() {
                         {session.label ? `@${session.label}` : 'Your account'}
                       </span>
                       {session.email && (
-                        <span className="block truncate font-mono text-[0.75rem] text-slate">{session.email}</span>
+                        <span className="block truncate font-mono text-caption text-slate">{session.email}</span>
                       )}
                     </span>
                   </div>
@@ -318,7 +318,7 @@ export function MobileNav() {
                   </Link>
                   <Link
                     href="/account"
-                    className="rounded border border-rule px-4 py-2.5 text-center font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-ink uppercase no-underline transition-colors hover:border-ink"
+                    className="rounded border border-rule px-4 py-2.5 text-center font-mono text-detail font-medium tracking-[0.1em] text-ink uppercase no-underline transition-colors hover:border-ink"
                   >
                     Sign in
                   </Link>
@@ -328,7 +328,7 @@ export function MobileNav() {
 
             {/* Appearance — theme control folded in, like the reference. */}
             <div className="flex items-center justify-between border-t border-rule px-5 py-3.5">
-              <span className="font-body text-[0.9375rem] text-slate">Appearance</span>
+              <span className="font-body text-note text-slate">Appearance</span>
               <ThemeToggle colorClass="border-ink/25 text-ink" />
             </div>
           </div>
@@ -363,7 +363,7 @@ export function MobileNav() {
               >
                 <path d="M6 15l6-6 6 6" />
               </svg>
-              <span className="font-mono text-[0.625rem] font-medium tracking-[0.06em] uppercase">
+              <span className="font-mono text-micro font-medium tracking-[0.06em] uppercase">
                 Menu
               </span>
             </button>

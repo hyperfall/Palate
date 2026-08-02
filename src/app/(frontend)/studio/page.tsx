@@ -32,7 +32,7 @@ export default async function StudioPage() {
             agents couldn't find the creator's cut anywhere but the ADVERTISER
             page — the one page a deciding creator has no reason to open. Plain
             prose, deliberately not the numbered strip this page used to have. */}
-        <p className="mt-3 text-[0.9375rem] leading-relaxed text-slate">
+        <p className="mt-3 text-note leading-relaxed text-slate">
           The deal: a person reads every submission, usually within a few days — if it isn’t right
           for the board, you’ll hear why, and you can send another. Your recipe stays yours, your
           links stay on it, and {DEFAULT_CREATOR_REV_SHARE}% of any partner revenue it earns is

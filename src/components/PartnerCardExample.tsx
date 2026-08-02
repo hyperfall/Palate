@@ -27,7 +27,7 @@ export function PartnerCardExample({
       thumb={
         <div
           aria-hidden="true"
-          className="grid h-16 w-16 shrink-0 place-items-center rounded-sm font-mono text-[1.25rem] font-semibold text-paper"
+          className="grid h-16 w-16 shrink-0 place-items-center rounded-sm font-mono text-title font-semibold text-paper"
           style={{ background: swatch }}
         >
           {brand.slice(0, 1)}

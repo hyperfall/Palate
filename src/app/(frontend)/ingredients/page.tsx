@@ -81,14 +81,14 @@ export default async function IngredientsPage() {
                   {has ? (
                     <a
                       href={`#letter-${letter}`}
-                      className="grid h-10 w-10 place-items-center rounded font-mono text-[0.8125rem] text-ink no-underline transition-colors hover:bg-flame hover:text-paper sm:h-7 sm:w-7"
+                      className="grid h-10 w-10 place-items-center rounded font-mono text-detail text-ink no-underline transition-colors hover:bg-flame hover:text-paper sm:h-7 sm:w-7"
                     >
                       {letter}
                     </a>
                   ) : (
                     <span
                       aria-hidden="true"
-                      className="grid h-10 w-10 place-items-center font-mono text-[0.8125rem] text-slate/30 sm:h-7 sm:w-7"
+                      className="grid h-10 w-10 place-items-center font-mono text-detail text-slate/30 sm:h-7 sm:w-7"
                     >
                       {letter}
                     </span>

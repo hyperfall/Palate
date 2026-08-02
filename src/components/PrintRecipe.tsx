@@ -20,7 +20,7 @@ export function PrintRecipe() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.12em] text-milk/70 uppercase underline-offset-4 hover:text-milk hover:underline"
+      className="cursor-pointer border-none bg-transparent p-0 font-mono text-caption tracking-[0.12em] text-milk/70 uppercase underline-offset-4 hover:text-milk hover:underline"
     >
       Print
     </button>

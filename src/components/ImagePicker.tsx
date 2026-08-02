@@ -187,7 +187,7 @@ export function ImagePicker({
         <button
           type="button"
           onClick={reset}
-          className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.08em] text-slate uppercase underline-offset-4 hover:underline"
+          className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.08em] text-slate uppercase underline-offset-4 hover:underline"
         >
           Change
         </button>
@@ -252,7 +252,7 @@ export function ImagePicker({
         {quality && quality.level !== 'ok' && (
           <p
             role={quality.level === 'block' ? 'alert' : 'status'}
-            className={`m-0 text-[0.8125rem] leading-snug ${
+            className={`m-0 text-detail leading-snug ${
               quality.level === 'block' ? 'text-heat' : 'text-slate'
             }`}
           >
@@ -288,7 +288,7 @@ export function ImagePicker({
           <button
             type="button"
             onClick={reset}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.08em] text-slate uppercase underline-offset-4 hover:underline"
+            className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.08em] text-slate uppercase underline-offset-4 hover:underline"
           >
             Cancel
           </button>
@@ -317,10 +317,10 @@ export function ImagePicker({
       style={{ minHeight: compact ? '5.5rem' : '8rem' }}
     >
       <span className="grid gap-1">
-        <span className="font-body text-[0.9375rem] font-semibold text-ink">
+        <span className="font-body text-note font-semibold text-ink">
           Drop a photo here
         </span>
-        <span className="font-mono text-[0.75rem] tracking-[0.06em] text-slate uppercase">
+        <span className="font-mono text-caption tracking-[0.06em] text-slate uppercase">
           browse · drag · paste (Ctrl+V)
         </span>
       </span>

@@ -30,7 +30,7 @@ export function Select({
       value={value}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full cursor-pointer appearance-none rounded border border-rule bg-transparent py-2 pr-9 pl-3 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none ${className}`}
+      className={`w-full cursor-pointer appearance-none rounded border border-rule bg-transparent py-2 pr-9 pl-3 font-mono text-eyebrow text-ink focus:border-flame focus:outline-none ${className}`}
       style={{
         backgroundImage: CHEVRON,
         backgroundRepeat: 'no-repeat',
@@ -134,10 +134,10 @@ export function Stepper({
               onChange(clamp(value - step))
             }
           }}
-          className={`bg-transparent text-center font-mono text-[0.9375rem] font-semibold tabular-nums text-ink focus:outline-none ${duration ? 'w-[4.5rem]' : 'w-10'}`}
+          className={`bg-transparent text-center font-mono text-note font-semibold tabular-nums text-ink focus:outline-none ${duration ? 'w-[4.5rem]' : 'w-10'}`}
         />
         {suffix && !duration ? (
-          <span className="-ml-0.5 text-[0.75rem] font-normal text-slate">{suffix}</span>
+          <span className="-ml-0.5 text-caption font-normal text-slate">{suffix}</span>
         ) : null}
       </span>
       <button

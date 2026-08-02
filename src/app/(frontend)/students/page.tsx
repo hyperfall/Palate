@@ -141,7 +141,7 @@ export default async function StudentsPage({
             </Link>
           ))}
         </div>
-        <p className="mt-4 max-w-[52ch] text-[0.9375rem] text-slate">{mode.blurb}</p>
+        <p className="mt-4 max-w-[52ch] text-note text-slate">{mode.blurb}</p>
 
         {picks.length === 0 ? (
           <p className="mt-6 max-w-[46ch] text-slate">
@@ -175,7 +175,7 @@ export default async function StudentsPage({
             dish without a figure is missing one rather than being free.
         */}
         {picks.length > 0 && (
-          <p className="mt-5 max-w-[60ch] text-[0.875rem] text-slate">
+          <p className="mt-5 max-w-[60ch] text-eyebrow text-slate">
             Plate prices are estimates for a typical UK shop, not a quote — what
             you pay depends on where you buy and what you already have. Some
             dishes carry no estimate yet; those show no price rather than a
@@ -190,7 +190,7 @@ export default async function StudentsPage({
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {SHORTCUTS.map((s) => (
             <Link key={s.label} href={s.href} className="ticket-card block p-5 no-underline">
-              <span className="block font-mono text-[0.9375rem] font-semibold text-ink">
+              <span className="block font-mono text-note font-semibold text-ink">
                 {s.label}
               </span>
               <span className="eyebrow mt-1 block">{s.note}</span>
@@ -202,18 +202,18 @@ export default async function StudentsPage({
       {/* Leftovers that don't feel sad. */}
       <section className="mt-14 border-t-2 border-ink pt-6">
         <h2 className="text-[1.5rem]">Leftovers that don’t feel sad</h2>
-        <p className="mt-2 max-w-[52ch] text-[0.9375rem] text-slate">
+        <p className="mt-2 max-w-[52ch] text-note text-slate">
           Batch cooking works when the second meal is intentional, not a repeat.
         </p>
         <div className="mt-5 grid gap-x-16 gap-y-6 md:grid-cols-3">
           {LEFTOVER_CHAINS.map((chain, i) => (
             <div key={chain.first} className="border-t border-rule pt-4">
               <div className="leader">
-                <span className="font-mono text-[0.875rem] font-semibold">{chain.first}</span>
+                <span className="font-mono text-eyebrow font-semibold">{chain.first}</span>
                 <span className="leader__dots" aria-hidden="true" />
                 <span className="datum text-flame">{String(i + 1).padStart(2, '0')}</span>
               </div>
-              <p className="mt-2 text-[0.9375rem] leading-relaxed text-slate">{chain.then}</p>
+              <p className="mt-2 text-note leading-relaxed text-slate">{chain.then}</p>
             </div>
           ))}
         </div>

@@ -130,7 +130,7 @@ export function AccountPanel() {
     return (
       <div className="ticket-card is-static max-w-[36rem] p-6">
         <p className="eyebrow m-0 text-flame">Not connected yet</p>
-        <p className="mt-2 text-[0.9375rem] leading-relaxed text-slate">
+        <p className="mt-2 text-note leading-relaxed text-slate">
           Accounts run on Supabase. Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
           <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to <code>.env</code>, run{' '}
           <code>supabase/schema.sql</code> in the SQL editor once, and restart the dev server.
@@ -161,7 +161,7 @@ export function AccountPanel() {
             <p className="eyebrow m-0">Signed in as</p>
             <h2 className="mt-0.5 text-[1.5rem]">{session.name ?? session.email}</h2>
             {session.username && (
-              <p className="m-0 font-mono text-[0.8125rem] text-slate">@{session.username}</p>
+              <p className="m-0 font-mono text-detail text-slate">@{session.username}</p>
             )}
           </div>
         </div>
@@ -257,8 +257,8 @@ export function AccountPanel() {
 
         {!session.creator && (
           <div className="mt-4 grid gap-1.5 rounded border border-flame/40 bg-flame/5 p-3">
-            <p className="m-0 text-[0.875rem] font-semibold text-ink">Cooking things worth sharing?</p>
-            <p className="m-0 text-[0.8125rem] leading-snug text-slate">
+            <p className="m-0 text-eyebrow font-semibold text-ink">Cooking things worth sharing?</p>
+            <p className="m-0 text-detail leading-snug text-slate">
               Creator accounts publish recipes under their own byline.
             </p>
             <button
@@ -280,7 +280,7 @@ export function AccountPanel() {
           </Link>
           <Link
             href="/feed"
-            className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+            className="font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
           >
             Your feed →
           </Link>
@@ -299,7 +299,7 @@ export function AccountPanel() {
             setSession(null)
             setSavedCount(null)
           }}
-          className="mt-6 w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
+          className="mt-6 w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-caption tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
         >
           Sign out
         </button>
@@ -387,7 +387,7 @@ export function AccountPanel() {
         <button
           type="button"
           onClick={() => setShowPassword((v) => !v)}
-          className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase hover:text-ink"
+          className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.1em] text-slate uppercase hover:text-ink"
         >
           {showPassword ? 'Hide' : 'Show'}
         </button>
@@ -399,7 +399,7 @@ export function AccountPanel() {
         autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
+        className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink focus:border-flame focus:outline-none"
       />
       {needsStrong &&
         (password ? (
@@ -422,14 +422,14 @@ export function AccountPanel() {
             </div>
             <span
               role="status"
-              className={`font-mono text-[0.75rem] ${strength.acceptable ? 'text-slate' : 'text-heat'}`}
+              className={`font-mono text-caption ${strength.acceptable ? 'text-slate' : 'text-heat'}`}
             >
               {strength.label}
               {strength.suggestions[0] ? ` — ${strength.suggestions[0]}` : ''}
             </span>
           </div>
         ) : (
-          <span className="text-[0.8125rem] text-slate">At least 8 characters — longer is stronger.</span>
+          <span className="text-detail text-slate">At least 8 characters — longer is stronger.</span>
         ))}
     </label>
   )
@@ -467,7 +467,7 @@ export function AccountPanel() {
               placeholder="What should we call you at the pass?"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+              className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
             />
           </label>
 
@@ -494,7 +494,7 @@ export function AccountPanel() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-[0.875rem] text-ink focus:border-flame focus:outline-none"
+              className="rounded border border-rule bg-transparent px-3 py-2 font-mono text-eyebrow text-ink focus:border-flame focus:outline-none"
             />
           </label>
         )}
@@ -503,7 +503,7 @@ export function AccountPanel() {
 
         {notice && (
           <p
-            className={`m-0 text-[0.875rem] leading-snug ${
+            className={`m-0 text-eyebrow leading-snug ${
               notice.kind === 'error' ? 'text-heat' : 'text-richness'
             }`}
             role={notice.kind === 'error' ? 'alert' : 'status'}
@@ -531,7 +531,7 @@ export function AccountPanel() {
               setMode('forgot')
               setNotice(null)
             }}
-            className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:underline"
+            className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.1em] text-slate uppercase underline-offset-4 hover:underline"
           >
             Forgotten password?
           </button>
@@ -543,7 +543,7 @@ export function AccountPanel() {
               setMode('sign-in')
               setNotice(null)
             }}
-            className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:underline"
+            className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.1em] text-slate uppercase underline-offset-4 hover:underline"
           >
             ← Back to sign in
           </button>

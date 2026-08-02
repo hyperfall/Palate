@@ -27,8 +27,8 @@ export default function BrowseIndex() {
         {COLLECTIONS.map((c) => (
           <Link key={c.slug} href={`/browse/${c.slug}`} className="ticket-card block p-6 no-underline">
             <h2 className="text-[1.375rem] text-ink">{c.title}</h2>
-            <p className="mt-2 text-[0.9375rem] leading-snug text-slate">{c.blurb}</p>
-            <span className="mt-4 inline-block font-mono text-[0.75rem] tracking-[0.1em] text-flame uppercase">
+            <p className="mt-2 text-note leading-snug text-slate">{c.blurb}</p>
+            <span className="mt-4 inline-block font-mono text-caption tracking-[0.1em] text-flame uppercase">
               Browse →
             </span>
           </Link>

@@ -180,7 +180,7 @@ export default async function RankingPage({ params }: Props) {
             </Link>
             <Link
               href="/recipes"
-              className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+              className="font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
             >
               Browse every recipe
             </Link>
@@ -203,13 +203,13 @@ export default async function RankingPage({ params }: Props) {
                   href={`/recipes/${entry.recipe.slug}`}
                   className="group flex items-baseline gap-4 py-3 no-underline"
                 >
-                  <span className="w-8 shrink-0 font-display text-[1.25rem] leading-none text-slate/60 tabular-nums group-hover:text-flame">
+                  <span className="w-8 shrink-0 font-display text-title leading-none text-slate/60 tabular-nums group-hover:text-flame">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-[1.0625rem] text-ink group-hover:text-flame">
+                  <span className="min-w-0 flex-1 truncate text-read text-ink group-hover:text-flame">
                     {entry.recipe.title}
                   </span>
-                  <span className="shrink-0 font-mono text-[0.8125rem] tabular-nums text-slate">
+                  <span className="shrink-0 font-mono text-detail tabular-nums text-slate">
                     {entry.votes} {entry.votes === 1 ? 'vote' : 'votes'} · {entry.average.toFixed(1)}★
                   </span>
                 </Link>
@@ -299,13 +299,13 @@ export default async function RankingPage({ params }: Props) {
                       href={`/recipes/${entry.recipe.slug}`}
                       className="group flex items-baseline gap-4 py-3 no-underline"
                     >
-                      <span className="w-8 shrink-0 font-display text-[1.25rem] leading-none text-slate/60 tabular-nums group-hover:text-flame">
+                      <span className="w-8 shrink-0 font-display text-title leading-none text-slate/60 tabular-nums group-hover:text-flame">
                         {String(i + 2).padStart(2, '0')}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-[1.0625rem] text-ink group-hover:text-flame">
+                      <span className="min-w-0 flex-1 truncate text-read text-ink group-hover:text-flame">
                         {entry.recipe.title}
                       </span>
-                      <span className="shrink-0 font-mono text-[0.8125rem] tabular-nums text-slate">
+                      <span className="shrink-0 font-mono text-detail tabular-nums text-slate">
                         {entry.votes} {entry.votes === 1 ? 'vote' : 'votes'} ·{' '}
                         {entry.average.toFixed(1)}★
                       </span>
@@ -318,7 +318,7 @@ export default async function RankingPage({ params }: Props) {
         </>
       )}
 
-      <p className="mt-12 max-w-[60ch] border-t border-rule pt-5 text-[0.875rem] text-slate">
+      <p className="mt-12 max-w-[60ch] border-t border-rule pt-5 text-eyebrow text-slate">
         Periods run in UTC so a shared link shows the same board to everyone. Votes count toward the
         period they were cast in, not the day a recipe was published.
       </p>

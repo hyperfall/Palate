@@ -61,7 +61,7 @@ export default function PartnersPage() {
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.1]">
           Reach cooks the moment they decide.
         </h1>
-        <p className="mt-3 text-[1.0625rem] leading-relaxed text-slate">
+        <p className="mt-3 text-read leading-relaxed text-slate">
           Palate readers arrive with intent — they’re about to cook. One tasteful, labelled partner
           card per recipe, matched to the dish and the reader’s country.
         </p>
@@ -72,7 +72,7 @@ export default function PartnersPage() {
           <li key={step.n} className="ticket-card p-5">
             <p className="datum m-0 text-flame">{step.n}</p>
             <p className="mt-2 font-display text-[1.1875rem] leading-tight text-ink">{step.t}</p>
-            <p className="mt-1.5 text-[0.9375rem] leading-snug text-slate">{step.d}</p>
+            <p className="mt-1.5 text-note leading-snug text-slate">{step.d}</p>
           </li>
         ))}
       </ol>
@@ -86,7 +86,7 @@ export default function PartnersPage() {
       <section className="mt-14 border-t-2 border-ink pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
           <h2 className="font-display text-[1.375rem]">This is the placement</h2>
-          <p className="m-0 max-w-[46ch] text-[0.9375rem] text-slate">
+          <p className="m-0 max-w-[46ch] text-note text-slate">
             One card, in the margin beside the method — where a reader is already
             deciding what to buy. Supply several images and we rotate them evenly.
           </p>
@@ -121,9 +121,9 @@ export default function PartnersPage() {
 
         <aside className="ticket-card p-5 lg:sticky lg:top-24">
           <p className="eyebrow m-0">Good to know</p>
-          <ul className="mt-3 grid list-none gap-3 p-0 text-[0.9375rem] leading-snug text-slate">
+          <ul className="mt-3 grid list-none gap-3 p-0 text-note leading-snug text-slate">
             <li>Every partner card is labelled “Partner”. We never take money to change a recipe.</li>
-            <li>Links carry <code className="font-mono text-[0.8125rem]">rel=&quot;sponsored nofollow&quot;</code>.</li>
+            <li>Links carry <code className="font-mono text-detail">rel=&quot;sponsored nofollow&quot;</code>.</li>
             <li>
               We share <span className="font-semibold text-ink">{DEFAULT_CREATOR_REV_SHARE}%</span> of a
               recipe’s partner revenue with the creator who wrote it.

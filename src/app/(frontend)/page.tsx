@@ -57,7 +57,7 @@ function Ticker({ kitchenCount }: { kitchenCount: number }) {
       {items.map((item) => (
         <span
           key={item}
-          className="inline-flex items-baseline font-mono text-[0.8125rem] tracking-[0.14em] text-milk/70 uppercase"
+          className="inline-flex items-baseline font-mono text-detail tracking-[0.14em] text-milk/70 uppercase"
         >
           <span className="px-7">{item}</span>
           <span aria-hidden="true" className="text-flame">✳</span>
@@ -99,7 +99,7 @@ export default async function HomePage() {
       <section className="pass-surface bg-pan text-milk">
         <div className="shell grid gap-12 py-12 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-20 lg:py-16 xl:grid-cols-[1fr_0.9fr_14.5rem] 2xl:gap-24">
           <div>
-            <p className="m-0 font-mono text-[0.8125rem] font-semibold tracking-[0.16em] text-flame-text uppercase">
+            <p className="m-0 font-mono text-detail font-semibold tracking-[0.16em] text-flame-text uppercase">
               Tonight’s service
             </p>
             <h1 className="mt-4 text-[clamp(2.5rem,4.6vw,4.5rem)] text-milk">
@@ -115,7 +115,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/cuisines"
-                className="font-mono text-[0.8125rem] font-medium tracking-[0.12em] text-milk uppercase underline underline-offset-4 hover:text-flame"
+                className="font-mono text-detail font-medium tracking-[0.12em] text-milk uppercase underline underline-offset-4 hover:text-flame"
               >
                 Explore cuisines
               </Link>
@@ -134,7 +134,7 @@ export default async function HomePage() {
                 'radial-gradient(120% 85% at 12% -8%, color-mix(in oklab, var(--color-flame) 10%, transparent), transparent 55%), radial-gradient(100% 70% at 92% 112%, color-mix(in oklab, var(--color-flame) 6%, transparent), transparent 60%)',
             }}
           >
-            <p className="m-0 font-body text-[1.0625rem] font-semibold text-milk">
+            <p className="m-0 font-body text-read font-semibold text-milk">
               How do you want to eat tonight?
             </p>
 
@@ -146,13 +146,13 @@ export default async function HomePage() {
                 return (
                   <div key={axis} style={{ ['--gauge-hue' as string]: AXIS_COLOR[axis] }}>
                     <div className="flex items-baseline justify-between gap-4">
-                      <span className="font-body text-[0.9375rem] font-semibold text-milk">
+                      <span className="font-body text-note font-semibold text-milk">
                         {TASTE_AXIS_LABELS[axis].title}
-                        <span className="ml-2 font-mono text-[0.6875rem] font-medium tracking-[0.08em] text-milk/55 uppercase">
+                        <span className="ml-2 font-mono text-tag font-medium tracking-[0.08em] text-milk/55 uppercase">
                           {atMost ? '≤ at most' : '≥ at least'}
                         </span>
                       </span>
-                      <span className="font-body text-[0.8125rem] text-milk/80">
+                      <span className="font-body text-detail text-milk/80">
                         {TASTE_AXIS_LABELS[axis].scale[0]} → {TASTE_AXIS_LABELS[axis].scale[5]}
                       </span>
                     </div>
@@ -188,7 +188,7 @@ export default async function HomePage() {
               })}
             </div>
 
-            <p className="mt-6 font-body text-[0.875rem] leading-relaxed text-milk/85">
+            <p className="mt-6 font-body text-eyebrow leading-relaxed text-milk/85">
               Tap a level — flavours mean “at least this much”, effort means “at most”.
             </p>
           </div>
@@ -201,7 +201,7 @@ export default async function HomePage() {
           {/* min-w-0: without it this grid item's intrinsic width (three fixed
               tickets) overrides the column and drags the page wider on phones. */}
           <div className="min-w-0 lg:col-span-2 xl:col-span-1 xl:self-center">
-            <p className="m-0 font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-milk/75 uppercase">
+            <p className="m-0 font-mono text-detail font-medium tracking-[0.14em] text-milk/75 uppercase">
               Fresh off the pass
             </p>
             <div className="scroll-rail mt-3 flex snap-x gap-4 overflow-x-auto pb-2 xl:flex-col xl:gap-5 xl:overflow-visible xl:pb-0">
@@ -224,10 +224,10 @@ export default async function HomePage() {
                         className="aspect-[8/5] w-full rounded-[2px] object-cover"
                       />
                     )}
-                    <span className="mt-2 block truncate font-mono text-[0.8125rem] font-semibold tracking-[0.06em] text-ink uppercase group-hover:text-flame">
+                    <span className="mt-2 block truncate font-mono text-detail font-semibold tracking-[0.06em] text-ink uppercase group-hover:text-flame">
                       {recipe.title}
                     </span>
-                    <span className="block font-mono text-[0.8125rem] tracking-[0.08em] text-slate uppercase">
+                    <span className="block font-mono text-detail tracking-[0.08em] text-slate uppercase">
                       {formatMinutes(recipe.totalMinutes)} · serves {recipe.servings}
                     </span>
                   </Link>
@@ -246,7 +246,7 @@ export default async function HomePage() {
           <h2 className="text-[clamp(1.75rem,2.5vw,2.5rem)]">On the board</h2>
           <Link
             href="/recipes"
-            className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+            className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
           >
             All recipes →
           </Link>
@@ -271,7 +271,7 @@ export default async function HomePage() {
             <h2 className="text-[clamp(1.75rem,2.5vw,2.5rem)]">By cuisine</h2>
             <Link
               href="/cuisines"
-              className="font-mono text-[0.8125rem] font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+              className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
             >
               All cuisines →
             </Link>
@@ -327,11 +327,11 @@ export default async function HomePage() {
                     )}
                   </div>
                   <div className="flex items-baseline justify-between gap-3 p-4">
-                    <h3 className={`text-ink group-hover:underline ${lead ? 'text-[1.5rem]' : 'text-[1.25rem]'}`}>
+                    <h3 className={`text-ink group-hover:underline ${lead ? 'text-[1.5rem]' : 'text-title'}`}>
                       {cuisine.flagEmoji ? `${cuisine.flagEmoji} ` : ''}
                       {cuisine.name}
                     </h3>
-                    <span className="shrink-0 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-slate uppercase">
+                    <span className="shrink-0 font-mono text-detail font-medium tracking-[0.08em] text-slate uppercase">
                       {count} {count === 1 ? 'recipe' : 'recipes'}
                     </span>
                   </div>
@@ -370,7 +370,7 @@ export default async function HomePage() {
                 <span className="leader__dots" aria-hidden="true" />
                 <span className="datum text-flame">{String(index + 1).padStart(2, '0')}</span>
               </div>
-              <p className="mt-2 max-w-[38ch] text-[0.9375rem] leading-relaxed text-slate">
+              <p className="mt-2 max-w-[38ch] text-note leading-relaxed text-slate">
                 {item.body}
               </p>
             </div>

@@ -27,8 +27,8 @@ export function QuickPaste({
     <div className="rounded-lg border border-flame/40 bg-flame/5 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <h2 className="m-0 text-[1.25rem]">Paste your recipe. We’ll lay it out.</h2>
-          <p className="mt-1 max-w-[54ch] text-[0.9375rem] text-slate">
+          <h2 className="m-0 text-title">Paste your recipe. We’ll lay it out.</h2>
+          <p className="mt-1 max-w-[54ch] text-note text-slate">
             From your notes, a doc, a message to a friend — anything. You’ll check it before it
             fills the form.
           </p>
@@ -36,7 +36,7 @@ export function QuickPaste({
         <button
           type="button"
           onClick={onCancel}
-          className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+          className="font-mono text-tag tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
         >
           Type it out instead
         </button>
@@ -50,21 +50,21 @@ export function QuickPaste({
           autoFocus
           aria-label="Paste your recipe"
           placeholder={'Birria Tacos\nserves 2, 1 h 15\n\n1 tbsp sunflower oil\n1kg braising steak\n4 guajillo chillies\n\nBrown the steak all over, about 8 minutes.\nToast the chillies, then blend until smooth.'}
-          className="w-full resize-y rounded border border-rule bg-card px-3 py-2 font-mono text-[0.8125rem] leading-relaxed text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+          className="w-full resize-y rounded border border-rule bg-card px-3 py-2 font-mono text-detail leading-relaxed text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
         />
 
         <div className="rounded border border-rule bg-card p-4">
           {!parsed ? (
-            <p className="m-0 text-[0.9375rem] text-slate">
+            <p className="m-0 text-note text-slate">
               What we understand will appear here as you paste.
             </p>
           ) : (
             <>
               <p className="eyebrow m-0">What we understood</p>
-              <p className="mt-2 text-[1.0625rem] text-ink">
+              <p className="mt-2 text-read text-ink">
                 {parsed.title || <span className="text-slate">No title found — add one after</span>}
               </p>
-              <p className="mt-1 font-mono text-[0.75rem] text-slate">
+              <p className="mt-1 font-mono text-caption text-slate">
                 {[
                   parsed.servings ? `serves ${parsed.servings}` : null,
                   parsed.prepMinutes ? `prep ${parsed.prepMinutes} min` : null,
@@ -83,8 +83,8 @@ export function QuickPaste({
                       {row.item}
                     </li>
                   ) : (
-                    <li key={i} className="flex items-baseline gap-2 text-[0.875rem] text-ink">
-                      <span className="min-w-[3.5rem] shrink-0 font-mono text-[0.75rem] text-flame">
+                    <li key={i} className="flex items-baseline gap-2 text-eyebrow text-ink">
+                      <span className="min-w-[3.5rem] shrink-0 font-mono text-caption text-flame">
                         {[row.quantity, row.unit].filter(Boolean).join(' ') || '—'}
                       </span>
                       <span className="min-w-0 break-words">{row.item}</span>
@@ -92,7 +92,7 @@ export function QuickPaste({
                   ),
                 )}
                 {parsed.ingredientRows.length > 8 && (
-                  <li className="font-mono text-[0.75rem] text-slate">
+                  <li className="font-mono text-caption text-slate">
                     + {parsed.ingredientRows.length - 8} more
                   </li>
                 )}
@@ -107,7 +107,7 @@ export function QuickPaste({
                 Looks right — fill the form
               </button>
               {!usable && (
-                <p className="mt-2 font-mono text-[0.6875rem] tracking-[0.06em] text-slate uppercase">
+                <p className="mt-2 font-mono text-tag tracking-[0.06em] text-slate uppercase">
                   Paste a few ingredients or steps to continue
                 </p>
               )}

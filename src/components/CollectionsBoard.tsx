@@ -79,7 +79,7 @@ export function CollectionsBoard() {
     return (
       <div className="ticket-card max-w-[34rem] p-6">
         <p className="eyebrow m-0 text-flame">Nothing on the shelf yet</p>
-        <p className="mt-2 text-[0.9375rem] leading-relaxed text-slate">
+        <p className="mt-2 text-note leading-relaxed text-slate">
           Sign in and every recipe you save — into collections you name yourself — lands here.
         </p>
         <Link href="/account" className="btn-primary mt-5">
@@ -122,7 +122,7 @@ export function CollectionsBoard() {
         ) : (
           <div aria-hidden="true" className="aspect-[8/5] w-full rounded-sm bg-wash" />
         )}
-        <span className="mt-2.5 block font-display text-[1.0625rem] leading-snug text-ink">
+        <span className="mt-2.5 block font-display text-read leading-snug text-ink">
           {item.recipe_title}
         </span>
       </Link>
@@ -131,7 +131,7 @@ export function CollectionsBoard() {
           type="button"
           onClick={onRemove}
           aria-label={`Remove ${item.recipe_title}`}
-          className="absolute top-2 right-2 hidden h-7 w-7 cursor-pointer place-items-center rounded border border-rule bg-card font-mono text-[0.8125rem] text-slate group-hover:grid hover:border-heat hover:text-heat"
+          className="absolute top-2 right-2 hidden h-7 w-7 cursor-pointer place-items-center rounded border border-rule bg-card font-mono text-detail text-slate group-hover:grid hover:border-heat hover:text-heat"
         >
           ✕
         </button>
@@ -144,7 +144,7 @@ export function CollectionsBoard() {
       {everything.length === 0 ? (
         <div className="ticket-card max-w-[34rem] p-6">
           <p className="eyebrow m-0">Empty shelf</p>
-          <p className="mt-2 text-[0.9375rem] text-slate">
+          <p className="mt-2 text-note text-slate">
             Open any recipe and hit <span className="font-mono">+ Save</span> — your collections
             build from there.
           </p>
@@ -171,20 +171,20 @@ export function CollectionsBoard() {
         return (
           <section key={collection.id}>
             <div className="flex items-baseline justify-between gap-4 border-b border-rule pb-2">
-              <h2 className="text-[1.25rem]">{collection.name}</h2>
+              <h2 className="text-title">{collection.name}</h2>
               <div className="flex items-baseline gap-4">
                 <span className="datum">{collectionItems.length}</span>
                 <button
                   type="button"
                   onClick={() => void removeCollection(collection)}
-                  className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
+                  className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
                 >
                   Delete
                 </button>
               </div>
             </div>
             {collectionItems.length === 0 ? (
-              <p className="mt-4 text-[0.875rem] text-slate">
+              <p className="mt-4 text-eyebrow text-slate">
                 Nothing plated here yet — open a recipe and hit + Save to fill it.
               </p>
             ) : (

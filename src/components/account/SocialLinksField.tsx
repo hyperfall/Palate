@@ -52,11 +52,11 @@ export function SocialLinksField() {
 
   return (
     <div className="mt-3 grid gap-2">
-      <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Social links</span>
+      <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">Social links</span>
       <div className="grid gap-2 sm:grid-cols-2">
         {SOCIAL_PLATFORMS.map((p) => (
           <label key={p.key} className="grid gap-1">
-            <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">{p.label}</span>
+            <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">{p.label}</span>
             <input
               type="url"
               inputMode="url"
@@ -67,7 +67,7 @@ export function SocialLinksField() {
                 setStatus('idle')
                 setError(null)
               }}
-              className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 font-mono text-[0.8125rem] text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
+              className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 font-mono text-detail text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
             />
           </label>
         ))}
@@ -76,7 +76,7 @@ export function SocialLinksField() {
         <button type="button" onClick={() => void save()} disabled={status === 'saving'} className="chip w-fit disabled:opacity-60">
           {status === 'saved' ? '✓ Saved' : status === 'saving' ? 'Saving…' : 'Save links'}
         </button>
-        {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
+        {error && <span className="font-mono text-caption text-heat">{error}</span>}
       </div>
     </div>
   )

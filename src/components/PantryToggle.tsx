@@ -112,7 +112,7 @@ export function PantryToggle({ slug, name }: { slug: string; name: string }) {
       {signedIn && state === 'in' && (
         <Link
           href="/cook-from"
-          className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+          className="font-mono text-caption tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
         >
           What can I cook? →
         </Link>

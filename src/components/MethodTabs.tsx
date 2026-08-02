@@ -27,7 +27,7 @@ export function MethodTabs({ story, children }: { story?: string | null; childre
             role="tab"
             aria-selected={view === v}
             onClick={() => setView(v)}
-            className={`rounded-full px-4 py-1.5 font-mono text-[0.75rem] tracking-[0.1em] uppercase transition-colors ${
+            className={`rounded-full px-4 py-1.5 font-mono text-caption tracking-[0.1em] uppercase transition-colors ${
               view === v ? 'bg-ink text-paper' : 'text-slate hover:text-ink'
             }`}
           >

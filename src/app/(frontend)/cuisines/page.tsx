@@ -23,7 +23,7 @@ export default async function CuisinesPage() {
           <p className="eyebrow m-0">Browse</p>
           <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cuisines</h1>
         </div>
-        <p className="m-0 max-w-[46ch] text-[0.9375rem] leading-snug text-slate">
+        <p className="m-0 max-w-[46ch] text-note leading-snug text-slate">
           Each cuisine balances the same four things differently.{' '}
           <span className="text-ink">
             {active.length} of {cuisines.length} kitchens open

@@ -231,7 +231,7 @@ export function HeroAnnotations({ items }: { items: HeroPin[] | null | undefined
                 <span className="block font-mono text-[0.5625rem] tracking-[0.12em] text-flame uppercase">
                   {a.kicker}
                 </span>
-                <span className="block font-display text-[0.9375rem] leading-tight text-ink">{a.note}</span>
+                <span className="block font-display text-note leading-tight text-ink">{a.note}</span>
               </span>
             </div>
           )

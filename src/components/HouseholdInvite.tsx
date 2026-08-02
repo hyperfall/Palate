@@ -28,13 +28,13 @@ export function HouseholdInvite({ code }: { code: string }) {
           readOnly
           value={link}
           onFocus={(e) => e.currentTarget.select()}
-          className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink"
+          className="min-w-0 flex-1 rounded border border-rule bg-transparent px-2 py-1 font-mono text-caption text-ink"
         />
         <button type="button" onClick={() => void copy()} className="chip">
           {copied ? 'Copied ✓' : 'Copy'}
         </button>
       </div>
-      <span className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase">
+      <span className="font-mono text-tag tracking-[0.1em] text-slate uppercase">
         or share the code · {code}
       </span>
     </div>

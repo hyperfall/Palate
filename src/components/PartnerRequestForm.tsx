@@ -164,7 +164,7 @@ export function PartnerRequestForm() {
       {notice && (
         <p
           role={notice.kind === 'error' ? 'alert' : 'status'}
-          className={`m-0 text-[0.9375rem] ${notice.kind === 'error' ? 'text-heat' : 'text-richness'}`}
+          className={`m-0 text-note ${notice.kind === 'error' ? 'text-heat' : 'text-richness'}`}
         >
           {notice.text}
         </p>

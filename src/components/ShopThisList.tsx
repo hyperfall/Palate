@@ -152,7 +152,7 @@ export function ShopThisList({
                   <span
                     aria-hidden="true"
                     style={{ background: tile.bg, color: tile.fg }}
-                    className="relative grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded font-mono text-[0.6875rem] font-bold"
+                    className="relative grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded font-mono text-tag font-bold"
                   >
                     {tile.initials}
                     {SHOP_LOGOS.has(r.slug) && (
@@ -168,9 +168,9 @@ export function ShopThisList({
                       />
                     )}
                   </span>
-                  <span className="min-w-0 truncate font-body text-[0.875rem] text-ink">{r.label}</span>
+                  <span className="min-w-0 truncate font-body text-eyebrow text-ink">{r.label}</span>
                   {on && (
-                    <span aria-hidden="true" className="ml-auto shrink-0 text-[0.75rem] text-flame">
+                    <span aria-hidden="true" className="ml-auto shrink-0 text-caption text-flame">
                       ✓
                     </span>
                   )}
@@ -181,7 +181,7 @@ export function ShopThisList({
         </ul>
 
         {eligible.length === 0 && (
-          <p className="mt-3 mb-0 text-[0.875rem] text-slate">
+          <p className="mt-3 mb-0 text-eyebrow text-slate">
             No shops listed for {country ? countryName(country) : 'your country'} yet — copy the
             list and take it anywhere.
           </p>
@@ -192,7 +192,7 @@ export function ShopThisList({
             {/* Once, in one place. This used to repeat "find at Tesco ↗" on
                 every one of fifty-three rows, which is noise the reader has to
                 read past rather than information. */}
-            <p className="mt-4 mb-0 flex flex-wrap items-baseline gap-x-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+            <p className="mt-4 mb-0 flex flex-wrap items-baseline gap-x-2 font-mono text-tag tracking-[0.08em] text-slate uppercase">
               <span>
                 {lines.length} {lines.length === 1 ? 'item' : 'items'} · tap one to search{' '}
                 {active.label}
@@ -209,12 +209,12 @@ export function ShopThisList({
                     rel="sponsored nofollow noopener"
                     className="group flex items-baseline justify-between gap-3 py-1.5 no-underline"
                   >
-                    <span className="min-w-0 text-[0.9375rem] text-ink group-hover:text-flame">
+                    <span className="min-w-0 text-note text-ink group-hover:text-flame">
                       {line.name}
                     </span>
                     <span className="flex shrink-0 items-baseline gap-1.5">
                       {line.amounts.length > 0 && (
-                        <span className="font-mono text-[0.75rem] tabular-nums text-slate">
+                        <span className="font-mono text-caption tabular-nums text-slate">
                           {line.amounts.join(' + ')}
                         </span>
                       )}
@@ -222,7 +222,7 @@ export function ShopThisList({
                           retailer's name fifty times. */}
                       <span
                         aria-hidden="true"
-                        className="text-[0.75rem] text-transparent group-hover:text-flame group-focus-visible:text-flame"
+                        className="text-caption text-transparent group-hover:text-flame group-focus-visible:text-flame"
                       >
                         ↗
                       </span>
@@ -238,12 +238,12 @@ export function ShopThisList({
         <button type="button" onClick={() => void copy()} className="chip">
           {copied ? 'Copied ✓' : 'Copy list'}
         </button>
-        <label className="flex flex-wrap items-center gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+        <label className="flex flex-wrap items-center gap-2 font-mono text-tag tracking-[0.08em] text-slate uppercase">
           {detected && overridden && defaultCountry ? (
             <button
               type="button"
               onClick={useDetected}
-              className="rounded border border-rule px-2 py-1 font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase hover:border-flame hover:text-flame"
+              className="rounded border border-rule px-2 py-1 font-mono text-tag tracking-[0.08em] text-slate uppercase hover:border-flame hover:text-flame"
             >
               Use {countryName(defaultCountry)}
             </button>
@@ -252,7 +252,7 @@ export function ShopThisList({
           <select
             value={country ?? ''}
             onChange={(e) => pickCountry(e.target.value)}
-            className="rounded border border-rule bg-transparent px-2 py-1 font-mono text-[0.75rem] text-ink focus:border-flame focus:outline-none"
+            className="rounded border border-rule bg-transparent px-2 py-1 font-mono text-caption text-ink focus:border-flame focus:outline-none"
           >
             <option value="" disabled>
               Pick a country

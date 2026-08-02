@@ -39,8 +39,8 @@ export function BrandCardFace({
       <div className="mt-3 flex items-start gap-4">
         {thumb}
         <div className="min-w-0">
-          <p className="m-0 font-mono text-[0.875rem] font-semibold text-ink">{brand}</p>
-          <p className="mt-1 text-[0.9375rem] leading-snug text-slate">{tagline}</p>
+          <p className="m-0 font-mono text-eyebrow font-semibold text-ink">{brand}</p>
+          <p className="mt-1 text-note leading-snug text-slate">{tagline}</p>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export function BrandCardFace({
 
 /** The CTA's look, shared so a live link and an inert sample cannot diverge. */
 export const BRAND_CTA_CLASS =
-  'inline-block rounded border border-ink px-4 py-2 font-mono text-[0.8125rem] font-semibold tracking-[0.08em] text-ink uppercase no-underline transition-colors hover:bg-ink hover:text-paper'
+  'inline-block rounded border border-ink px-4 py-2 font-mono text-detail font-semibold tracking-[0.08em] text-ink uppercase no-underline transition-colors hover:bg-ink hover:text-paper'
 
 /** The 64px square, shared for the same reason. */
 export const BRAND_THUMB_CLASS = 'h-16 w-16 shrink-0 rounded-sm object-cover'

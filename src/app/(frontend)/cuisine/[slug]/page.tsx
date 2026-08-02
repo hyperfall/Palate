@@ -117,7 +117,7 @@ export default async function CuisinePage({ params }: { params: Promise<{ slug: 
               </Link>
               <Link
                 href="/recipes"
-                className="font-mono text-[0.8125rem] tracking-[0.12em] text-ink uppercase underline underline-offset-4 hover:text-flame"
+                className="font-mono text-detail tracking-[0.12em] text-ink uppercase underline underline-offset-4 hover:text-flame"
               >
                 Browse everything
               </Link>

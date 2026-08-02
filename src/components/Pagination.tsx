@@ -26,7 +26,7 @@ export function Pagination({
   const windowed = [...new Set(raw)].sort((a, b) => a - b)
 
   const stepCls =
-    'grid h-9 min-w-[2.25rem] place-items-center rounded border border-rule px-2 font-mono text-[0.8125rem] font-medium text-ink no-underline transition-colors hover:border-ink'
+    'grid h-9 min-w-[2.25rem] place-items-center rounded border border-rule px-2 font-mono text-detail font-medium text-ink no-underline transition-colors hover:border-ink'
 
   return (
     <nav
@@ -46,11 +46,11 @@ export function Pagination({
           const gap = i > 0 && p - windowed[i - 1] > 1
           return (
             <span key={p} className="flex items-center gap-1.5">
-              {gap && <span className="px-0.5 font-mono text-[0.8125rem] text-slate">·</span>}
+              {gap && <span className="px-0.5 font-mono text-detail text-slate">·</span>}
               {p === page ? (
                 <span
                   aria-current="page"
-                  className="grid h-9 min-w-[2.25rem] place-items-center rounded bg-flame px-2 font-mono text-[0.8125rem] font-bold text-paper tabular-nums"
+                  className="grid h-9 min-w-[2.25rem] place-items-center rounded bg-flame px-2 font-mono text-detail font-bold text-paper tabular-nums"
                 >
                   {p}
                 </span>
@@ -72,7 +72,7 @@ export function Pagination({
         <span className={`${stepCls} cursor-default opacity-40`}>Next →</span>
       )}
 
-      <span className="ml-1 font-mono text-[0.75rem] tracking-[0.06em] text-slate uppercase">
+      <span className="ml-1 font-mono text-caption tracking-[0.06em] text-slate uppercase">
         Page {page} / {totalPages}
       </span>
     </nav>

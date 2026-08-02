@@ -185,7 +185,7 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
       {saveError && (
         <p
           role="alert"
-          className="mb-3 rounded border border-heat/40 bg-heat/10 px-3 py-2 font-mono text-[0.75rem] tracking-[0.06em] text-heat"
+          className="mb-3 rounded border border-heat/40 bg-heat/10 px-3 py-2 font-mono text-caption tracking-[0.06em] text-heat"
         >
           {saveError}
         </p>
@@ -198,14 +198,14 @@ export function MealBoard({ entries: initial }: { entries: BoardEntry[] }) {
           >
             <div className="flex items-baseline justify-between gap-2 xl:border-b-2 xl:border-ink xl:pb-1.5">
               <span
-                className={`font-mono text-[0.8125rem] font-semibold tracking-[0.12em] uppercase ${
+                className={`font-mono text-detail font-semibold tracking-[0.12em] uppercase ${
                   dayCount(day) === 0 ? 'text-slate/50' : 'text-flame'
                 }`}
               >
                 {label}
               </span>
               {dayCount(day) > 0 && (
-                <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">{dayCount(day)}</span>
+                <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">{dayCount(day)}</span>
               )}
             </div>
 
@@ -256,7 +256,7 @@ function MealSlot({
   // calendar always shows all three.
   return (
     <div className={`min-w-0 ${empty && !dragging ? 'max-xl:hidden' : ''}`}>
-      <p className="m-0 font-mono text-[0.625rem] font-medium tracking-[0.14em] text-slate/70 uppercase">
+      <p className="m-0 font-mono text-micro font-medium tracking-[0.14em] text-slate/70 uppercase">
         {MEAL_LABELS[meal]}
       </p>
       <SortableContext items={dishes.map((d) => d.id)} strategy={verticalListSortingStrategy}>
@@ -268,7 +268,7 @@ function MealSlot({
         >
           {empty ? (
             <span
-              className={`text-center font-mono text-[0.625rem] tracking-[0.1em] uppercase ${
+              className={`text-center font-mono text-micro tracking-[0.1em] uppercase ${
                 isOver ? 'text-flame' : 'text-slate/25'
               }`}
             >
@@ -338,7 +338,7 @@ function DishItem({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Link
           href={`/recipes/${entry.slug}`}
-          className="line-clamp-2 text-[0.8125rem] leading-[1.25] text-ink no-underline group-hover:text-flame"
+          className="line-clamp-2 text-detail leading-[1.25] text-ink no-underline group-hover:text-flame"
         >
           {entry.title}
         </Link>
@@ -352,14 +352,14 @@ function DishItem({
             disabled={entry.servings <= 1}
             aria-label="Fewer servings"
             title="Fewer servings"
-            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-[0.8125rem] leading-none text-slate transition-colors hover:text-flame disabled:opacity-30"
+            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-detail leading-none text-slate transition-colors hover:text-flame disabled:opacity-30"
           >
             −
           </button>
           <span
             title={`Serves ${entry.servings}`}
             aria-label={`Serves ${entry.servings}`}
-            className="min-w-[0.75rem] text-center font-mono text-[0.6875rem] font-medium tabular-nums text-flame"
+            className="min-w-[0.75rem] text-center font-mono text-tag font-medium tabular-nums text-flame"
           >
             {entry.servings}
           </span>
@@ -368,7 +368,7 @@ function DishItem({
             onClick={() => onServings(entry.id, entry.servings + 1)}
             aria-label="More servings"
             title="More servings"
-            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-[0.8125rem] leading-none text-slate transition-colors hover:text-flame"
+            className="-m-2 grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded-full bg-transparent font-mono text-detail leading-none text-slate transition-colors hover:text-flame"
           >
             +
           </button>
@@ -377,7 +377,7 @@ function DishItem({
             disabled={busy}
             onClick={() => onRemove(entry.id)}
             aria-label={`Remove ${entry.title}`}
-            className="-my-2 -mr-2 ml-auto grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded border-none bg-transparent font-mono text-[0.75rem] text-slate/50 transition-colors hover:text-heat disabled:opacity-40"
+            className="-my-2 -mr-2 ml-auto grid h-9 w-9 shrink-0 cursor-pointer place-items-center rounded border-none bg-transparent font-mono text-caption text-slate/50 transition-colors hover:text-heat disabled:opacity-40"
           >
             ✕
           </button>
@@ -404,8 +404,8 @@ function DishCard({ entry, dragging = false }: { entry: BoardEntry; dragging?: b
         )}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="line-clamp-2 text-[0.8125rem] leading-[1.25] text-ink">{entry.title}</span>
-        <span className="font-mono text-[0.6875rem] font-medium tabular-nums text-flame">
+        <span className="line-clamp-2 text-detail leading-[1.25] text-ink">{entry.title}</span>
+        <span className="font-mono text-tag font-medium tabular-nums text-flame">
           {entry.servings}
         </span>
       </div>

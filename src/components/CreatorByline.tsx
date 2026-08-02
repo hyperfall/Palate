@@ -104,7 +104,7 @@ export function CreatorByline({
             {name}
           </span>
         ) : (
-          <span className="font-mono text-[0.75rem] tracking-[0.04em] text-slate underline decoration-dotted decoration-slate/40 underline-offset-2 transition-colors hover:text-flame">
+          <span className="font-mono text-caption tracking-[0.04em] text-slate underline decoration-dotted decoration-slate/40 underline-offset-2 transition-colors hover:text-flame">
             by @{handle}
           </span>
         )}
@@ -116,7 +116,7 @@ export function CreatorByline({
             </svg>
           </span>
         )}
-        {variant === 'full' && <span className="font-mono text-[0.8125rem] text-slate">@{handle}</span>}
+        {variant === 'full' && <span className="font-mono text-detail text-slate">@{handle}</span>}
       </button>
 
       {open &&

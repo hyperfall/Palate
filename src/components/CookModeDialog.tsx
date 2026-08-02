@@ -326,7 +326,7 @@ export function CookMode({
             Fix it
           </button>
           {!done && (
-            <span className="font-mono text-[0.8125rem] font-semibold tracking-[0.1em] tabular-nums">
+            <span className="font-mono text-detail font-semibold tracking-[0.1em] tabular-nums">
               STEP {String(index + 1).padStart(2, '0')} / {String(steps.length).padStart(2, '0')}
             </span>
           )}
@@ -358,7 +358,7 @@ export function CookMode({
                out, or what the quantity was two steps ago with sticky hands. */
             <div>
               <p className="eyebrow m-0 text-flame">Ingredients</p>
-              <p className="mt-2 font-mono text-[0.8125rem] text-slate">
+              <p className="mt-2 font-mono text-detail text-slate">
                 For {servings} {servings === 1 ? 'serving' : 'servings'}
                 {factor !== 1 && ' · scaled with the recipe'}
               </p>
@@ -389,7 +389,7 @@ export function CookMode({
                         <span className="flex min-w-0 items-baseline gap-3">
                           <span
                             aria-hidden="true"
-                            className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-sm border text-[0.75rem] ${
+                            className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-sm border text-caption ${
                               gathered.has(`${i}:${ing.item}`)
                                 ? 'border-flame bg-flame text-paper'
                                 : 'border-rule'
@@ -420,7 +420,7 @@ export function CookMode({
                     <dt className="font-mono text-[1rem] font-semibold tracking-[0.06em] uppercase">
                       {rescue.problem}
                     </dt>
-                    <dd className="m-0 mt-1.5 max-w-[62ch] text-[1.0625rem] leading-relaxed text-slate">
+                    <dd className="m-0 mt-1.5 max-w-[62ch] text-read leading-relaxed text-slate">
                       {rescue.fix}
                     </dd>
                   </div>
@@ -507,7 +507,7 @@ export function CookMode({
                 </div>
               )}
               {step && step.prepAhead.length > 0 && (
-                <p className="mt-4 font-mono text-[0.8125rem] text-flame">
+                <p className="mt-4 font-mono text-detail text-flame">
                   Coming up — take out: {step.prepAhead.join(', ')}.
                 </p>
               )}

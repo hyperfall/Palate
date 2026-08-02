@@ -26,7 +26,7 @@ export function SettingsSection({
     >
       <div>
         <p className={`eyebrow m-0 ${tone === 'danger' ? 'text-heat' : ''}`}>{title}</p>
-        {desc && <p className="mt-1.5 text-[0.8125rem] leading-snug text-slate lg:max-w-[22ch]">{desc}</p>}
+        {desc && <p className="mt-1.5 text-detail leading-snug text-slate lg:max-w-[22ch]">{desc}</p>}
       </div>
       <div className="grid min-w-0 content-start gap-4">{children}</div>
     </div>

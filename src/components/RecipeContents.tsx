@@ -84,7 +84,7 @@ export function RecipeContents({ sections }: { sections: RecipeSection[] }) {
               // within a set of links", as opposed to page or step.
               aria-current={active === section.id ? 'location' : undefined}
               data-here={active === section.id}
-              className="inline-flex min-h-10 items-center font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase no-underline decoration-flame decoration-2 underline-offset-[6px] hover:text-flame hover:underline data-[here=true]:text-flame data-[here=true]:underline sm:min-h-0"
+              className="inline-flex min-h-10 items-center font-mono text-caption tracking-[0.1em] text-slate uppercase no-underline decoration-flame decoration-2 underline-offset-[6px] hover:text-flame hover:underline data-[here=true]:text-flame data-[here=true]:underline sm:min-h-0"
             >
               {section.label}
             </a>

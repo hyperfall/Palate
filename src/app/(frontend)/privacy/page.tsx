@@ -28,7 +28,7 @@ export default function PrivacyPage() {
         </p>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">What we collect</h2>
+          <h2 className="font-display text-title text-ink">What we collect</h2>
           <ul className="m-0 grid list-disc gap-2 pl-5">
             <li>
               <span className="font-semibold text-ink">Account details</span> — if you sign up: your
@@ -47,17 +47,17 @@ export default function PrivacyPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Advertising</h2>
+          <h2 className="font-display text-title text-ink">Advertising</h2>
           <p>
             Partner cards are chosen by the recipe and your country — not by tracking you around the
             web. They’re always labelled, and their links carry{' '}
-            <code className="font-mono text-[0.875rem]">rel=&quot;sponsored nofollow&quot;</code>. You
+            <code className="font-mono text-eyebrow">rel=&quot;sponsored nofollow&quot;</code>. You
             can adjust non-essential cookies any time from the “Cookie settings” link in the footer.
           </p>
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">What we don’t do</h2>
+          <h2 className="font-display text-title text-ink">What we don’t do</h2>
           <p>
             We don’t sell your personal information, and we don’t share it with advertisers. Partners
             get aggregate performance, never your identity.
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="grid gap-2">
-          <h2 className="font-display text-[1.25rem] text-ink">Your choices</h2>
+          <h2 className="font-display text-title text-ink">Your choices</h2>
           <p>
             You can manage cookie consent from the footer, and ask us to close your account and remove
             your data. Questions can be sent through our{' '}

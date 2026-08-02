@@ -59,7 +59,7 @@ export function BioField() {
     >
       {state.hasProfile ? (
         <div className="grid gap-1">
-          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">Bio</span>
+          <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">Bio</span>
           <textarea
             value={bio}
             maxLength={BIO_MAX}
@@ -69,7 +69,7 @@ export function BioField() {
               setBio(e.target.value)
               setStatus('idle')
             }}
-            className="resize-none rounded border border-rule bg-transparent px-3 py-2 font-body text-[0.9375rem] text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
+            className="resize-none rounded border border-rule bg-transparent px-3 py-2 font-body text-note text-ink placeholder:text-slate/60 focus:border-flame focus:outline-none"
           />
           <div className="flex items-center justify-between">
             <button
@@ -80,15 +80,15 @@ export function BioField() {
             >
               {status === 'saved' ? '✓ Saved' : status === 'saving' ? 'Saving…' : 'Save bio'}
             </button>
-            <span className="font-mono text-[0.75rem] text-slate">
+            <span className="font-mono text-caption text-slate">
               {bio.length}/{BIO_MAX}
             </span>
           </div>
-          {error && <span className="font-mono text-[0.75rem] text-heat">{error}</span>}
+          {error && <span className="font-mono text-caption text-heat">{error}</span>}
           <SocialLinksField />
         </div>
       ) : (
-        <p className="m-0 text-[0.8125rem] text-slate">
+        <p className="m-0 text-detail text-slate">
           Publish your first recipe to open your creator profile, then add a bio here.
         </p>
       )}

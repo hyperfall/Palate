@@ -81,7 +81,7 @@ export function WeekCardActions({ week, shopping }: { week: WeekSnapshot; shoppi
         </button>
       </div>
       {failed && (
-        <p className="m-0 text-[0.8125rem] text-heat">Couldn’t generate that file — please try again.</p>
+        <p className="m-0 text-detail text-heat">Couldn’t generate that file — please try again.</p>
       )}
     </div>
   )

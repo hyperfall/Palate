@@ -117,7 +117,7 @@ export function StepRowsInput({
             dragOver === i ? 'border-flame bg-flame/5' : 'border-transparent'
           }`}
         >
-          <span className="pt-2 text-center font-mono text-[0.8125rem] font-medium text-flame tabular-nums">
+          <span className="pt-2 text-center font-mono text-detail font-medium text-flame tabular-nums">
             {String(i + 1).padStart(2, '0')}
           </span>
 
@@ -187,17 +187,17 @@ export function StepRowsInput({
         </div>
       ))}
 
-      {error && <p className="font-mono text-[0.75rem] text-heat">{error}</p>}
+      {error && <p className="font-mono text-caption text-heat">{error}</p>}
 
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => addRow(value.length)}
-          className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-[0.75rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+          className="w-fit cursor-pointer border-none bg-transparent p-0 font-mono text-caption font-medium tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
         >
           + Add step
         </button>
-        <span className="font-mono text-[0.6875rem] text-slate">
+        <span className="font-mono text-tag text-slate">
           A photo per step is optional — drop or paste one onto a step.
         </span>
       </div>

@@ -44,11 +44,11 @@ export default async function HouseholdPage({
         <div className="ticket-card mt-6 max-w-[38rem] p-5 sm:p-6">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="font-display text-[1.375rem] text-ink">{context.name}</h2>
-            <span className="font-mono text-[0.6875rem] tracking-[0.12em] text-slate uppercase">
+            <span className="font-mono text-tag tracking-[0.12em] text-slate uppercase">
               {context.members.length} {context.members.length === 1 ? 'member' : 'members'}
             </span>
           </div>
-          <p className="mt-1 text-[0.9375rem] text-slate">
+          <p className="mt-1 text-note text-slate">
             Everyone here shares one week board, pantry and shopping list. Your personal plan is kept
             and returns if you leave.
           </p>
@@ -59,11 +59,11 @@ export default async function HouseholdPage({
 
           <ul className="mt-5 grid list-none gap-2 border-t border-rule p-0 pt-4">
             {context.members.map((m) => (
-              <li key={m.userId} className="flex items-baseline justify-between gap-3 text-[0.9375rem]">
+              <li key={m.userId} className="flex items-baseline justify-between gap-3 text-note">
                 <span className="text-ink">
                   {m.userId === user.id ? 'You' : `Member ${m.userId.slice(0, 8)}`}
                 </span>
-                <span className="font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase">{m.role}</span>
+                <span className="font-mono text-tag tracking-[0.1em] text-slate uppercase">{m.role}</span>
               </li>
             ))}
           </ul>
@@ -71,12 +71,12 @@ export default async function HouseholdPage({
           <form action="/household/leave" method="post" className="mt-6 border-t border-rule pt-4">
             <button
               type="submit"
-              className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+              className="font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
             >
               {context.isOwner ? 'Disband household →' : 'Leave household →'}
             </button>
             {context.isOwner && (
-              <p className="mt-2 text-[0.8125rem] text-slate">
+              <p className="mt-2 text-detail text-slate">
                 Disbanding removes the shared week for everyone; each person keeps their own plan.
               </p>
             )}
@@ -101,8 +101,8 @@ export default async function HouseholdPage({
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div className="ticket-card p-5">
-          <h2 className="font-display text-[1.25rem] text-ink">Start a household</h2>
-          <p className="mt-1 text-[0.9375rem] text-slate">Share your week with the people you cook for.</p>
+          <h2 className="font-display text-title text-ink">Start a household</h2>
+          <p className="mt-1 text-note text-slate">Share your week with the people you cook for.</p>
           {isSupporter ? (
             <form action="/household/create" method="post" className="mt-4 grid gap-2">
               <label htmlFor="household-name" className="sr-only">
@@ -113,7 +113,7 @@ export default async function HouseholdPage({
                 name="name"
                 placeholder="Our kitchen"
                 maxLength={60}
-                className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 text-[0.9375rem] text-ink"
+                className="w-full min-w-0 rounded border border-rule bg-transparent px-2 py-1.5 text-note text-ink"
               />
               <button type="submit" className="btn-primary w-full justify-center">
                 Create household
@@ -121,7 +121,7 @@ export default async function HouseholdPage({
             </form>
           ) : (
             <div className="mt-4">
-              <p className="text-[0.875rem] text-slate">Household mode is a supporter perk.</p>
+              <p className="text-eyebrow text-slate">Household mode is a supporter perk.</p>
               <Link href="/support" className="btn-primary mt-3 inline-block">
                 Become a supporter →
               </Link>
@@ -130,8 +130,8 @@ export default async function HouseholdPage({
         </div>
 
         <div className="ticket-card p-5">
-          <h2 className="font-display text-[1.25rem] text-ink">Join one</h2>
-          <p className="mt-1 text-[0.9375rem] text-slate">Got an invite code? Joining is free.</p>
+          <h2 className="font-display text-title text-ink">Join one</h2>
+          <p className="mt-1 text-note text-slate">Got an invite code? Joining is free.</p>
           <form action="/household/join" method="post" className="mt-4 grid gap-2">
             <label htmlFor="household-code" className="sr-only">
               Invite code
@@ -167,7 +167,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function Note({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-5 rounded border border-flame/40 bg-flame/5 px-3 py-2 text-[0.9375rem] text-ink" role="alert">
+    <p className="mt-5 rounded border border-flame/40 bg-flame/5 px-3 py-2 text-note text-ink" role="alert">
       {children}
     </p>
   )

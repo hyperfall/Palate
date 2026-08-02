@@ -24,7 +24,7 @@ export async function SupporterStatus() {
       <div className="flex items-baseline justify-between gap-3">
         <p className="eyebrow m-0">Membership</p>
         <span
-          className={`font-mono text-[0.6875rem] tracking-[0.12em] uppercase ${isSupporter ? 'text-flame' : 'text-slate'}`}
+          className={`font-mono text-tag tracking-[0.12em] uppercase ${isSupporter ? 'text-flame' : 'text-slate'}`}
         >
           {isSupporter ? 'Supporter' : 'Free'}
         </span>
@@ -32,14 +32,14 @@ export async function SupporterStatus() {
 
       {isSupporter ? (
         <>
-          <p className="mt-2 text-[0.9375rem] text-slate">
+          <p className="mt-2 text-note text-slate">
             Thank you for supporting Palate. Household mode and supporter perks are unlocked.
           </p>
           {row?.stripe_customer_id && (
             <form action="/support/portal" method="post" className="mt-4">
               <button
                 type="submit"
-                className="font-mono text-[0.8125rem] tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+                className="font-mono text-detail tracking-[0.12em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
               >
                 Manage subscription →
               </button>
@@ -48,7 +48,7 @@ export async function SupporterStatus() {
         </>
       ) : (
         <>
-          <p className="mt-2 text-[0.9375rem] text-slate">
+          <p className="mt-2 text-note text-slate">
             Unlock Household mode and the perks to come — {SUPPORTER_PRICE_LABEL}, cancel anytime.
           </p>
           <Link href="/support" className="btn-primary mt-4 inline-block">

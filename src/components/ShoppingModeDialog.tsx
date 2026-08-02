@@ -45,7 +45,7 @@ function Row({ line, on, onToggle }: { line: ShoppingLine; on: boolean; onToggle
           {line.name}
         </span>
         {line.amounts.length > 0 && (
-          <span className={`ml-2 font-mono text-[0.8125rem] ${on ? 'text-slate/70 line-through' : 'text-slate'}`}>
+          <span className={`ml-2 font-mono text-detail ${on ? 'text-slate/70 line-through' : 'text-slate'}`}>
             {line.amounts.join(' + ')}
           </span>
         )}
@@ -143,7 +143,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
       <header className="flex items-center justify-between gap-4 border-b border-rule px-5 py-3.5 sm:px-8">
         <div className="min-w-0">
           <p className="eyebrow m-0 text-flame">Shopping</p>
-          <p className="m-0 font-mono text-[0.8125rem] text-slate">
+          <p className="m-0 font-mono text-detail text-slate">
             <span className="tabular-nums text-ink">{done}</span> of{' '}
             <span className="tabular-nums">{total}</span> in the basket
             {synced && <span className="ml-2 text-slate/70">· synced</span>}
@@ -158,7 +158,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <path d="M6 6l12 12M18 6 6 18" />
           </svg>
-          <span className="font-mono text-[0.75rem] tracking-[0.1em] uppercase">Close</span>
+          <span className="font-mono text-caption tracking-[0.1em] uppercase">Close</span>
         </button>
       </header>
 
@@ -210,7 +210,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
                       : `Add ${done} ${done === 1 ? 'item' : 'items'} to my pantry`}
                   </button>
                   {stocking === 'error' && (
-                    <p role="alert" className="mt-2 m-0 font-mono text-[0.75rem] text-heat">
+                    <p role="alert" className="mt-2 m-0 font-mono text-caption text-heat">
                       Couldn’t stock the pantry — try again.
                     </p>
                   )}
@@ -249,7 +249,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
                 <section key={dish.slug}>
                   <div className="flex items-baseline justify-between gap-3 border-b-2 border-ink pb-1.5">
                     <h2 className="font-display text-[1.125rem] text-ink">{dish.title}</h2>
-                    <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+                    <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">
                       {dish.lines.filter((l) => checked.has(l.key)).length}/{dish.lines.length}
                     </span>
                   </div>
@@ -269,14 +269,14 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
 
       {/* Footer */}
       <footer className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 border-t border-rule bg-paper px-5 py-3 sm:px-8">
-        <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+        <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">
           Tap an item to check it off
         </span>
         {done > 0 && (
           <button
             type="button"
             onClick={() => void clearAll()}
-            className="font-mono text-[0.75rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
+            className="font-mono text-caption tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-flame hover:underline"
           >
             Clear all
           </button>

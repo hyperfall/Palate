@@ -135,7 +135,7 @@ export function CreatorRecipes() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search your recipes…"
           aria-label="Search your recipes"
-          className="min-w-0 flex-1 rounded border border-rule bg-transparent px-3 py-1.5 text-[0.9375rem] text-ink"
+          className="min-w-0 flex-1 rounded border border-rule bg-transparent px-3 py-1.5 text-note text-ink"
         />
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
@@ -159,11 +159,11 @@ export function CreatorRecipes() {
           ))}
         </ul>
       ) : failed ? (
-        <p role="alert" className="mt-6 text-[0.9375rem] text-slate">
+        <p role="alert" className="mt-6 text-note text-slate">
           Couldn’t load your recipes just now — they’re safe. Refresh to try again.
         </p>
       ) : total === 0 ? (
-        <p className="mt-6 text-[0.9375rem] text-slate">
+        <p className="mt-6 text-note text-slate">
           {isFiltering ? 'No recipes match that.' : 'No recipes yet — '}
           {!isFiltering && (
             <Link href="/studio" className="text-flame underline underline-offset-4">
@@ -189,7 +189,7 @@ export function CreatorRecipes() {
                         s.title
                       )}
                     </span>
-                    <span className="font-mono text-[0.6875rem] tracking-[0.06em] text-slate">
+                    <span className="font-mono text-tag tracking-[0.06em] text-slate">
                       {fmtDate(s.createdAt)}
                       {/* Only once it's live and someone has actually done
                           something — a row of zeroes on a day-old recipe reads
@@ -208,12 +208,12 @@ export function CreatorRecipes() {
                     {s.recipeId && (
                       <Link
                         href={`/studio?edit=${s.recipeId}`}
-                        className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline"
+                        className="font-mono text-tag tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline"
                       >
                         Edit
                       </Link>
                     )}
-                    <span className={`font-mono text-[0.75rem] font-medium tracking-[0.08em] uppercase ${st.cls}`}>
+                    <span className={`font-mono text-caption font-medium tracking-[0.08em] uppercase ${st.cls}`}>
                       {st.label}
                     </span>
                   </span>
@@ -232,7 +232,7 @@ export function CreatorRecipes() {
               >
                 ← Prev
               </button>
-              <span className="font-mono text-[0.75rem] tracking-[0.08em] text-slate uppercase">
+              <span className="font-mono text-caption tracking-[0.08em] text-slate uppercase">
                 Page {data!.page} of {data!.totalPages} · {total} {total === 1 ? 'recipe' : 'recipes'}
               </span>
               <button

@@ -152,7 +152,7 @@ function CookieBanner({
       <div className="shell flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
         <div className="max-w-[62ch]">
           <p className="eyebrow m-0 text-flame">Cookies</p>
-          <p className="mt-1 text-[0.9375rem] leading-snug text-slate">
+          <p className="mt-1 text-note leading-snug text-slate">
             We use strictly-necessary cookies to run the site (sign-in, your choices). With your
             consent we also use analytics — and, if you allow it, marketing — cookies. You can accept,
             reject, or choose per category. Change it anytime under “Cookie settings.”
@@ -162,14 +162,14 @@ function CookieBanner({
           <button
             type="button"
             onClick={onCustomize}
-            className="rounded border border-rule px-4 py-2.5 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
+            className="rounded border border-rule px-4 py-2.5 font-mono text-detail font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
           >
             Customize
           </button>
           <button
             type="button"
             onClick={onRejectAll}
-            className="rounded border border-rule px-4 py-2.5 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
+            className="rounded border border-rule px-4 py-2.5 font-mono text-detail font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
           >
             Reject all
           </button>
@@ -282,7 +282,7 @@ function CookiePreferences({
         </div>
 
         {gpc && (
-          <p className="mt-4 rounded border border-rule bg-wash px-3 py-2 text-[0.8125rem] text-slate">
+          <p className="mt-4 rounded border border-rule bg-wash px-3 py-2 text-detail text-slate">
             We detected a Global Privacy Control signal, so marketing is off by default. You can still
             change any setting below.
           </p>
@@ -292,12 +292,12 @@ function CookiePreferences({
           <li className="flex items-start justify-between gap-4 border-t border-rule pt-4">
             <div>
               <p className="m-0 font-body font-semibold text-ink">Strictly necessary</p>
-              <p className="mt-1 text-[0.875rem] leading-snug text-slate">
+              <p className="mt-1 text-eyebrow leading-snug text-slate">
                 Required to run the site — sign-in, security, and remembering this consent choice.
                 Always on.
               </p>
             </div>
-            <span className="mt-1 font-mono text-[0.75rem] tracking-[0.08em] text-slate uppercase">
+            <span className="mt-1 font-mono text-caption tracking-[0.08em] text-slate uppercase">
               Always on
             </span>
           </li>
@@ -309,7 +309,7 @@ function CookiePreferences({
             >
               <div>
                 <p className="m-0 font-body font-semibold text-ink">{cat.label}</p>
-                <p className="mt-1 text-[0.875rem] leading-snug text-slate">{cat.description}</p>
+                <p className="mt-1 text-eyebrow leading-snug text-slate">{cat.description}</p>
               </div>
               <div className="mt-1">
                 <Toggle
@@ -329,14 +329,14 @@ function CookiePreferences({
           <button
             type="button"
             onClick={onRejectAll}
-            className="rounded border border-rule px-4 py-2.5 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
+            className="rounded border border-rule px-4 py-2.5 font-mono text-detail font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
           >
             Reject all
           </button>
           <button
             type="button"
             onClick={onAcceptAll}
-            className="rounded border border-rule px-4 py-2.5 font-mono text-[0.8125rem] font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
+            className="rounded border border-rule px-4 py-2.5 font-mono text-detail font-medium tracking-[0.08em] text-ink uppercase transition-colors hover:border-ink"
           >
             Accept all
           </button>

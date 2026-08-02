@@ -362,7 +362,7 @@ export function StudioForm({
           {creatorBusy ? 'Switching…' : 'Become a creator'}
         </button>
         {notice?.kind === 'error' && (
-          <p role="alert" className="mt-3 m-0 text-[0.9375rem] text-heat">
+          <p role="alert" className="mt-3 m-0 text-note text-heat">
             {notice.text}
           </p>
         )}
@@ -529,13 +529,13 @@ export function StudioForm({
     <>
     {editRecipeId ? (
       <div className="mb-8 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
-        <p className="m-0 text-[0.9375rem] text-ink">
+        <p className="m-0 text-note text-ink">
           Editing <span className="font-semibold">{editTitle ?? 'your recipe'}</span>. Changes go back for review — the live
           recipe stays as it is until they’re approved.
         </p>
       </div>
     ) : (
-      <p className="mb-8 text-[0.9375rem] text-slate">
+      <p className="mb-8 text-note text-slate">
         Tracking what you’ve already sent?{' '}
         <Link href="/dashboard" className="text-flame underline underline-offset-4">
           See your recipes on the dashboard
@@ -551,7 +551,7 @@ export function StudioForm({
     {notice?.kind === 'ok' && (
       <div
         role="status"
-        className="mb-6 rounded-lg border border-richness/50 bg-richness/10 px-4 py-3 text-[0.9375rem] text-ink"
+        className="mb-6 rounded-lg border border-richness/50 bg-richness/10 px-4 py-3 text-note text-ink"
       >
         {notice.text}{' '}
         <Link href="/dashboard" className="text-flame underline underline-offset-4">
@@ -561,7 +561,7 @@ export function StudioForm({
     )}
     {foundDraft && (
       <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
-        <p className="m-0 text-[0.9375rem] text-ink">
+        <p className="m-0 text-note text-ink">
           You have an unfinished recipe from {draftAge(foundDraft.savedAt)}
           {foundDraft.title.trim() ? ` — “${foundDraft.title.trim()}”` : ''}.
         </p>
@@ -575,7 +575,7 @@ export function StudioForm({
               clearDraft()
               setFoundDraft(null)
             }}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
+            className="cursor-pointer border-none bg-transparent p-0 font-mono text-tag tracking-[0.1em] text-slate uppercase underline-offset-4 hover:text-heat hover:underline"
           >
             Discard
           </button>
@@ -605,7 +605,7 @@ export function StudioForm({
             <button
               type="button"
               onClick={() => setQuick(true)}
-              className="font-mono text-[0.6875rem] tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
+              className="font-mono text-tag tracking-[0.1em] text-flame uppercase underline-offset-4 hover:underline"
             >
               Already written it? Paste it in →
             </button>
@@ -661,7 +661,7 @@ export function StudioForm({
           classification below it, and the optional depth folded under that. */}
       <div className={labelCls}>
         <span className="eyebrow">Ingredients</span>
-        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+        <span className="-mt-0.5 text-detail leading-snug text-slate">
           Quantity, unit, then name — paste a whole list to fill rows fast. At least{' '}
           {MIN_INGREDIENTS}.
         </span>
@@ -670,7 +670,7 @@ export function StudioForm({
 
       <div className={labelCls}>
         <span className="eyebrow">Steps — one per row</span>
-        <span className="-mt-0.5 text-[0.8125rem] leading-snug text-slate">
+        <span className="-mt-0.5 text-detail leading-snug text-slate">
           One action per step, in order. At least {MIN_STEPS}.
         </span>
         <StepRowsInput value={stepRows} onChange={setStepRows} />
@@ -735,7 +735,7 @@ export function StudioForm({
           <div key={axis} style={{ ['--gauge-hue' as string]: AXIS_COLOR[axis] }}>
             <div className="flex items-baseline justify-between gap-3">
               <span className="eyebrow">{TASTE_AXIS_LABELS[axis].title}</span>
-              <span className="font-mono text-[0.8125rem] font-medium text-ink">
+              <span className="font-mono text-detail font-medium text-ink">
                 {TASTE_AXIS_LABELS[axis].scale[taste[axis]]}
               </span>
             </div>
@@ -818,7 +818,7 @@ export function StudioForm({
       {notice && (
         <p
           role={notice.kind === 'error' ? 'alert' : 'status'}
-          className={`m-0 text-[0.9375rem] ${notice.kind === 'error' ? 'text-heat' : 'text-richness'}`}
+          className={`m-0 text-note ${notice.kind === 'error' ? 'text-heat' : 'text-richness'}`}
         >
           {notice.text}
         </p>
@@ -829,7 +829,7 @@ export function StudioForm({
           {busy ? 'Sending…' : editRecipeId ? 'Submit changes for review' : 'Submit for review'}
         </button>
         {!editRecipeId && draftSavedAt && (
-          <span className="font-mono text-[0.6875rem] tracking-[0.08em] text-slate uppercase">
+          <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">
             Draft saved in this browser
           </span>
         )}

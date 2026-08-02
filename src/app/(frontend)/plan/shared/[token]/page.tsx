@@ -107,7 +107,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
           <GroceryPanel lines={shopping.netted} />
         </div>
         <WeekCardActions week={week} shopping={shopping} />
-        <p className="mt-6 text-center text-[0.9375rem] text-slate">
+        <p className="mt-6 text-center text-note text-slate">
           Want your own?{' '}
           <Link href="/plan" className="text-flame underline underline-offset-4">
             Plan your week on Palate
@@ -145,7 +145,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
           <ul className="mt-4 grid list-none gap-2 p-0">
             {planned.map((p) => (
               <li key={p.slug}>
-                <Link href={`/recipes/${p.slug}`} className="text-[1.0625rem] no-underline hover:text-flame">
+                <Link href={`/recipes/${p.slug}`} className="text-read no-underline hover:text-flame">
                   {p.title}
                 </Link>
               </li>
@@ -157,7 +157,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
           <h2 className="border-t-2 border-ink pt-4 text-[1.5rem]">Shopping list</h2>
           <ul className="mt-4 grid list-none gap-2.5 p-0">
             {shopping.map((line) => (
-              <li key={line.key} className="border-b border-rule pb-2 text-[1.0625rem]">
+              <li key={line.key} className="border-b border-rule pb-2 text-read">
                 {line.name}
                 {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
               </li>

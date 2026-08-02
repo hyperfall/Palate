@@ -50,7 +50,7 @@ export default async function JoinHouseholdPage({ params }: { params: Promise<{ 
           <button type="submit" className="btn-primary">
             Join this household
           </button>
-          <Link href="/plan" className="font-mono text-[0.8125rem] tracking-[0.1em] text-slate uppercase hover:text-flame">
+          <Link href="/plan" className="font-mono text-detail tracking-[0.1em] text-slate uppercase hover:text-flame">
             No thanks →
           </Link>
         </form>

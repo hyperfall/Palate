@@ -36,7 +36,7 @@ export default async function SupportPage() {
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.1]">
           Keep the recipe at the top.
         </h1>
-        <p className="mt-4 text-[1.0625rem] leading-relaxed text-slate">
+        <p className="mt-4 text-read leading-relaxed text-slate">
           Palate earns from clearly-labelled partner cards — never from burying the food. Supporters
           fund the rest, and get the tools built for people who cook for a household. It’s{' '}
           <span className="font-semibold text-ink">{SUPPORTER_PRICE_LABEL}</span>, cancel anytime.
@@ -76,7 +76,7 @@ export default async function SupportPage() {
         <ul className="mt-4 grid list-none gap-3 p-0">
           {PERKS_NOW.map(([title, body]) => (
             <li key={title} className="border-t border-rule pt-3">
-              <p className="m-0 font-display text-[1.0625rem] text-ink">{title}</p>
+              <p className="m-0 font-display text-read text-ink">{title}</p>
               <p className="mt-1 text-slate">{body}</p>
             </li>
           ))}
@@ -88,12 +88,12 @@ export default async function SupportPage() {
         <ul className="mt-4 grid list-none gap-3 p-0">
           {PERKS_SOON.map(([title, body]) => (
             <li key={title} className="border-t border-rule pt-3">
-              <p className="m-0 font-display text-[1.0625rem] text-ink">{title}</p>
+              <p className="m-0 font-display text-read text-ink">{title}</p>
               <p className="mt-1 text-slate">{body}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-6 text-[0.9375rem] text-slate">
+        <p className="mt-6 text-note text-slate">
           Everything you use today stays free. Supporting only adds — it never takes a feature away.
         </p>
       </section>

@@ -16,7 +16,7 @@ import { adoptRemoteUnitSystem } from '@/lib/useUnitSystem'
  */
 
 const linkClass =
-  'font-mono text-[0.875rem] font-medium tracking-[0.12em] text-milk/90 uppercase no-underline transition-colors hover:text-flame'
+  'font-mono text-eyebrow font-medium tracking-[0.12em] text-milk/90 uppercase no-underline transition-colors hover:text-flame'
 
 function PersonIcon() {
   return (
@@ -147,10 +147,10 @@ export function NavAccount() {
               )}
             </span>
             <span className="min-w-0">
-              <span className="block truncate font-body text-[0.9375rem] font-semibold text-ink">
+              <span className="block truncate font-body text-note font-semibold text-ink">
                 {session.name ?? session.email ?? 'Your account'}
               </span>
-              {session.email && <span className="block truncate font-mono text-[0.6875rem] text-slate">{session.email}</span>}
+              {session.email && <span className="block truncate font-mono text-tag text-slate">{session.email}</span>}
             </span>
           </div>
 
@@ -162,7 +162,7 @@ export function NavAccount() {
                 role="menuitem"
                 ref={i === 0 ? firstItemRef : undefined}
                 onClick={() => setOpen(false)}
-                className="px-4 py-2 font-body text-[0.9375rem] text-ink no-underline transition-colors hover:bg-wash hover:text-flame"
+                className="px-4 py-2 font-body text-note text-ink no-underline transition-colors hover:bg-wash hover:text-flame"
               >
                 {item.label}
               </Link>
@@ -171,7 +171,7 @@ export function NavAccount() {
               type="button"
               role="menuitem"
               onClick={() => void signOut()}
-              className="mt-1 border-t border-rule px-4 py-2.5 text-left font-body text-[0.9375rem] text-heat no-underline transition-colors hover:bg-wash"
+              className="mt-1 border-t border-rule px-4 py-2.5 text-left font-body text-note text-heat no-underline transition-colors hover:bg-wash"
             >
               Sign out
             </button>

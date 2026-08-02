@@ -76,15 +76,15 @@ export function SubstitutionPopover({
           <span className="eyebrow block">Swap for</span>
           {groups.map((group) => (
             <span key={group.kind} className="mt-2.5 block">
-              <span className="block font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-flame">
+              <span className="block font-mono text-tag font-semibold uppercase tracking-[0.1em] text-flame">
                 {group.title}
               </span>
               <span className="mt-1 block">
                 {group.items.map((sub, i) => (
-                  <span key={i} className="block py-0.5 text-[0.9375rem] leading-snug">
+                  <span key={i} className="block py-0.5 text-note leading-snug">
                     {sub.label}
                     {sub.ratio ? <span className="text-slate"> · {sub.ratio}</span> : null}
-                    {sub.note ? <span className="block text-[0.8125rem] text-slate">{sub.note}</span> : null}
+                    {sub.note ? <span className="block text-detail text-slate">{sub.note}</span> : null}
                   </span>
                 ))}
               </span>
@@ -95,7 +95,7 @@ export function SubstitutionPopover({
             // "what else can I make with this" — the ingredient page answers it.
             <Link
               href={`/ingredients/${canonicalSlug}`}
-              className="mt-3 block border-t border-rule pt-2.5 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase no-underline hover:text-flame"
+              className="mt-3 block border-t border-rule pt-2.5 font-mono text-tag tracking-[0.1em] text-slate uppercase no-underline hover:text-flame"
             >
               Everything with {canonicalName ?? item} →
             </Link>

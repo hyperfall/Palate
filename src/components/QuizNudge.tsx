@@ -90,11 +90,11 @@ export function QuizNudge() {
             ✕
           </button>
           <p className="eyebrow m-0 text-flame">Quiz night at the pass</p>
-          <h3 className="mt-1 text-[1.25rem] leading-tight text-ink">Think you know your onions?</h3>
-          <p className="mt-1.5 text-[0.875rem] leading-snug text-slate">
+          <h3 className="mt-1 text-title leading-tight text-ink">Think you know your onions?</h3>
+          <p className="mt-1.5 text-eyebrow leading-snug text-slate">
             Eight quick questions, two minutes — and the dish your palate’s been after.
           </p>
-          <button type="button" onClick={() => void openQuiz()} className="btn-primary mt-3 !py-2 !text-[0.8125rem]">
+          <button type="button" onClick={() => void openQuiz()} className="btn-primary mt-3 !py-2 !text-detail">
             Take Taste Night →
           </button>
         </div>

@@ -102,7 +102,7 @@ function TasteBand({
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium text-flame underline-offset-2 hover:underline"
+              className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail font-medium text-flame underline-offset-2 hover:underline"
             >
               Any
             </button>
@@ -201,14 +201,14 @@ function FacetGroup({
             {label}
           </span>
           {activeCount > 0 && (
-            <span className="grid h-[1.1rem] min-w-[1.1rem] place-items-center rounded-full bg-flame px-1 font-mono text-[0.625rem] font-semibold text-paper tabular-nums">
+            <span className="grid h-[1.1rem] min-w-[1.1rem] place-items-center rounded-full bg-flame px-1 font-mono text-micro font-semibold text-paper tabular-nums">
               {activeCount}
             </span>
           )}
         </span>
         <span className="flex items-center gap-2">
           {hint && open && (
-            <span className="font-mono text-[0.75rem] tracking-[0.04em] text-slate">{hint}</span>
+            <span className="font-mono text-caption tracking-[0.04em] text-slate">{hint}</span>
           )}
           <svg
             width="11"
@@ -248,7 +248,7 @@ function Section({
   return (
     <div className={accent ? 'rounded-r-lg border-l-2 border-flame/40 bg-flame/[0.035] pb-3 pl-3.5' : ''}>
       <p
-        className={`m-0 pt-3 pb-0.5 font-mono text-[0.625rem] font-bold tracking-[0.18em] uppercase ${
+        className={`m-0 pt-3 pb-0.5 font-mono text-micro font-bold tracking-[0.18em] uppercase ${
           accent ? 'text-flame' : 'text-slate/55'
         }`}
       >
@@ -288,7 +288,7 @@ function CalorieBand({
           <button
             type="button"
             onClick={() => onCommit(null)}
-            className="cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium text-flame underline-offset-2 hover:underline"
+            className="cursor-pointer border-none bg-transparent p-0 font-mono text-detail font-medium text-flame underline-offset-2 hover:underline"
           >
             Any
           </button>
@@ -307,7 +307,7 @@ function CalorieBand({
         style={{ ['--fill' as string]: `${fillPct}%` }}
         className="slider mt-2"
       />
-      <div className="mt-1 flex justify-between font-mono text-[0.75rem] text-slate tabular-nums">
+      <div className="mt-1 flex justify-between font-mono text-caption text-slate tabular-nums">
         <span>{CALORIE_MIN}</span>
         <span>{CALORIE_MAX}+ kcal</span>
       </div>
@@ -498,7 +498,7 @@ export function FilterPanel({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search recipes…"
-            className="w-full rounded border border-edge bg-transparent px-3.5 py-2.5 font-mono text-[0.8125rem] text-ink placeholder:text-slate focus:border-ink focus:outline-none"
+            className="w-full rounded border border-edge bg-transparent px-3.5 py-2.5 font-mono text-detail text-ink placeholder:text-slate focus:border-ink focus:outline-none"
           />
         </label>
 
@@ -756,7 +756,7 @@ export function FilterPanel({
                   </Chip>
                 ))}
               </div>
-              <p className="mt-2.5 text-[0.75rem] leading-snug text-slate">
+              <p className="mt-2.5 text-caption leading-snug text-slate">
                 Shows only recipes tagged free of the allergen — untagged dishes aren’t assumed safe.
               </p>
             </FacetGroup>
@@ -769,7 +769,7 @@ export function FilterPanel({
   )
 
   const clearButtonClass =
-    'cursor-pointer border-none bg-transparent p-0 font-mono text-[0.8125rem] font-medium tracking-[0.1em] text-flame uppercase underline-offset-2 hover:underline'
+    'cursor-pointer border-none bg-transparent p-0 font-mono text-detail font-medium tracking-[0.1em] text-flame uppercase underline-offset-2 hover:underline'
 
   return (
     <aside aria-label="Filter recipes">
@@ -855,7 +855,7 @@ export function FilterPanel({
             />
             <span
               aria-hidden="true"
-              className={`pointer-events-none absolute inset-x-0 bottom-1 text-center font-mono text-[0.625rem] tracking-[0.12em] text-slate/70 uppercase transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
+              className={`pointer-events-none absolute inset-x-0 bottom-1 text-center font-mono text-micro tracking-[0.12em] text-slate/70 uppercase transition-opacity duration-200 ${rail.bottom ? 'opacity-100' : 'opacity-0'}`}
             >
               more ↓
             </span>
@@ -884,7 +884,7 @@ export function SortSelect({ filters }: { filters: CatalogFilters }) {
             d.tasteVector = tv
           })
         }}
-        className="cursor-pointer appearance-none rounded border border-edge bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-[0.8125rem] font-medium text-ink focus:border-flame focus:outline-none"
+        className="cursor-pointer appearance-none rounded border border-edge bg-transparent py-1.5 pr-8 pl-2.5 font-mono text-detail font-medium text-ink focus:border-flame focus:outline-none"
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.5'/%3E%3C/svg%3E\")",

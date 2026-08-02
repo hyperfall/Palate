@@ -37,7 +37,7 @@ export function CreatorHoverCard({ card, loading }: { card: CreatorCard | null; 
             </span>
             <span className="min-w-0">
               <span className="flex items-center gap-1.5">
-                <span className="truncate font-display text-[1.0625rem] text-ink">{card.name}</span>
+                <span className="truncate font-display text-read text-ink">{card.name}</span>
                 {card.verified && (
                   <span title="Verified creator" className="text-flame" aria-label="Verified creator">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
@@ -47,17 +47,17 @@ export function CreatorHoverCard({ card, loading }: { card: CreatorCard | null; 
                   </span>
                 )}
               </span>
-              <span className="block truncate font-mono text-[0.75rem] text-slate">@{card.handle}</span>
+              <span className="block truncate font-mono text-caption text-slate">@{card.handle}</span>
             </span>
           </div>
 
-          {card.bio && <p className="mt-3 text-[0.875rem] leading-snug text-ink/70">{card.bio}</p>}
+          {card.bio && <p className="mt-3 text-eyebrow leading-snug text-ink/70">{card.bio}</p>}
 
           <div className="mt-4 flex items-center justify-between gap-2 border-t border-rule pt-3">
             <SocialLinks socials={card.socials} variant="brand" />
             <Link
               href={`/creator/${card.handle}`}
-              className="group/vp inline-flex shrink-0 items-center gap-1 font-mono text-[0.6875rem] tracking-[0.1em] text-slate uppercase transition-colors hover:text-flame"
+              className="group/vp inline-flex shrink-0 items-center gap-1 font-mono text-tag tracking-[0.1em] text-slate uppercase transition-colors hover:text-flame"
             >
               Profile
               <span aria-hidden="true" className="transition-transform group-hover/vp:translate-x-0.5">→</span>

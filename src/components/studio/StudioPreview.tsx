@@ -89,7 +89,7 @@ export function StudioPreview({
             <img src={photoUrl} alt="" className="aspect-[4/3] w-full object-cover" />
           ) : (
             <div className="grid aspect-[4/3] w-full place-items-center bg-pan-deep">
-              <span className="rounded-sm border border-dashed border-milk/25 px-4 py-2 font-mono text-[0.75rem] tracking-[0.06em] text-milk/50 uppercase">
+              <span className="rounded-sm border border-dashed border-milk/25 px-4 py-2 font-mono text-caption tracking-[0.06em] text-milk/50 uppercase">
                 your photo lands here
               </span>
             </div>
@@ -101,7 +101,7 @@ export function StudioPreview({
             <h3 className="font-display text-[2rem] leading-[0.95] tracking-[-0.01em] text-milk">
               {title || 'Your recipe title'}
             </h3>
-            <p className="mt-2 m-0 font-mono text-[0.75rem] tracking-[0.02em] text-milk">
+            <p className="mt-2 m-0 font-mono text-caption tracking-[0.02em] text-milk">
               {facts.join(' · ')}
             </p>
           </div>
@@ -110,13 +110,13 @@ export function StudioPreview({
         {/* Byline — matches the published recipe page exactly (plain "Written by",
             no avatar), so the preview never promises a treatment that won't ship. */}
         <div className="border-b border-rule p-4">
-          <p className="m-0 flex flex-wrap items-center gap-1.5 text-[0.9375rem] leading-snug text-slate">
+          <p className="m-0 flex flex-wrap items-center gap-1.5 text-note leading-snug text-slate">
             Written by <span className="font-semibold text-ink">{profile.name ?? 'Your name'}</span>
             {profile.verified && (
-              <span title="Verified creator" className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-flame text-[0.625rem] text-paper">✓</span>
+              <span title="Verified creator" className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-flame text-micro text-paper">✓</span>
             )}
             {profile.username && (
-              <span className="font-mono text-[0.75rem] text-slate">@{profile.username}</span>
+              <span className="font-mono text-caption text-slate">@{profile.username}</span>
             )}
           </p>
         </div>
@@ -136,7 +136,7 @@ export function StudioPreview({
                       {row.item}
                     </li>
                   ) : (
-                    <li key={i} className="leader text-[0.9375rem] leading-snug">
+                    <li key={i} className="leader text-note leading-snug">
                       <span className="break-words [overflow-wrap:anywhere]">{row.item}</span>
                       {/* The dotted leader promises a measure — only draw it when
                           one is coming, exactly as the recipe page does. */}
@@ -150,7 +150,7 @@ export function StudioPreview({
                   ),
                 )}
               {ingredients.length > 8 && (
-                <li className="pt-1 font-mono text-[0.75rem] text-slate">+ {ingredients.length - 8} more</li>
+                <li className="pt-1 font-mono text-caption text-slate">+ {ingredients.length - 8} more</li>
               )}
             </ul>
           </div>
@@ -164,10 +164,10 @@ export function StudioPreview({
                 .slice(0, 4)
                 .map((step, i) => (
                   <li key={i} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2 gap-y-2">
-                    <span className="font-mono text-[0.9375rem] font-bold text-flame tabular-nums">
+                    <span className="font-mono text-note font-bold text-flame tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <p className="m-0 text-[0.9375rem] leading-relaxed break-words [overflow-wrap:anywhere]">
+                    <p className="m-0 text-note leading-relaxed break-words [overflow-wrap:anywhere]">
                       {step.text.trim()}
                     </p>
                     {step.imageUrl && (
@@ -181,7 +181,7 @@ export function StudioPreview({
                   </li>
                 ))}
               {steps.length > 4 && (
-                <li className="font-mono text-[0.75rem] text-slate">+ {steps.length - 4} more steps</li>
+                <li className="font-mono text-caption text-slate">+ {steps.length - 4} more steps</li>
               )}
             </ol>
           </div>
@@ -210,7 +210,7 @@ export function StudioPreview({
           aria-haspopup="dialog"
           // Clear the fixed bottom nav on phones (it's ~3.25rem tall, sm:hidden);
           // on tablets there's no bottom bar, so sit closer to the edge.
-          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-[0.75rem] font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
+          className="fixed right-5 bottom-[calc(3.25rem+env(safe-area-inset-bottom)+1rem)] z-40 flex items-center gap-2 rounded-full border border-flame bg-flame px-4 py-2.5 font-mono text-caption font-semibold tracking-[0.12em] text-paper uppercase shadow-lg sm:bottom-6 xl:hidden"
         >
           <span aria-hidden="true">◉</span> Live preview
         </button>

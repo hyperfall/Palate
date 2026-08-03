@@ -116,6 +116,25 @@ export const Ingredients: CollectionConfig = {
                       'Pieces skips the weight conversion entirely — "12 eggs for £3" needs no grams-per-egg.',
                   },
                 },
+                {
+                  name: 'source',
+                  type: 'text',
+                  label: 'Where this price came from',
+                  admin: {
+                    description:
+                      'The shop and product it was read off, e.g. "Tesco Olive Oil 500ml". A price nobody can trace is a guess wearing a number — this is what makes it checkable.',
+                  },
+                },
+                {
+                  name: 'checkedAt',
+                  type: 'date',
+                  label: 'Last checked',
+                  admin: {
+                    description:
+                      'Groceries move. This is how you find the prices that have gone stale rather than re-checking all of them.',
+                    date: { pickerAppearance: 'dayOnly', displayFormat: 'd MMM yyyy' },
+                  },
+                },
               ],
             },
           ],

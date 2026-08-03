@@ -590,6 +590,14 @@ export interface Ingredient {
      * Pieces skips the weight conversion entirely — "12 eggs for £3" needs no grams-per-egg.
      */
     packUnit?: ('g' | 'ml' | 'piece') | null;
+    /**
+     * The shop and product it was read off, e.g. "Tesco Olive Oil 500ml". A price nobody can trace is a guess wearing a number — this is what makes it checkable.
+     */
+    source?: string | null;
+    /**
+     * Groceries move. This is how you find the prices that have gone stale rather than re-checking all of them.
+     */
+    checkedAt?: string | null;
   };
   needsReview?: boolean | null;
   updatedAt: string;
@@ -1481,6 +1489,8 @@ export interface IngredientsSelect<T extends boolean = true> {
         packPrice?: T;
         packAmount?: T;
         packUnit?: T;
+        source?: T;
+        checkedAt?: T;
       };
   needsReview?: T;
   updatedAt?: T;

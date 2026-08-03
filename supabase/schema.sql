@@ -453,3 +453,66 @@ $$;
 -- Any signed-in creator may ask for counts; the function itself is the guard.
 revoke all on function public.recipe_stats(text[]) from public;
 grant execute on function public.recipe_stats(text[]) to authenticated;
+
+-- ── The price book: what a cook actually pays ───────────────────────────────
+--
+-- A recipe's cost used to be one hand-typed number per recipe, in GBP pence,
+-- identical for everyone. This is the replacement: real prices, recorded by
+-- the person shopping, and costs computed from the quantities.
+--
+-- Household-shared, like the plan and the pantry — two people cooking from one
+-- kitchen buy from the same shelf, and a week's budget that disagreed between
+-- them would be useless. The set_row_household trigger owns household_id, so
+-- the client never sets it and cannot mis-scope a row.
+--
+-- Currency is stored per row rather than assumed. It is the whole point: the
+-- amounts are meaningless without it, and nothing here ever converts between
+-- currencies — an unconvertible price is reported as unpriced instead of
+-- silently becoming a wrong number in someone's weekly budget.
+create table if not exists public.ingredient_prices (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  household_id uuid references public.households (id) on delete set null,
+  ingredient_slug text not null check (char_length(ingredient_slug) between 1 and 200),
+  ingredient_name text not null check (char_length(ingredient_name) between 1 and 200),
+  -- Minor units (pence, cents, yen). Integer on purpose: money in a float
+  -- accumulates error across a shopping list.
+  price_minor int not null check (price_minor >= 0 and price_minor <= 100000000),
+  currency text not null check (currency ~ '^[A-Z]{3}$'),
+  -- The pack it was bought as: 500 g, 750 ml, 12 pieces.
+  pack_amount numeric not null check (pack_amount > 0 and pack_amount <= 1000000),
+  pack_unit text not null check (pack_unit in ('g', 'ml', 'piece')),
+  updated_at timestamptz not null default now(),
+  unique (user_id, ingredient_slug)
+);
+create index if not exists ingredient_prices_user_idx on public.ingredient_prices (user_id);
+create index if not exists ingredient_prices_household_idx on public.ingredient_prices (household_id);
+
+alter table public.ingredient_prices enable row level security;
+
+drop trigger if exists ingredient_prices_household on public.ingredient_prices;
+create trigger ingredient_prices_household before insert or update on public.ingredient_prices
+  for each row execute function public.set_row_household();
+
+-- Keep updated_at honest so the settings page can show when a price was last
+-- checked — a two-year-old price is worth re-entering and worth flagging.
+create or replace function public.touch_ingredient_price()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+drop trigger if exists ingredient_prices_touch on public.ingredient_prices;
+create trigger ingredient_prices_touch before update on public.ingredient_prices
+  for each row execute function public.touch_ingredient_price();
+
+-- Same shape as the pantry: your rows or your household's. WITH CHECK keeps
+-- user_id honest; the trigger owns household_id.
+drop policy if exists "price book access" on public.ingredient_prices;
+create policy "price book access" on public.ingredient_prices
+  for all
+  using (user_id = auth.uid() or household_id = public.my_household_id())
+  with check (user_id = auth.uid());

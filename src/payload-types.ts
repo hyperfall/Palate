@@ -577,6 +577,20 @@ export interface Ingredient {
      */
     source?: string | null;
   };
+  price?: {
+    /**
+     * In pence, GBP — the baseline is authored in one currency on purpose. A cook shopping elsewhere records their own prices; we never convert, because a made-up exchange rate is worse than saying we do not know.
+     */
+    packPrice?: number | null;
+    /**
+     * How much is in that pack: 500, 750, 12.
+     */
+    packAmount?: number | null;
+    /**
+     * Pieces skips the weight conversion entirely — "12 eggs for £3" needs no grams-per-egg.
+     */
+    packUnit?: ('g' | 'ml' | 'piece') | null;
+  };
   needsReview?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -1460,6 +1474,13 @@ export interface IngredientsSelect<T extends boolean = true> {
         fibrePer100g?: T;
         saltPer100g?: T;
         source?: T;
+      };
+  price?:
+    | T
+    | {
+        packPrice?: T;
+        packAmount?: T;
+        packUnit?: T;
       };
   needsReview?: T;
   updatedAt?: T;

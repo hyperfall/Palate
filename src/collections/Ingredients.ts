@@ -75,6 +75,51 @@ export const Ingredients: CollectionConfig = {
             },
           ],
         },
+        {
+          label: 'Price',
+          description:
+            'A typical shelf price, used to cost a recipe for anyone who has not recorded their own. Signed-in cooks override this with what they actually pay. Leave blank and the recipe reports this ingredient as unpriced rather than free.',
+          fields: [
+            {
+              name: 'price',
+              type: 'group',
+              label: 'Typical price',
+              fields: [
+                {
+                  name: 'packPrice',
+                  type: 'number',
+                  min: 0,
+                  label: 'Pack price (pence)',
+                  admin: {
+                    description:
+                      'In pence, GBP — the baseline is authored in one currency on purpose. A cook shopping elsewhere records their own prices; we never convert, because a made-up exchange rate is worse than saying we do not know.',
+                  },
+                },
+                {
+                  name: 'packAmount',
+                  type: 'number',
+                  min: 0,
+                  label: 'Pack size',
+                  admin: { description: 'How much is in that pack: 500, 750, 12.' },
+                },
+                {
+                  name: 'packUnit',
+                  type: 'select',
+                  label: 'Pack unit',
+                  options: [
+                    { label: 'grams', value: 'g' },
+                    { label: 'millilitres', value: 'ml' },
+                    { label: 'pieces', value: 'piece' },
+                  ],
+                  admin: {
+                    description:
+                      'Pieces skips the weight conversion entirely — "12 eggs for £3" needs no grams-per-egg.',
+                  },
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
     { name: 'needsReview', type: 'checkbox', defaultValue: false, index: true, admin: { position: 'sidebar' } },

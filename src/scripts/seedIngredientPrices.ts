@@ -188,6 +188,64 @@ const PRICES: Record<string, Entry> = {
 }
 
 /**
+ * What kind of thing each ingredient is.
+ *
+ * Every one of the 109 was sitting on the default 'other', which made the
+ * field useless — it could not group a shopping list, filter a catalogue, or
+ * pick a stand-in tile for an ingredient with no photograph yet. These come
+ * from the same grouping the price research was organised by, so they are a
+ * by-product of work already done rather than a fresh guess.
+ */
+type Category = NonNullable<import('@/payload-types').Ingredient['category']>
+
+const CATEGORIES: Partial<Record<Category, string[]>> = {
+  'condiment': [
+    'chicken-stock', 'chilli-crisp', 'chinkiang-black-vinegar', 'chipotles-in-adobo',
+    'coconut-milk', 'dashi', 'doubanjiang', 'fish-sauce', 'gochujang', 'green-curry-paste',
+    'honey', 'kimchi', 'kombu', 'mirin', 'palm-sugar', 'passata', 'pomegranate-molasses',
+    'salsa', 'soy-sauce', 'spicy-salsa', 'tahini', 'tomato-puree', 'wasabi',
+    'white-wine-vinegar',
+  ],
+  'dairy': [
+    'butter', 'double-cream', 'feta', 'mozzarella', 'pecorino-romano', 'quesillo',
+    'yoghurt',
+  ],
+  'grain-legume': [
+    'breadcrumb', 'chickpea', 'corn-tortilla', 'cornflour', 'ditalini',
+    'refried-black-bean', 'rice', 'sesame-seed', 'short-grain-rice', 'soba', 'sugar',
+    'tonnarelli', 'walnut', 'water',
+  ],
+  'oil-fat': [
+    'olive-oil', 'sesame-oil', 'sunflower-oil',
+  ],
+  'produce': [
+    'aubergine', 'avocado', 'beansprout', 'cabbage', 'carrot', 'cherry-tomato', 'cilantro',
+    'cucumber', 'flat-leaf-parsley', 'garlic', 'ginger', 'green-papaya', 'kaffir-lime-leaf',
+    'lemon', 'lime', 'lime-juice', 'lime-wedge', 'onion', 'pomegranate-seed',
+    'red-bell-pepper', 'red-pepper', 'shiitake', 'shiitake-mushroom', 'spinach',
+    'spring-onion', 'thai-aubergine', 'thai-basil', 'tomato', 'white-onion',
+    'white-onion-and-coriander',
+  ],
+  'protein': [
+    'bone-marrow-disc', 'braising-steak', 'chicken-thigh', 'egg', 'firm-tofu', 'pork',
+    'pork-belly', 'silken-tofu',
+  ],
+  'spice-herb': [
+    'aleppo-pepper', 'amchur', 'ancho-chilli', 'arbol-chilli', 'bay-leaf',
+    'bird-s-eye-chilli', 'black-peppercorn', 'cayenne-pepper', 'cinnamon', 'coriander',
+    'cumin', 'fenugreek-leaf', 'garam-masala', 'gochugaru', 'guajillo-chilli',
+    'kashmiri-chilli-powder', 'oregano', 'rosemary', 'salt', 'sea-salt-flake',
+    'sichuan-peppercorn', 'sweet-paprika', 'tandoori-masala',
+  ],
+}
+
+const CATEGORY_BY_SLUG = new Map<string, Category>(
+  Object.entries(CATEGORIES).flatMap(([category, slugs]) =>
+    slugs.map((s) => [s, category as Category] as const),
+  ),
+)
+
+/**
  * Per-piece weights for things a recipe counts but a shop sells by weight.
  *
  * Without these the row is honestly unpriceable, which is correct behaviour but
@@ -227,6 +285,7 @@ const found = await payload.find({
 let wrote = 0
 let unchanged = 0
 let weights = 0
+let categorised = 0
 const missing = new Set(slugs)
 
 for (const doc of found.docs as unknown as Array<Record<string, unknown>>) {
@@ -236,6 +295,8 @@ for (const doc of found.docs as unknown as Array<Record<string, unknown>>) {
   const current = (doc.price ?? {}) as Record<string, unknown>
   const gpp = GRAMS_PER_PIECE[slug]
   const needsWeight = gpp != null && doc.gramsPerPiece == null
+  const category = CATEGORY_BY_SLUG.get(slug)
+  const needsCategory = category != null && doc.category !== category
 
   const same =
     current.packPrice === packPrice &&
@@ -243,7 +304,7 @@ for (const doc of found.docs as unknown as Array<Record<string, unknown>>) {
     current.packUnit === packUnit &&
     current.source === source
 
-  if (same && !needsWeight) {
+  if (same && !needsWeight && !needsCategory) {
     unchanged++
     continue
   }
@@ -254,11 +315,13 @@ for (const doc of found.docs as unknown as Array<Record<string, unknown>>) {
       data: {
         price: { packPrice, packAmount, packUnit, source, checkedAt },
         ...(needsWeight ? { gramsPerPiece: gpp } : {}),
+        ...(needsCategory ? { category } : {}),
       },
       depth: 0,
     })
   }
   if (needsWeight) weights++
+  if (needsCategory) categorised++
   if (!same) wrote++
 }
 
@@ -273,7 +336,10 @@ for (const [slug, why] of Object.entries(UNVERIFIED)) {
   const hit = doc.docs[0] as unknown as Record<string, unknown> | undefined
   if (!hit) continue
   const price = (hit.price ?? {}) as Record<string, unknown>
-  if (price.packPrice == null && price.packAmount == null) continue
+  const wantCategory = CATEGORY_BY_SLUG.get(slug)
+  const categoryWrong = wantCategory != null && hit.category !== wantCategory
+  // Already cleared AND already categorised: nothing left to do.
+  if (price.packPrice == null && price.packAmount == null && !categoryWrong) continue
   if (apply) {
     await payload.update({
       collection: 'ingredients',
@@ -286,6 +352,10 @@ for (const [slug, why] of Object.entries(UNVERIFIED)) {
           source: `No verifiable price: ${why}`,
           checkedAt,
         },
+        // Still categorise it. An ingredient with no price is exactly the one a
+        // cook is most likely to go looking for, so it should not also be the
+        // one drawn as the generic fallback tile.
+        ...(wantCategory ? { category: wantCategory } : {}),
       },
       depth: 0,
     })
@@ -298,6 +368,7 @@ console.log(`Baseline prices — ${apply ? 'applied' : 'dry run'}`)
 console.log(`  priced          ${wrote}`)
 console.log(`  already correct ${unchanged}`)
 if (weights) console.log(`  per-piece weights added ${weights}`)
+if (categorised) console.log(`  categorised       ${categorised}`)
 if (cleared) console.log(`  cleared as unverifiable ${cleared}`)
 if (missing.size) {
   console.log(`  no such ingredient (${missing.size}): ${[...missing].join(', ')}`)

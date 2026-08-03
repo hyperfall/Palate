@@ -30,6 +30,15 @@ export const Ingredients: CollectionConfig = {
             },
             { name: 'countable', type: 'checkbox', defaultValue: false, admin: { description: 'Discrete items (eggs, cloves).' } },
             {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description:
+                  'A photo of the ingredient, used in the cost calculator and shopping lists. Optional — without one, a tinted tile keyed to the category stands in, so a missing photo reads as a placeholder rather than a broken image.',
+              },
+            },
+            {
               name: 'substitutions',
               type: 'array',
               fields: [

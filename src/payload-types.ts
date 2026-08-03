@@ -539,6 +539,10 @@ export interface Ingredient {
    * Discrete items (eggs, cloves).
    */
   countable?: boolean | null;
+  /**
+   * A photo of the ingredient, used in the cost calculator and shopping lists. Optional — without one, a tinted tile keyed to the category stands in, so a missing photo reads as a placeholder rather than a broken image.
+   */
+  image?: (number | null) | Media;
   substitutions?:
     | {
         sub?: (number | null) | Ingredient;
@@ -1458,6 +1462,7 @@ export interface IngredientsSelect<T extends boolean = true> {
   aliases?: T;
   category?: T;
   countable?: T;
+  image?: T;
   substitutions?:
     | T
     | {

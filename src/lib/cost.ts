@@ -1,5 +1,5 @@
 import { BASE_CURRENCY, type Money } from './money'
-import { parseQuantity, toGrams, type NutritionIngredient } from './nutrition'
+import { isMeasuredUnit, parseQuantity, toGrams, type NutritionIngredient } from './nutrition'
 
 /**
  * What a recipe actually costs, from its ingredients.
@@ -73,6 +73,36 @@ export type CostResult = {
   complete: boolean
 }
 
+/**
+ * How many pieces a row uses, for an ingredient sold by the item.
+ *
+ * Countable things skip grams entirely when the row is a count: "2 eggs" at
+ * 30p an egg needs no weight, and demanding one would leave every egg, clove
+ * and tin unpriced for want of a number nobody has.
+ *
+ * But a row may state a WEIGHT of something sold by the item — "400 g crushed
+ * tomatoes", where tomato is priced per tomato. Reading that quantity as a
+ * count is how a tin of tomatoes came out at £120 and took a plate of
+ * shakshuka to £30.95. So a measured unit is converted to grams first and then
+ * to pieces through the ingredient's own per-piece weight; without one, it is
+ * honestly unpriceable rather than wrong by a factor of a hundred.
+ *
+ * An unmeasured unit — "2 tins", "3 cloves", "1 bunch" — is still a count.
+ */
+function toPieces(
+  quantity: number,
+  unitRaw: string | null | undefined,
+  ing: NutritionIngredient,
+): number | null {
+  if (!isMeasuredUnit(unitRaw)) return quantity
+
+  const grams = toGrams(quantity, unitRaw, ing)
+  if (grams == null || grams <= 0) return null
+  const per = ing.gramsPerPiece
+  if (per == null || per <= 0) return null
+  return grams / per
+}
+
 /** Cost of `grams` of an ingredient priced by pack, in minor units. */
 function costOfGrams(grams: number, price: IngredientPrice, densityGPerMl: number): number | null {
   if (price.packAmount <= 0) return null
@@ -132,12 +162,10 @@ export function computeCost(
 
     const density = ing.densityGPerMl ?? 1
 
-    // Countable things priced per piece skip grams entirely: "2 eggs" at 30p an
-    // egg needs no weight at all, and demanding one would leave every egg,
-    // clove and tin unpriced for want of a number nobody has.
     let minor: number | null
     if (price.packUnit === 'piece') {
-      minor = (qty / price.packAmount) * price.priceMinor
+      const pieces = toPieces(qty, row.unit, ing)
+      minor = pieces == null ? null : (pieces / price.packAmount) * price.priceMinor
     } else {
       const grams = toGrams(qty, row.unit, ing)
       minor = grams == null || grams <= 0 ? null : costOfGrams(grams, price, density)

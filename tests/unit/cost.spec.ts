@@ -203,3 +203,51 @@ describe('the worked example from the brief', () => {
     expect(result.complete).toBe(true)
   })
 })
+
+describe('a weight of something sold by the item', () => {
+  it('converts through the per-piece weight instead of counting the grams', () => {
+    // "400 g crushed tomatoes" where tomato is priced per tomato. Reading 400
+    // as a count of tomatoes put £120 of tinned tomatoes into a shakshuka and
+    // took the plate price to £30.95.
+    const result = computeCost(
+      [row('400', 'g', 'Crushed tomatoes', 'tomato', { gramsPerPiece: 100 })],
+      1,
+      book({ tomato: [30, 'GBP', 1, 'piece'] }),
+      'GBP',
+    )
+    // 400g ÷ 100g per tomato = 4 tomatoes × 30p
+    expect(result.lines[0].minor).toBe(120)
+  })
+
+  it('refuses to guess when the ingredient has no per-piece weight', () => {
+    const result = computeCost(
+      [row('400', 'g', 'Crushed tomatoes', 'tomato')],
+      1,
+      book({ tomato: [30, 'GBP', 1, 'piece'] }),
+      'GBP',
+    )
+    expect(result.lines[0].minor).toBeNull()
+    expect(result.lines[0].reason).toBe('not-convertible')
+  })
+
+  it('still counts a bare quantity as pieces', () => {
+    const result = computeCost(
+      [row('4', null, 'Tomatoes', 'tomato', { gramsPerPiece: 100 })],
+      1,
+      book({ tomato: [30, 'GBP', 1, 'piece'] }),
+      'GBP',
+    )
+    expect(result.lines[0].minor).toBe(120)
+  })
+
+  it('treats an unmeasured unit as a count', () => {
+    // "2 tins" is two of the thing, not a weight.
+    const result = computeCost(
+      [row('2', 'tin', 'Tinned tomatoes', 'tomato')],
+      1,
+      book({ tomato: [80, 'GBP', 1, 'piece'] }),
+      'GBP',
+    )
+    expect(result.lines[0].minor).toBe(160)
+  })
+})

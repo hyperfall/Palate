@@ -7,6 +7,7 @@ import { BrandSlot } from '@/components/BrandSlot'
 import { AddToPlan } from '@/components/AddToPlan'
 import { ConvertedText } from '@/components/ConvertedText'
 import { CookModeLauncher } from '@/components/CookMode'
+import { CostPanel, type CostPanelRow } from '@/components/CostPanel'
 import { CreatorByline } from '@/components/CreatorByline'
 import { MethodTabs } from '@/components/MethodTabs'
 import { NutritionPanel } from '@/components/NutritionPanel'
@@ -21,16 +22,19 @@ import { RecipeContents } from '@/components/RecipeContents'
 import { RecipeJsonLd } from '@/components/RecipeJsonLd'
 import { TastePanel } from '@/components/TasteGauge'
 import { VideoEmbed } from '@/components/VideoEmbed'
-import { formatMinutes, formatPlatePrice, formatTimer } from '@/lib/format'
+import { formatMinutes, formatTimer } from '@/lib/format'
 import { lexicalToParagraphs, lexicalToPlainText } from '@/lib/lexical'
 import { recipeSections } from '@/lib/recipeContents'
 import { readingTime } from '@/lib/storyOutline'
 import { imageFrom } from '@/lib/media'
 import { HeroAnnotations, type HeroPin } from '@/components/HeroAnnotations'
 import { findAllRecipeSlugs, findRecipeBySlug, findRelatedRecipes } from '@/lib/queries'
+import { computeCost } from '@/lib/cost'
+import { BASE_CURRENCY, formatMoney } from '@/lib/money'
 import { absoluteUrl } from '@/lib/site'
 import { buildCookSteps } from '@/lib/stepIngredients'
 import type { Provenance } from '@/lib/taxonomy'
+import type { Recipe } from '@/payload-types'
 
 export const revalidate = 3600 // ISR — §8 asks for SSG/ISR on recipe pages.
 
@@ -73,6 +77,46 @@ export async function generateMetadata({
   }
 }
 
+/**
+ * Flatten the ingredient rows into what the cost panel needs.
+ *
+ * Only the four numbers costing depends on — the canonical slug, the density
+ * and per-piece weight that convert an amount to grams, and the baseline shelf
+ * price. Sending the whole ingredient (aliases, substitutions, nutrition,
+ * every relationship at depth 2) would put several kilobytes of JSON into
+ * every recipe page's payload to read four fields off it.
+ */
+function costRows(ingredients: NonNullable<Recipe['ingredients']>): CostPanelRow[] {
+  return ingredients.map((row) => {
+    const ing = typeof row.ingredient === 'object' ? row.ingredient : null
+    const price = ing?.price
+    const packUnit = price?.packUnit
+    const usable =
+      price?.packPrice != null &&
+      price.packAmount != null &&
+      price.packAmount > 0 &&
+      (packUnit === 'g' || packUnit === 'ml' || packUnit === 'piece')
+
+    return {
+      item: row.item,
+      quantity: row.quantity ?? null,
+      unit: row.unit ?? null,
+      heading: row.heading ?? false,
+      slug: ing?.slug ?? null,
+      densityGPerMl: ing?.densityGPerMl ?? null,
+      gramsPerPiece: ing?.gramsPerPiece ?? null,
+      baseline: usable
+        ? {
+            priceMinor: price.packPrice as number,
+            currency: BASE_CURRENCY,
+            packAmount: price.packAmount as number,
+            packUnit: packUnit as 'g' | 'ml' | 'piece',
+          }
+        : null,
+    }
+  })
+}
+
 export default async function RecipePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const recipe = await findRecipeBySlug(slug)
@@ -95,6 +139,31 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
   const author = typeof recipe.author === 'object' ? recipe.author : null
   // Paragraphs for the page; the flattened form stays for the meta description.
   const storyParagraphs = recipe.story ? lexicalToParagraphs(recipe.story as never) : []
+
+  // The plate price in the hero, computed from the ingredients. Baseline
+  // prices only — this is part of the static page, so it must not depend on
+  // who is looking. The panel below personalises it in the browser.
+  const costPanelRows = costRows(recipe.ingredients ?? [])
+  const baselineCost = computeCost(
+    costPanelRows.map((r) => ({
+      quantity: r.quantity,
+      unit: r.unit,
+      item: r.item,
+      heading: r.heading,
+      ingredient: r.slug
+        ? { slug: r.slug, densityGPerMl: r.densityGPerMl, gramsPerPiece: r.gramsPerPiece }
+        : null,
+    })),
+    recipe.servings,
+    new Map(costPanelRows.flatMap((r) => (r.slug && r.baseline ? [[r.slug, r.baseline] as const] : []))),
+    BASE_CURRENCY,
+  )
+  // Only claim a price when most of the dish is actually priced — a figure
+  // built from three of eleven ingredients is worse than none.
+  const baselinePlatePrice =
+    baselineCost.quantified > 0 && baselineCost.priced / baselineCost.quantified >= 0.6
+      ? baselineCost.perServingMinor
+      : null
 
   // Built from what this recipe actually has, so no entry can scroll to nothing.
   const sections = recipeSections({
@@ -190,11 +259,19 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 <span className="capitalize">{recipe.difficulty}</span>
                 {/* The card grid shows the plate price; hiding it on the page
                     itself meant going BACK to a listing to check the cost of
-                    the dish in front of you. */}
-                {recipe.costPerServing != null && (
+                    the dish in front of you.
+
+                    Computed from the ingredients rather than read off the
+                    recipe's hand-typed costPerServing, which is why it can
+                    disagree with an older figure — this one is the sum of what
+                    the dish is actually made of, and it moves when a price
+                    does. It is deliberately the baseline number, matching what
+                    a signed-out visitor sees in the panel below; a cook with
+                    their own prices gets a more accurate figure there. */}
+                {baselinePlatePrice != null && (
                   <>
                     <span aria-hidden="true" className="text-milk/40">·</span>
-                    <span>≈{formatPlatePrice(recipe.costPerServing)} a plate</span>
+                    <span>≈{formatMoney(baselinePlatePrice, BASE_CURRENCY)} a plate</span>
                   </>
                 )}
                 {communityAverage > 0 && (
@@ -358,6 +435,17 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
             </div>
 
             <NutritionPanel nutrition={recipe.nutrition} />
+
+            {/* Baseline prices ride along with the ingredient relationship the
+                page already loads, so this costs no extra query and stays part
+                of the static page. The cook's own prices are fetched in the
+                browser — doing it here would opt the route out of static
+                rendering for every visitor, priced or not. */}
+            <CostPanel
+              slug={recipe.slug}
+              baseServings={recipe.servings}
+              rows={costPanelRows}
+            />
 
             <div className="mt-8">
               <BrandSlot recipeSlug={recipe.slug} />

@@ -114,6 +114,18 @@ export function parseQuantity(raw: string | null | undefined): number | null {
   return null
 }
 
+/**
+ * Does this unit state a mass or a volume, as opposed to a count?
+ *
+ * The distinction matters to anything pricing by the piece: "400 g" of tomato
+ * and "4 tomatoes" are both valid rows, and treating the first as a count of
+ * four hundred is how a tin of tomatoes came to cost £120.
+ */
+export function isMeasuredUnit(unitRaw: string | null | undefined): boolean {
+  const unit = String(unitRaw ?? '').trim().toLowerCase()
+  return unit in WEIGHT_G || unit in VOLUME_ML
+}
+
 /** quantity + unit + the ingredient's own measures → grams, or null if unconvertible. */
 export function toGrams(quantity: number, unitRaw: string | null | undefined, ing: NutritionIngredient): number | null {
   const unit = String(unitRaw ?? '').trim().toLowerCase()

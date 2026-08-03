@@ -177,7 +177,7 @@ let wrote = 0
 let unchanged = 0
 const missing = new Set(slugs)
 
-for (const doc of found.docs as Array<Record<string, unknown>>) {
+for (const doc of found.docs as unknown as Array<Record<string, unknown>>) {
   const slug = String(doc.slug)
   missing.delete(slug)
   const [packPrice, packAmount, packUnit] = PRICES[slug]
@@ -212,7 +212,7 @@ if (missing.size) {
 // The catalogue is the thing that has to be covered, not this table — an
 // ingredient nobody priced is the one that makes a recipe read "partly priced".
 const all = await payload.find({ collection: 'ingredients', depth: 0, limit: 1000 })
-const unpriced = (all.docs as Array<Record<string, unknown>>).filter((d) => {
+const unpriced = (all.docs as unknown as Array<Record<string, unknown>>).filter((d) => {
   const p = (d.price ?? {}) as Record<string, unknown>
   return p.packPrice == null || p.packAmount == null || !p.packUnit
 })

@@ -84,6 +84,17 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    // The price book. A tag with a value on it.
+    href: '/prices',
+    label: 'Prices',
+    icon: (
+      <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
+        <path d="M20.5 12.5 12 21l-9-9V3h9z" />
+        <circle cx="7.5" cy="7.5" r="1.4" />
+      </svg>
+    ),
+  },
+  {
     href: '/students',
     label: 'Students',
     icon: (

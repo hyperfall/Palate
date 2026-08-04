@@ -3,7 +3,7 @@
 import { Select } from '@/components/controls'
 import { IngredientThumb, type ThumbImage } from '@/components/IngredientThumb'
 import type { UnpricedReason } from '@/lib/cost'
-import { useUnitsFor, type CostingItem } from '@/lib/costing'
+import { unitPrice, useUnitsFor, type CostingItem } from '@/lib/costing'
 import { formatMoney, minorPerMajor, parseMoneyInput } from '@/lib/money'
 
 /**
@@ -68,6 +68,7 @@ export function CalculatorRow({
   onRemove,
 }: RowProps) {
   const units = useUnitsFor(item)
+  const shelf = unitPrice(item)
   const major = minorPerMajor(currency)
   const decimals = major === 1 ? 0 : 2
 
@@ -89,7 +90,12 @@ export function CalculatorRow({
             <input
               inputMode="decimal"
               value={priceText}
-              onChange={(e) => onChange({ priceMinor: parseMoneyInput(e.target.value, currency) })}
+              onChange={(e) =>
+                onChange({
+                  priceMinor: parseMoneyInput(e.target.value, currency),
+                  priceFrom: 'mine',
+                })
+              }
               onBlur={onCommitPrice}
               placeholder={currency}
               aria-label={`What you paid for ${item.label}`}
@@ -108,7 +114,7 @@ export function CalculatorRow({
               aria-label={`How much you got for that, for ${item.label}`}
               className="w-16 rounded border border-rule bg-transparent px-2 py-1 text-right text-detail text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
             />
-            <div className="w-20">
+            <div className="w-[5.5rem] shrink-0">
               <Select
                 value={item.packUnit ?? 'g'}
                 onChange={(v) => {
@@ -120,18 +126,41 @@ export function CalculatorRow({
                 }}
                 ariaLabel={`What you bought ${item.label} by`}
               >
-                <option value="g">grams</option>
+                <option value="g">g</option>
                 <option value="ml">ml</option>
                 <option value="piece">each</option>
               </Select>
             </div>
           </div>
 
+          {/* The shelf figure: the only one comparable between a 90 g tub and a
+              300 g one, and the reason someone can tell whether our estimate is
+              anywhere near their shop. */}
+          {shelf && (
+            <p className="mt-1.5 mb-0 flex flex-wrap items-center gap-x-2 font-mono text-caption text-slate">
+              <span>
+                {formatMoney(Math.round(shelf.minor), currency)}
+                {shelf.per === 'each' ? ' each' : `/${shelf.per}`}
+              </span>
+              {item.priceFrom === 'ours' && (
+                <span className="rounded-sm border border-rule px-1.5 py-px text-slate/80">
+                  our estimate
+                </span>
+              )}
+              {item.priceFrom === 'mine' && (
+                <span className="rounded-sm border border-flame/40 px-1.5 py-px text-flame">
+                  what you pay
+                </span>
+              )}
+            </p>
+          )}
+
           {suggestion && item.priceMinor == null && (
             <button
               type="button"
               onClick={() =>
                 onChange({
+                  priceFrom: 'ours',
                   priceMinor: suggestion.priceMinor,
                   packAmount: suggestion.packAmount,
                   packUnit: suggestion.packUnit as CostingItem['packUnit'],
@@ -176,7 +205,7 @@ export function CalculatorRow({
             className="w-16 rounded border border-rule bg-transparent px-2 py-1.5 text-right font-mono text-detail text-ink placeholder:text-slate/50 focus:border-flame focus:outline-none"
           />
 
-          <div className="w-24 shrink-0">
+          <div className="w-[6.5rem] shrink-0">
             <Select
               value={item.useUnit ?? ''}
               onChange={(v) => onChange({ useUnit: v })}

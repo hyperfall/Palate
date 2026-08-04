@@ -36,6 +36,16 @@ export type CostingItem = {
    */
   useAmount: string | null
   useUnit: string | null
+  /**
+   * Whose number the price is.
+   *
+   * The point of prefilling our estimate is that a ten-ingredient dish should
+   * not need ten taps before it totals anything. The point of recording where
+   * it came from is that a total built on our guesses about someone else's shop
+   * must not look like a total built on their receipts. Both matter, so the
+   * value is filled in and labelled rather than withheld.
+   */
+  priceFrom: 'ours' | 'mine' | null
 }
 
 export type Costing = {
@@ -91,13 +101,19 @@ export function emptyItem(label: string, slug: string | null = null): CostingIte
     packUnit: null,
     useAmount: null,
     useUnit: null,
+    priceFrom: null,
   }
 }
 
 /** Fill a new row's purchase side from a known price. */
-export function withPrice(item: CostingItem, price: IngredientPrice): CostingItem {
+export function withPrice(
+  item: CostingItem,
+  price: IngredientPrice,
+  from: 'ours' | 'mine' = 'ours',
+): CostingItem {
   return {
     ...item,
+    priceFrom: from,
     priceMinor: price.priceMinor,
     packAmount: price.packAmount,
     packUnit: price.packUnit,
@@ -143,6 +159,7 @@ export function parseItem(raw: unknown): CostingItem | null {
     packUnit: packUnit && PACK_UNIT_SET.has(packUnit) ? (packUnit as CostingItem['packUnit']) : null,
     useAmount: str(o.useAmount, 24),
     useUnit: typeof o.useUnit === 'string' ? o.useUnit.trim().slice(0, 12) : null,
+    priceFrom: o.priceFrom === 'ours' || o.priceFrom === 'mine' ? o.priceFrom : null,
   }
 }
 
@@ -204,6 +221,26 @@ export function toCostInput(
     }
   })
   return { rows, prices }
+}
+
+/**
+ * The price per shelf unit: "£6.67/kg", "£2.40/l", "29p each".
+ *
+ * Derived, never stored. It is the number a shop puts on the label precisely
+ * because it is the only one you can compare between a 90 g tub and a 300 g
+ * one, and a calculator that already knows both halves has no excuse for
+ * making someone work it out.
+ */
+export function unitPrice(
+  item: CostingItem,
+): { minor: number; per: string } | null {
+  if (item.priceMinor == null || item.packAmount == null || item.packAmount <= 0) return null
+  if (!item.packUnit) return null
+  const each = item.priceMinor / item.packAmount
+  if (item.packUnit === 'piece') return { minor: each, per: 'each' }
+  // Scale to the unit a shelf label uses, so the figure is comparable rather
+  // than a fraction of a penny.
+  return { minor: each * 1000, per: item.packUnit === 'ml' ? 'l' : 'kg' }
 }
 
 /** Is there enough here to be worth saving? */

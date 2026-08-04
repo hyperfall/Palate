@@ -56,6 +56,7 @@ export function CostThisRecipe({
       packUnit: null,
       useAmount: r.useAmount,
       useUnit: r.useUnit,
+      priceFrom: null,
     }))
 
     writeDraft({

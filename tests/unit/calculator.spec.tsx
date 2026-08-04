@@ -110,17 +110,21 @@ describe('a row shows its working', () => {
 })
 
 describe('whose number it is', () => {
-  it('offers our estimate rather than adopting it silently', () => {
+  it('uses our estimate and says so, rather than making you ask for it', () => {
+    // Withholding it meant one tap per ingredient before a dish totalled
+    // anything. Filling it in and labelling it keeps the honesty without the
+    // busywork.
     renderEditor(costingWith(emptyItem('garlic', 'garlic')))
-    const suggestion = screen.getByText(/ours: £0\.88 \/ 132g/)
-    expect(suggestion).toBeTruthy()
-    // Not applied until asked for — the row must say whose number it is.
-    expect(screen.getByLabelText('What you paid for garlic')).toHaveProperty('value', '')
+    expect(screen.getByLabelText('What you paid for garlic')).toHaveProperty('value', '0.88')
+    expect(screen.getByText('our estimate')).toBeTruthy()
+    // Nothing to offer, because it is already applied.
+    expect(screen.queryByText(/tap to use/)).toBeNull()
   })
 
-  it('applies the estimate when tapped', () => {
+  it('offers it back after you clear the field', () => {
     renderEditor(costingWith(emptyItem('garlic', 'garlic')))
-    fireEvent.click(screen.getByText(/ours: £0\.88 \/ 132g/))
+    fireEvent.change(screen.getByLabelText('What you paid for garlic'), { target: { value: '' } })
+    fireEvent.click(screen.getByText(/tap to use/))
     expect(screen.getByLabelText('What you paid for garlic')).toHaveProperty('value', '0.88')
   })
 
@@ -242,7 +246,7 @@ describe('what it costs at the till', () => {
   it('shows a second cooking as free when the leftovers cover it', () => {
     renderEditor(costingWith(partPack()), [gochujang])
     const till = screen.getByText('At the till').parentElement!
-    const nextTime = within(till).getByText('Next time').closest('.leader')!
+    const nextTime = within(till).getByText('Next time').closest('.leader') as HTMLElement
     expect(within(nextTime).getByText('£0.00')).toBeTruthy()
   })
 
@@ -259,7 +263,53 @@ describe('what it costs at the till', () => {
   })
 
   it('stays quiet when nothing is priced', () => {
-    renderEditor(costingWith({ ...partPack(), priceMinor: null }), [gochujang])
+    // An ingredient we have no estimate for, so nothing resolves into it.
+    renderEditor(
+      costingWith({ ...partPack(), label: 'rosemary', slug: 'rosemary', priceMinor: null }),
+      [{ ...gochujang, slug: 'rosemary', name: 'rosemary', baseline: null }],
+    )
     expect(screen.queryByText('At the till')).toBeNull()
+  })
+})
+
+describe('a row arrives priced', () => {
+  it('fills our estimate in rather than hiding it behind a tap', () => {
+    // A recipe-seeded costing carries amounts but no prices. Left unresolved it
+    // showed a row of empty boxes and totalled zero — one tap per ingredient
+    // before the dish came to anything.
+    renderEditor(costingWith({ ...emptyItem('garlic', 'garlic'), useAmount: '100', useUnit: 'g' }))
+    expect(screen.getByLabelText('What you paid for garlic')).toHaveProperty('value', '0.88')
+    const row = screen.getByLabelText('How much garlic the dish uses').closest('li')!
+    expect(within(row).getByText('£0.67')).toBeTruthy()
+  })
+
+  it('says the number is ours until it is corrected', () => {
+    renderEditor(costingWith({ ...emptyItem('garlic', 'garlic'), useAmount: '100', useUnit: 'g' }))
+    const row = screen.getByLabelText('How much garlic the dish uses').closest('li')!
+    expect(within(row).getByText('our estimate')).toBeTruthy()
+
+    fireEvent.change(screen.getByLabelText('What you paid for garlic'), { target: { value: '1.20' } })
+    expect(within(row).getByText('what you pay')).toBeTruthy()
+    expect(within(row).queryByText('our estimate')).toBeNull()
+  })
+
+  it('leaves an ingredient we never priced alone', () => {
+    renderEditor(costingWith({ ...emptyItem('rosemary', 'rosemary'), useAmount: '5', useUnit: 'g' }))
+    expect(screen.getByLabelText('What you paid for rosemary')).toHaveProperty('value', '')
+  })
+
+  it('shows the shelf price, the only figure comparable between pack sizes', () => {
+    renderEditor(costingWith(priced()))
+    const row = screen.getByLabelText('How much garlic the dish uses').closest('li')!
+    // 88p for 132 g is £6.67/kg.
+    expect(within(row).getByText(/£6\.67\/kg/)).toBeTruthy()
+  })
+
+  it('shows a per-item price for something sold by the item', () => {
+    renderEditor(
+      costingWith(priced({ priceMinor: 180, packAmount: 6, packUnit: 'piece', useAmount: '2', useUnit: '' })),
+    )
+    const row = screen.getByLabelText('How much garlic the dish uses').closest('li')!
+    expect(within(row).getByText(/£0\.30 each/)).toBeTruthy()
   })
 })

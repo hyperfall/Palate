@@ -98,6 +98,47 @@ export function useCosting({
     }
   }, [])
 
+  /**
+   * Fill in prices for rows that arrived without one.
+   *
+   * A costing seeded from a recipe carries amounts but no prices, and rows can
+   * be added before the cook's own prices have finished loading. Without this
+   * they sit empty behind a "tap to use" link — which is a tap per ingredient
+   * before the dish totals anything, and it made a recipe-costing arrive at
+   * zero.
+   *
+   * Only touches rows that are unset or still marked as OURS. A price the cook
+   * entered, or one that came from their own book, is never overwritten — that
+   * is the whole distinction the row is built around.
+   *
+   * Deliberately not routed through `mutate`, so it does not mark the costing
+   * dirty: resolving a price is not an edit, and autosaving here would bump a
+   * costing to the top of the list merely for being opened.
+   */
+  useEffect(() => {
+    setCosting((c) => {
+      let changed = false
+      const items = c.items.map((item) => {
+        if (!item.slug) return item
+        if (item.priceMinor != null && item.priceFrom !== 'ours') return item
+
+        const mine = myPrices.get(item.slug)
+        if (mine && mine.currency === c.currency) {
+          if (item.priceFrom === 'mine' && item.priceMinor === mine.priceMinor) return item
+          changed = true
+          return withPrice(item, mine, 'mine')
+        }
+        if (item.priceMinor != null) return item
+
+        const baseline = catalogue.get(item.slug)?.baseline
+        if (!baseline || baseline.currency !== c.currency) return item
+        changed = true
+        return withPrice(item, baseline, 'ours')
+      })
+      return changed ? { ...c, items } : c
+    })
+  }, [myPrices, catalogue])
+
   // ── What it comes to ─────────────────────────────────────────────────────
   const result = useMemo(() => {
     const { rows, prices } = toCostInput(costing, (slug) => catalogue.get(slug) ?? null)

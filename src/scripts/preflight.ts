@@ -153,6 +153,80 @@ if (!browsersInstalled) {
   })
 } else ok.push('Playwright browsers — installed')
 
+// --- Has the Supabase schema actually been run? ----------------------------
+
+// supabase/schema.sql is applied by hand, which means the code can ship weeks
+// ahead of the tables it needs. Every feature here degrades politely when its
+// table is missing — the site builds, the page renders, and the failure only
+// appears when someone tries to save. That is the right behaviour at runtime
+// and a terrible way to find out, so ask the database directly.
+//
+// Read from information_schema rather than selecting from each table: a missing
+// table and an empty one are different facts, and a select cannot tell them
+// apart through PostgREST's error shape.
+const EXPECTED_TABLES = [
+  'collection_items',
+  'collections',
+  'cook_log',
+  'costings',
+  'follows',
+  'household_members',
+  'households',
+  'ingredient_prices',
+  'meal_plan',
+  'pantry',
+  'plan_shares',
+  'shopping_checks',
+  'subscriptions',
+  'taste_profile',
+  'usernames',
+]
+
+const supabaseUrl = val('NEXT_PUBLIC_SUPABASE_URL')
+const serviceKey = val('SUPABASE_SERVICE_ROLE_KEY')
+
+if (supabaseUrl && serviceKey && !isPlaceholder(supabaseUrl)) {
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/`, { method: 'HEAD' }).catch(() => null)
+    // PostgREST does not expose information_schema, so ask each table for zero
+    // rows and read the error code: 42P01 is "relation does not exist".
+    const missing: string[] = []
+    for (const table of EXPECTED_TABLES) {
+      const r = await fetch(`${supabaseUrl}/rest/v1/${table}?select=count&limit=0`, {
+        headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+      }).catch(() => null)
+      if (!r) continue
+      if (r.status === 404) {
+        missing.push(table)
+        continue
+      }
+      if (!r.ok) {
+        const body = (await r.json().catch(() => null)) as { code?: string } | null
+        if (body?.code === '42P01') missing.push(table)
+      }
+    }
+    void res
+    if (missing.length === EXPECTED_TABLES.length) {
+      warnings.push({
+        name: 'Supabase schema',
+        detail: 'Could not read any table — the service key may be wrong, or the project unreachable. Nothing checked.',
+      })
+    } else if (missing.length) {
+      blockers.push({
+        name: 'Supabase schema',
+        detail: `${missing.length} table(s) missing: ${missing.join(', ')}. Run the matching block of supabase/schema.sql — the site will build and render without them, and only fail when someone tries to save.`,
+      })
+    } else {
+      ok.push(`Supabase schema — all ${EXPECTED_TABLES.length} tables present`)
+    }
+  } catch {
+    warnings.push({
+      name: 'Supabase schema',
+      detail: 'Could not be checked from here. Confirm supabase/schema.sql has been applied.',
+    })
+  }
+}
+
 // --- Report ---------------------------------------------------------------
 
 const line = (s: string) => console.log(s)

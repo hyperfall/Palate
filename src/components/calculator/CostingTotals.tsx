@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Select } from '@/components/controls'
 import type { CostResult } from '@/lib/cost'
 import { BASE_CURRENCY, formatMoney, supportedCurrencies } from '@/lib/money'
+import { biggestLeftovers, type ShoppingResult } from '@/lib/shopping'
 import type { SaveState } from '@/lib/useCosting'
 
 /**
@@ -18,6 +19,7 @@ import type { SaveState } from '@/lib/useCosting'
  */
 export function CostingTotals({
   result,
+  shopping,
   servings,
   currency,
   saveState,
@@ -26,6 +28,7 @@ export function CostingTotals({
   onCurrency,
 }: {
   result: CostResult
+  shopping: ShoppingResult
   servings: number
   currency: string
   saveState: SaveState
@@ -34,6 +37,11 @@ export function CostingTotals({
   onCurrency: (c: string) => void
 }) {
   const missing = result.quantified - result.priced
+  // Only worth showing when the two readings actually differ. When every pack
+  // is used up, "you'd buy" and "the dish" are the same number and the section
+  // is noise.
+  const showTill = !shopping.empty && shopping.leftoverMinor > 0
+  const worst = showTill ? biggestLeftovers(shopping, 2) : []
 
   return (
     <aside className="rounded border border-rule bg-wash p-5 lg:sticky lg:top-24">
@@ -80,6 +88,54 @@ export function CostingTotals({
           </Select>
         </div>
       </label>
+
+      {showTill && (
+        <div className="mt-5 border-t border-rule pt-4">
+          <p className="eyebrow m-0">At the till</p>
+          <p className="mt-1 mb-0 text-eyebrow leading-snug text-slate">
+            Cooking this once from an empty cupboard.
+          </p>
+
+          <dl className="mt-3 grid gap-2">
+            <div className="leader">
+              <dt className="eyebrow">You&rsquo;d buy</dt>
+              <span className="leader__dots" aria-hidden="true" />
+              <dd className="datum m-0 font-semibold">
+                {formatMoney(shopping.shoppingMinor, shopping.currency)}
+              </dd>
+            </div>
+            <div className="leader">
+              <dt className="eyebrow">Left over</dt>
+              <span className="leader__dots" aria-hidden="true" />
+              <dd className="datum m-0">
+                {formatMoney(shopping.leftoverMinor, shopping.currency)}
+              </dd>
+            </div>
+            <div className="leader">
+              {/* The number that makes stocking a cupboard feel worth it. */}
+              <dt className="eyebrow">Next time</dt>
+              <span className="leader__dots" aria-hidden="true" />
+              <dd className="datum m-0">
+                {formatMoney(shopping.secondTimeMinor, shopping.currency)}
+              </dd>
+            </div>
+          </dl>
+
+          {worst.length > 0 && (
+            <p className="mt-3 mb-0 text-eyebrow leading-snug text-slate">
+              Most of what stays in the cupboard is{' '}
+              {worst.map((l, i) => (
+                <span key={l.item}>
+                  {i > 0 && ' and '}
+                  <span className="text-ink">{l.item}</span> (
+                  {formatMoney(l.leftoverMinor, shopping.currency)})
+                </span>
+              ))}
+              .
+            </p>
+          )}
+        </div>
+      )}
 
       {missing > 0 && (
         <p className="mt-4 mb-0 text-eyebrow leading-snug text-slate">

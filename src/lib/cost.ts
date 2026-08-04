@@ -57,6 +57,16 @@ export type CostLine = {
   /** Null when this row could not be costed; `reason` says why. */
   minor: number | null
   reason?: UnpricedReason
+  /**
+   * How much of one pack this row uses — 0.6 of a 500 g bag, 2.5 tubs.
+   *
+   * The bridge between what a dish CONSUMES and what it costs to SHOP FOR.
+   * Cooking cost is this times the pack price; shopping cost is the same
+   * against the next whole number, because a shop sells whole tubs. Derived
+   * here rather than recomputed elsewhere so the two can never disagree about
+   * an amount.
+   */
+  packFraction?: number
 }
 
 export type CostResult = {
@@ -103,8 +113,12 @@ function toPieces(
   return grams / per
 }
 
-/** Cost of `grams` of an ingredient priced by pack, in minor units. */
-function costOfGrams(grams: number, price: IngredientPrice, densityGPerMl: number): number | null {
+/** What fraction of one pack `grams` represents. */
+function packsOfGrams(
+  grams: number,
+  price: IngredientPrice,
+  densityGPerMl: number,
+): number | null {
   if (price.packAmount <= 0) return null
   // Normalise the pack to grams so a 750ml bottle of oil and a 500g bag of
   // flour are the same kind of thing. A pack sold by volume needs the
@@ -113,7 +127,7 @@ function costOfGrams(grams: number, price: IngredientPrice, densityGPerMl: numbe
   const packGrams =
     price.packUnit === 'ml' ? price.packAmount * densityGPerMl : price.packAmount
   if (packGrams <= 0) return null
-  return (grams / packGrams) * price.priceMinor
+  return grams / packGrams
 }
 
 /**
@@ -162,22 +176,24 @@ export function computeCost(
 
     const density = ing.densityGPerMl ?? 1
 
-    let minor: number | null
+    // How much of a pack this row uses. Money comes from it rather than beside
+    // it, so the cooking and shopping readings share one number.
+    let packs: number | null
     if (price.packUnit === 'piece') {
       const pieces = toPieces(qty, row.unit, ing)
-      minor = pieces == null ? null : (pieces / price.packAmount) * price.priceMinor
+      packs = pieces == null || price.packAmount <= 0 ? null : pieces / price.packAmount
     } else {
       const grams = toGrams(qty, row.unit, ing)
-      minor = grams == null || grams <= 0 ? null : costOfGrams(grams, price, density)
+      packs = grams == null || grams <= 0 ? null : packsOfGrams(grams, price, density)
     }
 
-    if (minor == null || !Number.isFinite(minor)) {
+    if (packs == null || !Number.isFinite(packs)) {
       lines.push({ item: row.item, minor: null, reason: 'not-convertible' })
       continue
     }
 
-    const rounded = Math.round(minor)
-    lines.push({ item: row.item, minor: rounded })
+    const rounded = Math.round(packs * price.priceMinor)
+    lines.push({ item: row.item, minor: rounded, packFraction: packs })
     totalMinor += rounded
     priced++
   }

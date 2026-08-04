@@ -210,3 +210,56 @@ describe('serves label', () => {
     expect(screen.getByLabelText('Serves')).toBeTruthy()
   })
 })
+
+describe('what it costs at the till', () => {
+  const gochujang: CalculatorIngredient = {
+    slug: 'gochujang',
+    name: 'gochujang',
+    category: null,
+    image: null,
+    densityGPerMl: null,
+    gramsPerPiece: null,
+    baseline: { priceMinor: 180, packAmount: 90, packUnit: 'g', currency: 'GBP' },
+  }
+
+  const partPack = () => ({
+    ...emptyItem('gochujang', 'gochujang'),
+    priceMinor: 180,
+    packAmount: 90,
+    packUnit: 'g' as const,
+    useAmount: '30',
+    useUnit: 'g',
+  })
+
+  it('separates what the dish eats from what leaves your account', () => {
+    // 30 g of a 90 g tub: the meal consumes 60p, the shop charges £1.80.
+    renderEditor(costingWith(partPack()), [gochujang])
+    const till = screen.getByText('At the till').parentElement!
+    expect(within(till).getByText('£1.80')).toBeTruthy()
+    expect(within(till).getByText('£1.20')).toBeTruthy()
+  })
+
+  it('shows a second cooking as free when the leftovers cover it', () => {
+    renderEditor(costingWith(partPack()), [gochujang])
+    const till = screen.getByText('At the till').parentElement!
+    const nextTime = within(till).getByText('Next time').closest('.leader')!
+    expect(within(nextTime).getByText('£0.00')).toBeTruthy()
+  })
+
+  it('names where the money is sitting', () => {
+    renderEditor(costingWith(partPack()), [gochujang])
+    expect(screen.getByText(/Most of what stays in the cupboard/)).toBeTruthy()
+  })
+
+  it('stays quiet when every pack is used up', () => {
+    // Nothing left over means the two readings are the same number, and the
+    // section would be repeating the total back at you.
+    renderEditor(costingWith({ ...partPack(), useAmount: '90' }), [gochujang])
+    expect(screen.queryByText('At the till')).toBeNull()
+  })
+
+  it('stays quiet when nothing is priced', () => {
+    renderEditor(costingWith({ ...partPack(), priceMinor: null }), [gochujang])
+    expect(screen.queryByText('At the till')).toBeNull()
+  })
+})

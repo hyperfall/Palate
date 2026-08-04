@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import type { ThumbImage } from '@/components/IngredientThumb'
 import type { IngredientPrice } from '@/lib/cost'
 import type { Costing } from '@/lib/costing'
+import { computeShopping } from '@/lib/shopping'
 import { useCosting, type CatalogueEntry } from '@/lib/useCosting'
 
 import { CalculatorRow } from './CalculatorRow'
@@ -57,6 +58,9 @@ export function CostingEditor({
 
   const c = useCosting({ initial, catalogue })
   const { costing, result } = c
+  // Derived from the same result, never recomputed — the two readings must
+  // agree about what the dish consumes.
+  const shopping = useMemo(() => computeShopping(costing, result), [costing, result])
 
   const taken = useMemo(
     () => new Set(costing.items.map((i) => i.slug).filter((s): s is string => Boolean(s))),
@@ -151,6 +155,7 @@ export function CostingEditor({
 
       <CostingTotals
         result={result}
+        shopping={shopping}
         servings={costing.servings}
         currency={costing.currency}
         saveState={c.saveState}

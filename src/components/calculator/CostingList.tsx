@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
-import { displayName, parseCosting, readDraft, type Costing } from '@/lib/costing'
+import { computeCost } from '@/lib/cost'
+import { displayName, parseCosting, readDraft, toCostInput, type Costing } from '@/lib/costing'
 import { formatMoney } from '@/lib/money'
 import { supabaseBrowser } from '@/lib/supabase/client'
+import type { CatalogueEntry } from '@/lib/useCosting'
 
 /**
  * Everything you have costed, newest first.
@@ -17,7 +19,7 @@ import { supabaseBrowser } from '@/lib/supabase/client'
 
 type Row = { costing: Costing; updatedAt: string | null; draft: boolean }
 
-export function CostingList() {
+export function CostingList({ catalogue }: { catalogue: Map<string, CatalogueEntry> }) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [signedIn, setSignedIn] = useState(false)
 
@@ -87,6 +89,14 @@ export function CostingList() {
         <ul className="mt-8 list-none p-0">
           {rows.map(({ costing, updatedAt, draft }) => {
             const items = costing.items.length
+            // Needs the catalogue: without density and per-piece weights, "3
+            // cloves" and "2 tbsp" cannot be converted and the total would
+            // quietly under-report.
+            const { rows: costRows, prices } = toCostInput(
+              costing,
+              (slug) => catalogue.get(slug) ?? null,
+            )
+            const cost = computeCost(costRows, costing.servings, prices, costing.currency)
             return (
               <li
                 key={costing.id ?? 'draft'}
@@ -106,10 +116,12 @@ export function CostingList() {
                   </p>
                 </div>
 
-                <span className="font-mono text-caption text-slate">
-                  {formatMoney(0, costing.currency)?.replace(/[\d.,]+/, '') ?? ''}
-                  {costing.currency}
-                </span>
+                <div className="text-right">
+                  <p className="datum m-0">{formatMoney(cost.totalMinor, cost.currency)}</p>
+                  <p className="m-0 font-mono text-caption text-slate">
+                    {formatMoney(cost.perServingMinor, cost.currency)} a plate
+                  </p>
+                </div>
 
                 {costing.id && (
                   <button

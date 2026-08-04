@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 
 import { CostingList } from '@/components/calculator/CostingList'
+import { loadCalculatorIngredients } from '@/lib/calculatorData'
+import type { CatalogueEntry } from '@/lib/useCosting'
 
 export const metadata: Metadata = {
   title: 'Cost calculator',
@@ -11,7 +13,24 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-export default function CalculatorPage() {
+export default async function CalculatorPage() {
+  // The same public catalogue the editor uses. The list needs it to total each
+  // costing: a row saying "3 cloves" is only convertible with the per-piece
+  // weight, and without it the figures beside each name would under-report.
+  const ingredients = await loadCalculatorIngredients()
+  const catalogue = new Map<string, CatalogueEntry>(
+    ingredients.map((i) => [
+      i.slug,
+      {
+        slug: i.slug,
+        name: i.name,
+        densityGPerMl: i.densityGPerMl,
+        gramsPerPiece: i.gramsPerPiece,
+        baseline: i.baseline,
+      },
+    ]),
+  )
+
   return (
     <div className="shell py-10 lg:py-14">
       <header className="max-w-[60ch]">
@@ -24,7 +43,7 @@ export default function CalculatorPage() {
         </p>
       </header>
 
-      <CostingList />
+      <CostingList catalogue={catalogue} />
     </div>
   )
 }

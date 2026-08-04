@@ -65,6 +65,8 @@ export function useCosting({
   const [saveState, setSaveState] = useState<SaveState>('idle')
   /** Slugs saved to the price book this session, for the inline undo. */
   const [remembered, setRemembered] = useState<Map<string, IngredientPrice | null>>(new Map())
+  /** Names as they were when remembered, so an undo restores the row intact. */
+  const previousName = useRef(new Map<string, string>()).current
 
   const dirty = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -261,6 +263,12 @@ export function useCosting({
       const supabase = supabaseBrowser()
       if (!supabase || !signedIn || !item.slug) return
       if (item.priceMinor == null || item.packAmount == null || !item.packUnit) return
+      // Only ever remember a number the cook actually gave us. Rows arrive
+      // prefilled with our estimate, so without this, tabbing through the price
+      // field on a freshly added ingredient wrote our guess into their price
+      // book — and it would come back on the next costing labelled "what you
+      // pay", which is precisely the claim the label exists to make truthfully.
+      if (item.priceFrom !== 'mine') return
 
       const previous = myPrices.get(item.slug) ?? null
       const next: IngredientPrice = {
@@ -292,10 +300,11 @@ export function useCosting({
         { onConflict: 'user_id,ingredient_slug' },
       )
       if (error) return
+      previousName.set(item.slug, item.label)
       setMyPrices((m) => new Map(m).set(item.slug!, next))
       setRemembered((r) => new Map(r).set(item.slug!, previous))
     },
-    [signedIn, myPrices, costing.currency],
+    [signedIn, myPrices, costing.currency, previousName],
   )
 
   const undoRemember = useCallback(
@@ -307,7 +316,7 @@ export function useCosting({
         await supabase.from('ingredient_prices').upsert(
           {
             ingredient_slug: slug,
-            ingredient_name: slug,
+            ingredient_name: previousName.get(slug) ?? slug,
             price_minor: previous.priceMinor,
             currency: previous.currency,
             pack_amount: previous.packAmount,
@@ -330,7 +339,7 @@ export function useCosting({
         return next
       })
     },
-    [remembered],
+    [remembered, previousName],
   )
 
   // ── Persistence ──────────────────────────────────────────────────────────

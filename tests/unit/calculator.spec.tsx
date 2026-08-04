@@ -313,3 +313,29 @@ describe('a row arrives priced', () => {
     expect(within(row).getByText(/£0\.30 each/)).toBeTruthy()
   })
 })
+
+describe('what reaches the price book', () => {
+  // The book is the thing that outlives a costing and reaches every recipe, so
+  // what goes into it has to be what the cook actually said.
+  it('does not treat our estimate as a price the cook gave us', () => {
+    // A row arrives prefilled with our estimate. Tabbing through the field must
+    // not write that guess into their book — it would come back on the next
+    // costing labelled "what you pay", which would be a lie.
+    const saved: unknown[] = []
+    renderEditor(costingWith(emptyItem('garlic', 'garlic')))
+    const field = screen.getByLabelText('What you paid for garlic')
+    expect(field).toHaveProperty('value', '0.88')
+    fireEvent.blur(field)
+    expect(saved).toHaveLength(0)
+    // Still ours, because nothing was corrected.
+    expect(screen.getByText('our estimate')).toBeTruthy()
+  })
+
+  it('marks a corrected price as the cook’s own', () => {
+    renderEditor(costingWith(emptyItem('garlic', 'garlic')))
+    const field = screen.getByLabelText('What you paid for garlic')
+    fireEvent.change(field, { target: { value: '1.20' } })
+    fireEvent.blur(field)
+    expect(screen.getByText('what you pay')).toBeTruthy()
+  })
+})

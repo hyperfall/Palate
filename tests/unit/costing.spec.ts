@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { computeCost } from '@/lib/cost'
+import { preferredCurrency } from '@/lib/useCosting'
+import { readShopCountry } from '@/lib/shopCountry'
 import {
   displayName,
   emptyCosting,
@@ -13,6 +15,9 @@ import {
   withPrice,
   type CostingItem,
 } from '@/lib/costing'
+
+vi.mock('@/lib/shopCountry', () => ({ readShopCountry: vi.fn(() => null) }))
+const chosenCountry = vi.mocked(readShopCountry)
 
 /**
  * Reading costings out of untrusted JSON.
@@ -231,5 +236,32 @@ describe('housekeeping', () => {
     expect(seeded).toMatchObject({ priceMinor: 180, packAmount: 6, packUnit: 'piece' })
     // Sold by the item, so the usage starts as a count and needs only a number.
     expect(seeded.useUnit).toBe('')
+  })
+})
+
+describe('which currency a new costing starts in', () => {
+  it('prefers a country the cook chose over one the edge guessed', () => {
+    // A VPN, a holiday or a mis-geolocated ISP all produce a confident wrong
+    // answer, and the footer picker exists precisely so it can be corrected.
+    chosenCountry.mockReturnValue('DE')
+    expect(preferredCurrency('US')).toBe('EUR')
+  })
+
+  it('falls back to what the edge detected', () => {
+    chosenCountry.mockReturnValue(null)
+    expect(preferredCurrency('JP')).toBe('JPY')
+    expect(preferredCurrency('IE')).toBe('EUR')
+  })
+
+  it('falls back to the currency our own estimates are in', () => {
+    // The only one usable without inventing an exchange rate.
+    chosenCountry.mockReturnValue(null)
+    expect(preferredCurrency(null)).toBe('GBP')
+    expect(preferredCurrency()).toBe('GBP')
+  })
+
+  it('ignores a country it cannot map', () => {
+    chosenCountry.mockReturnValue(null)
+    expect(preferredCurrency('ZZ')).toBe('GBP')
   })
 })

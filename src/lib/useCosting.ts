@@ -68,6 +68,8 @@ export function useCosting({
 
   const dirty = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Set once the cook picks a currency, so nothing overrides them after. */
+  const currencyChosen = useRef(false)
 
   // ── Who is looking, and what have they priced before ─────────────────────
   useEffect(() => {
@@ -138,6 +140,28 @@ export function useCosting({
       return changed ? { ...c, items } : c
     })
   }, [myPrices, catalogue])
+
+  /**
+   * A new costing adopts the currency the cook's price book is already in.
+   *
+   * Without this, someone whose prices are recorded in euros starts a costing
+   * in the site's default and every one of their own prices reads as a currency
+   * mismatch — the calculator ignores the entire book and quietly falls back to
+   * estimates in a currency they do not use.
+   *
+   * Only for a costing that has not been saved and whose currency the cook has
+   * not set. A saved costing keeps the currency it was made in, because it is a
+   * record of a purchase.
+   */
+  useEffect(() => {
+    if (currencyChosen.current) return
+    const first = [...myPrices.values()][0]
+    if (!first) return
+    setCosting((c) => {
+      if (c.id || c.currency === first.currency) return c
+      return { ...c, currency: first.currency }
+    })
+  }, [myPrices])
 
   // ── What it comes to ─────────────────────────────────────────────────────
   const result = useMemo(() => {
@@ -214,7 +238,10 @@ export function useCosting({
     [mutate],
   )
   const setCurrency = useCallback(
-    (currency: string) => mutate((c) => ({ ...c, currency })),
+    (currency: string) => {
+      currencyChosen.current = true
+      mutate((c) => ({ ...c, currency }))
+    },
     [mutate],
   )
 
@@ -392,8 +419,17 @@ export function costingFromRow(row: unknown): Costing | null {
   return parseCosting(row)
 }
 
-/** Read the country's currency for a brand-new costing. */
-export function preferredCurrency(): string {
-  if (typeof window === 'undefined') return currencyForCountry(null)
-  return currencyForCountry(readShopCountry())
+/**
+ * The currency a brand-new costing should start in.
+ *
+ * A country the cook picked themselves outranks one an edge server guessed
+ * from an IP — a VPN, a holiday or a mis-geolocated ISP all produce a
+ * confident wrong answer, and the footer picker exists precisely so that can be
+ * corrected. Falling all the way through lands on the currency our own
+ * estimates are recorded in, which is the only one that can be used without
+ * inventing an exchange rate.
+ */
+export function preferredCurrency(detectedCountry?: string | null): string {
+  const chosen = typeof window === 'undefined' ? null : readShopCountry()
+  return currencyForCountry(chosen ?? detectedCountry ?? null)
 }

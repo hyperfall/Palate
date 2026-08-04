@@ -23,9 +23,12 @@ import { CostingEditor, type CalculatorIngredient } from './CostingEditor'
 export function CostingLoader({
   id,
   ingredients,
+  detectedCountry,
 }: {
   id: string
   ingredients: CalculatorIngredient[]
+  /** What the edge thinks, used only when the cook has not chosen a country. */
+  detectedCountry: string | null
 }) {
   const [costing, setCosting] = useState<Costing | null>(null)
   const [missing, setMissing] = useState(false)
@@ -36,7 +39,7 @@ export function CostingLoader({
     if (id === 'new') {
       // A draft in progress outranks a blank one — refreshing mid-list should
       // not throw the list away.
-      setCosting(readDraft() ?? emptyCosting(preferredCurrency()))
+      setCosting(readDraft() ?? emptyCosting(preferredCurrency(detectedCountry)))
       return
     }
 
@@ -61,7 +64,7 @@ export function CostingLoader({
     return () => {
       live = false
     }
-  }, [id])
+  }, [id, detectedCountry])
 
   if (missing) {
     return (

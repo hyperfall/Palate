@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
+  async redirects() {
+    return [
+      // The price book briefly lived at /prices before it became a calculator.
+      // The route was noindex and days old, so nothing external points at it —
+      // but anyone who bookmarked it in that window should still land somewhere.
+      { source: '/prices', destination: '/calculator', permanent: true },
+    ]
+  },
   images: {
     // Food photography is the product — serve modern formats and let the
     // optimizer emit AVIF (then WebP) per device instead of the source JPEG/PNG.

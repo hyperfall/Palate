@@ -516,3 +516,71 @@ create policy "price book access" on public.ingredient_prices
   for all
   using (user_id = auth.uid() or household_id = public.my_household_id())
   with check (user_id = auth.uid());
+
+-- ── Saved costings: what a dish cost, as a record ───────────────────────────
+--
+-- A costing is a named working list — "Dad's chilli", "Sunday roast" — of
+-- ingredients, what was paid for each, and how much of it the dish uses.
+--
+-- Items live in JSONB rather than a child table because a costing's rows are
+-- only ever read and written as a whole; nothing queries "all items across all
+-- costings". That makes autosave one atomic write instead of a diff of inserts,
+-- updates and deletes, and removes the ordering column a child table would
+-- need. meal_plan and collection_items are relational for the opposite reason —
+-- their rows ARE queried and mutated one at a time.
+--
+-- Every item carries its own price, and the costing its own currency. This is
+-- the whole point: a costing is a record of a purchase, not a live query. Update
+-- your mince price in June and March's chilli must still show what March cost,
+-- or "what did that dinner cost" stops being answerable and a one-off deal price
+-- silently rewrites history.
+--
+-- Household-shared like the plan, the pantry and the price book: two people
+-- cooking from one kitchen are costing the same shop.
+create table if not exists public.costings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  household_id uuid references public.households (id) on delete set null,
+  name text not null check (char_length(name) between 1 and 120),
+  servings int not null default 4 check (servings between 1 and 100),
+  currency text not null check (currency ~ '^[A-Z]{3}$'),
+  items jsonb not null default '[]'::jsonb check (jsonb_typeof(items) = 'array'),
+  -- Set when the costing was opened from a recipe, so it can link back.
+  source_recipe_slug text check (
+    source_recipe_slug is null or char_length(source_recipe_slug) between 1 and 200
+  ),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists costings_user_idx on public.costings (user_id);
+create index if not exists costings_household_idx on public.costings (household_id);
+create index if not exists costings_updated_idx on public.costings (updated_at desc);
+
+alter table public.costings enable row level security;
+
+drop trigger if exists costings_household on public.costings;
+create trigger costings_household before insert or update on public.costings
+  for each row execute function public.set_row_household();
+
+-- The list is sorted by updated_at, so it has to be true rather than whatever
+-- the client last sent.
+create or replace function public.touch_costing()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+drop trigger if exists costings_touch on public.costings;
+create trigger costings_touch before update on public.costings
+  for each row execute function public.touch_costing();
+
+-- Same shape as the pantry and the price book: your rows or your household's.
+-- WITH CHECK keeps user_id honest; the trigger owns household_id.
+drop policy if exists "costings access" on public.costings;
+create policy "costings access" on public.costings
+  for all
+  using (user_id = auth.uid() or household_id = public.my_household_id())
+  with check (user_id = auth.uid());

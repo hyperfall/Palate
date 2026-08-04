@@ -9,6 +9,8 @@ import { readShopCountry, subscribeShopCountry } from '@/lib/shopCountry'
 import { supabaseBrowser } from '@/lib/supabase/client'
 import { useServings } from '@/lib/useServings'
 
+import { CostThisRecipe } from './calculator/CostThisRecipe'
+
 /**
  * What this recipe costs to cook.
  *
@@ -40,6 +42,8 @@ export type CostPanelRow = {
 
 type Props = {
   slug: string
+  /** Names the costing when someone starts one from this recipe. */
+  title: string
   baseServings: number
   rows: CostPanelRow[]
 }
@@ -53,7 +57,7 @@ type PriceRow = {
   pack_unit: string
 }
 
-export function CostPanel({ slug, baseServings, rows }: Props) {
+export function CostPanel({ slug, title, baseServings, rows }: Props) {
   const [servings] = useServings(slug, baseServings)
   const [mine, setMine] = useState<PriceBook>(() => new Map())
   const [country, setCountry] = useState<string | null>(null)
@@ -184,6 +188,20 @@ export function CostPanel({ slug, baseServings, rows }: Props) {
         </div>
       </div>
 
+      <CostThisRecipe
+        title={title}
+        servings={baseServings}
+        recipeSlug={slug}
+        rows={rows
+          .filter((r) => !r.heading && r.quantity)
+          .map((r) => ({
+            label: r.item,
+            slug: r.slug,
+            useAmount: r.quantity,
+            useUnit: r.unit,
+          }))}
+      />
+
       <p className="mt-3 mb-0 text-eyebrow leading-snug text-slate">
         {missing > 0 ? (
           <>
@@ -194,7 +212,7 @@ export function CostPanel({ slug, baseServings, rows }: Props) {
           <>Estimated from typical shelf prices. </>
         )}
         {signedIn ? (
-          <Link href="/prices" className="text-flame">
+          <Link href="/calculator" className="text-flame">
             Use what you actually pay
           </Link>
         ) : (

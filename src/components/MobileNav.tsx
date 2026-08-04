@@ -85,7 +85,7 @@ const NAV: NavItem[] = [
   },
   {
     // The cost calculator. A tag with a value on it.
-    href: '/prices',
+    href: '/calculator',
     label: 'Calculator',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>

@@ -443,6 +443,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 rendering for every visitor, priced or not. */}
             <CostPanel
               slug={recipe.slug}
+              title={recipe.title}
               baseServings={recipe.servings}
               rows={costPanelRows}
             />

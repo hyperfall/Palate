@@ -14,8 +14,10 @@ const NAV = [
   { href: '/cook-from', label: 'Cook from', prefixes: ['/cook-from'] },
   { href: '/plan', label: 'Plan', prefixes: ['/plan'] },
   // Next to Plan because it is the same question one step down: the week's
-  // budget is only as real as the prices under it.
-  { href: '/prices', label: 'Prices', prefixes: ['/prices'] },
+  // budget is only as real as the prices under it. Labelled for what it does
+  // rather than what it stores — "Prices" read as a price list, which is
+  // exactly the wrong expectation to set for a thing you add ingredients to.
+  { href: '/prices', label: 'Calculator', prefixes: ['/prices'] },
   { href: '/students', label: 'Students', prefixes: ['/students'] },
   { href: '/recipes', label: 'Recipes', prefixes: ['/recipes', '/browse'] },
   // Sits next to Recipes: both are ways of reading the catalogue, one by

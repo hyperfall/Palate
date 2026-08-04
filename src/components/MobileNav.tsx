@@ -84,9 +84,9 @@ const NAV: NavItem[] = [
     ),
   },
   {
-    // The price book. A tag with a value on it.
+    // The cost calculator. A tag with a value on it.
     href: '/prices',
-    label: 'Prices',
+    label: 'Calculator',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" {...stroke}>
         <path d="M20.5 12.5 12 21l-9-9V3h9z" />

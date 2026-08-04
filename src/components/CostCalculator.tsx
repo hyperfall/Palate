@@ -276,15 +276,22 @@ export function CostCalculator({ ingredients }: { ingredients: CalculatorIngredi
               const isEditing = editing === line.slug
               return (
                 <li key={`${line.slug}-${i}`} className="border-b border-rule py-3">
-                  <div className="flex items-center gap-3">
+                  {/* The controls are grouped so they wrap BELOW the name on a
+                      narrow screen rather than crushing it. The name column
+                      keeps a min-width for the same reason: it shares a row
+                      with a select, and a select is content-sized in a way that
+                      will happily squeeze a truncating neighbour to nothing. */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <IngredientThumb name={ing.name} category={ing.category} image={ing.image} />
 
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-[9rem] flex-1">
                       <p className="m-0 truncate font-body text-[1rem] text-ink">{ing.name}</p>
                       <button
                         type="button"
                         onClick={() => setEditing(isEditing ? null : line.slug)}
-                        className="cursor-pointer border-none bg-transparent p-0 text-left font-mono text-caption tracking-[0.06em] text-slate uppercase hover:text-flame"
+                        // Not uppercased: this line is mostly numbers and units,
+                        // and "132G" is not a unit anyone writes.
+                        className="cursor-pointer border-none bg-transparent p-0 text-left font-mono text-caption text-slate hover:text-flame"
                       >
                         {price
                           ? `${formatMoney(price.priceMinor, price.currency)} / ${price.packAmount}${PACK_LABEL[price.packUnit] ?? price.packUnit}`
@@ -293,65 +300,70 @@ export function CostCalculator({ ingredients }: { ingredients: CalculatorIngredi
                       </button>
                     </div>
 
-                    <input
-                      inputMode="decimal"
-                      value={line.quantity}
-                      onChange={(e) =>
-                        setLines((l) =>
-                          l.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)),
-                        )
-                      }
-                      placeholder="0"
-                      aria-label={`How much ${ing.name}`}
-                      className="w-16 rounded border border-rule bg-transparent px-2 py-1.5 text-right font-mono text-detail text-ink focus:border-flame focus:outline-none"
-                    />
+                    <div className="ml-auto flex items-center gap-2">
+                      <input
+                        inputMode="decimal"
+                        value={line.quantity}
+                        onChange={(e) =>
+                          setLines((l) =>
+                            l.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)),
+                          )
+                        }
+                        placeholder="0"
+                        aria-label={`How much ${ing.name}`}
+                        className="w-16 rounded border border-rule bg-transparent px-2 py-1.5 text-right font-mono text-detail text-ink focus:border-flame focus:outline-none"
+                      />
 
-                    <Select
-                      value={line.unit}
-                      onChange={(v) =>
-                        setLines((l) => l.map((x, j) => (j === i ? { ...x, unit: v } : x)))
-                      }
-                      ariaLabel={`Unit for ${ing.name}`}
-                      className="w-24"
-                    >
-                      {UNITS.map((u) => (
-                        <option key={u} value={u}>
-                          {UNIT_LABEL[u]}
-                        </option>
-                      ))}
-                    </Select>
-
-                    <span className="datum w-20 text-right">
-                      {cost != null ? (
-                        formatMoney(cost, result.currency)
-                      ) : (
-                        <span
-                          className="font-mono text-caption text-slate uppercase"
-                          title={
-                            why === 'no-price'
-                              ? 'No price recorded for this ingredient'
-                              : why === 'no-amount'
-                                ? 'Type an amount'
-                                : why === 'wrong-currency'
-                                  ? `Your price for this is not in ${result.currency}`
-                                  : 'This amount cannot be converted to the pack size'
+                      {/* Select is w-full by house style, so it needs a sized
+                          box around it or it takes the whole row. */}
+                      <div className="w-24 shrink-0">
+                        <Select
+                          value={line.unit}
+                          onChange={(v) =>
+                            setLines((l) => l.map((x, j) => (j === i ? { ...x, unit: v } : x)))
                           }
+                          ariaLabel={`Unit for ${ing.name}`}
                         >
-                          {why === 'no-amount' ? '—' : '?'}
-                        </span>
-                      )}
-                    </span>
+                          {UNITS.map((u) => (
+                            <option key={u} value={u}>
+                              {UNIT_LABEL[u]}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setLines((l) => l.filter((_, j) => j !== i))}
-                      aria-label={`Remove ${ing.name}`}
-                      className="cursor-pointer border-none bg-transparent p-1 text-slate hover:text-heat"
-                    >
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                        <path d="M6 6l12 12M18 6 6 18" />
-                      </svg>
-                    </button>
+                      <span className="datum w-20 shrink-0 text-right">
+                        {cost != null ? (
+                          formatMoney(cost, result.currency)
+                        ) : (
+                          <span
+                            className="font-mono text-caption text-slate uppercase"
+                            title={
+                              why === 'no-price'
+                                ? 'No price recorded for this ingredient'
+                                : why === 'no-amount'
+                                  ? 'Type an amount'
+                                  : why === 'wrong-currency'
+                                    ? `Your price for this is not in ${result.currency}`
+                                    : 'This amount cannot be converted to the pack size'
+                            }
+                          >
+                            {why === 'no-amount' ? '—' : '?'}
+                          </span>
+                        )}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setLines((l) => l.filter((_, j) => j !== i))}
+                        aria-label={`Remove ${ing.name}`}
+                        className="shrink-0 cursor-pointer border-none bg-transparent p-1 text-slate hover:text-heat"
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M6 6l12 12M18 6 6 18" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   {isEditing && (
@@ -405,13 +417,15 @@ export function CostCalculator({ ingredients }: { ingredients: CalculatorIngredi
 
         <label className="mt-3 flex items-center justify-between gap-3">
           <span className="eyebrow">Currency</span>
-          <Select value={currency} onChange={setCurrency} ariaLabel="Currency" className="w-28">
-            {supportedCurrencies().map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </Select>
+          <div className="w-28 shrink-0">
+            <Select value={currency} onChange={setCurrency} ariaLabel="Currency">
+              {supportedCurrencies().map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          </div>
         </label>
 
         {result.quantified > result.priced && (
@@ -492,16 +506,17 @@ function PriceEditor({
         </label>
         <label className="flex flex-col gap-1">
           <span className="eyebrow">Unit</span>
-          <Select
-            value={unit}
-            onChange={(v) => setUnit(v as IngredientPrice['packUnit'])}
-            ariaLabel="Pack unit"
-            className="w-24"
-          >
-            <option value="g">grams</option>
-            <option value="ml">ml</option>
-            <option value="piece">each</option>
-          </Select>
+          <div className="w-24">
+            <Select
+              value={unit}
+              onChange={(v) => setUnit(v as IngredientPrice['packUnit'])}
+              ariaLabel="Pack unit"
+            >
+              <option value="g">grams</option>
+              <option value="ml">ml</option>
+              <option value="piece">each</option>
+            </Select>
+          </div>
         </label>
         <button
           type="button"

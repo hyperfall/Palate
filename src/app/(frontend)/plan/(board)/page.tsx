@@ -150,7 +150,10 @@ export default async function PlanPage() {
       </div>
 
       <div className="mt-14 grid gap-10 border-t-2 border-ink pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(15rem,20rem)]">
-        <div>
+        {/* min-w-0: the lg columns use minmax(0,…) but on one column this child
+            keeps a grid item's default min-width:auto, so the cost figure beside
+            "Shopping list" could not wrap and pushed the page 36px sideways. */}
+        <div className="min-w-0">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="text-[1.5rem]">Shopping list</h2>
             {/*

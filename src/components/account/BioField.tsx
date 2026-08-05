@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { SettingsSection } from '@/components/account/SettingsSection'
 import { SocialLinksField } from '@/components/account/SocialLinksField'
 
@@ -52,6 +52,8 @@ export function BioField() {
     }
   }
 
+  const bioLabelId = useId()
+
   return (
     <SettingsSection
       title="Creator profile"
@@ -59,8 +61,19 @@ export function BioField() {
     >
       {state.hasProfile ? (
         <div className="grid gap-1">
-          <span className="font-mono text-tag tracking-[0.08em] text-slate uppercase">Bio</span>
+          {/* The word "Bio" was on screen but attached to nothing, so the field
+              announced itself only by its placeholder — which disappears the
+              moment anyone types. Associated rather than wrapped in a label,
+              because the Save button below shares this box and clicking it
+              would otherwise focus the textarea. */}
+          <span
+            id={bioLabelId}
+            className="font-mono text-tag tracking-[0.08em] text-slate uppercase"
+          >
+            Bio
+          </span>
           <textarea
+            aria-labelledby={bioLabelId}
             value={bio}
             maxLength={BIO_MAX}
             rows={3}

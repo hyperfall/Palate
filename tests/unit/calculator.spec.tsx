@@ -339,3 +339,40 @@ describe('what reaches the price book', () => {
     expect(screen.getByText('what you pay')).toBeTruthy()
   })
 })
+
+describe('a costing with nothing in it', () => {
+  it('does not offer itself for saving', () => {
+    // Autosave fires on any edit, including merely naming a costing or nudging
+    // the servings — so without a guard, opening the calculator and touching a
+    // control left an "Untitled costing · 0 ingredients" row in the database.
+    renderEditor(costingWith())
+    fireEvent.change(screen.getByLabelText('Name for this costing'), {
+      target: { value: 'Just thinking' },
+    })
+    // Nothing to total, and nothing worth keeping.
+    const totals = screen.getByText('What it comes to').parentElement!
+    expect(within(totals).getAllByText('£0.00')).toHaveLength(2)
+  })
+})
+
+describe('working outside our prices', () => {
+  it('says why nothing is priced, and offers a way out', () => {
+    // Every researched price is GBP and none is ever converted, so a cook in
+    // another currency meets a calculator that cannot help them. Explaining it
+    // in a paragraph is not enough — there has to be a way forward.
+    renderEditor({ ...costingWith(priced()), currency: 'EUR' })
+    expect(screen.getByText(/only prices you enter count/)).toBeTruthy()
+    expect(screen.getByText(/Work in GBP to use them/)).toBeTruthy()
+  })
+
+  it('says nothing of the sort when working in our own currency', () => {
+    renderEditor(costingWith(priced()))
+    expect(screen.queryByText(/Work in GBP to use them/)).toBeNull()
+  })
+
+  it('switches the costing over when asked', () => {
+    renderEditor({ ...costingWith(priced()), currency: 'EUR' })
+    fireEvent.click(screen.getByText(/Work in GBP to use them/))
+    expect(screen.queryByText(/Work in GBP to use them/)).toBeNull()
+  })
+})

@@ -6,6 +6,7 @@ import { computeCost, type IngredientPrice, type PriceBook } from './cost'
 import {
   clearDraft,
   emptyItem,
+  isWorthSaving,
   MAX_ITEMS,
   parseCosting,
   readDraft,
@@ -351,6 +352,17 @@ export function useCosting({
     if (!supabase || !signedIn) {
       writeDraft(costing)
       setSaveState('signed-out')
+      return null
+    }
+
+    // Do not CREATE a record for a costing with nothing in it. Autosave fires on
+    // any edit, including merely naming one or nudging the servings, so opening
+    // the calculator and touching a control was enough to leave an "Untitled
+    // costing · 0 ingredients" row behind. Emptying one that already exists is a
+    // deliberate act and still saves.
+    if (!costing.id && !isWorthSaving(costing)) {
+      writeDraft(costing)
+      setSaveState('idle')
       return null
     }
 

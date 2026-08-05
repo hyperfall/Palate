@@ -145,10 +145,23 @@ export function CostingTotals({
       )}
 
       {currency !== BASE_CURRENCY && (
-        <p className="mt-3 mb-0 text-eyebrow leading-snug text-slate">
-          Our estimates are in {BASE_CURRENCY} and are never converted — a rate we invented would be
-          worse than a gap. In {currency}, only prices you enter count.
-        </p>
+        <div className="mt-4 rounded border border-rule bg-paper/40 px-3 py-2.5">
+          <p className="m-0 text-eyebrow leading-snug text-slate">
+            Our shelf prices are British, and we never convert them — a rate we invented would be
+            worse than a gap. In {currency}, only prices you enter count
+            {result.quantified > 0 && result.priced === 0 ? ', which is why this is empty' : ''}.
+          </p>
+          {/* Without this a cook outside the UK meets a calculator that cannot
+              help them and no way out of it: every row unpriced, the total zero,
+              and the reason buried in a paragraph. */}
+          <button
+            type="button"
+            onClick={() => onCurrency(BASE_CURRENCY)}
+            className="tap mt-2 cursor-pointer border-none bg-transparent p-0 font-mono text-caption text-flame underline"
+          >
+            Work in {BASE_CURRENCY} to use them
+          </button>
+        </div>
       )}
 
       <p className="mt-4 mb-0 text-eyebrow leading-snug text-slate" aria-live="polite">

@@ -142,6 +142,7 @@ export function CostingEditor({
                       : null
                   }
                   remembered={Boolean(item.slug && c.remembered.has(item.slug))}
+                  saveError={item.slug ? c.priceError.get(item.slug) : undefined}
                   onChange={(patch) => c.updateItem(i, patch)}
                   onCommitPrice={() => void c.rememberPrice(costing.items[i])}
                   onUndoRemember={() => item.slug && void c.undoRemember(item.slug)}

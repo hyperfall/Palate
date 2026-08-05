@@ -47,6 +47,8 @@ export type RowProps = {
   suggestion: { priceMinor: number; packAmount: number; packUnit: string; label: string } | null
   /** Set once this row's price has been written to the price book. */
   remembered: boolean
+  /** Why the price could not be saved, if it could not. */
+  saveError?: string
   onChange: (patch: Partial<CostingItem>) => void
   onCommitPrice: () => void
   onUndoRemember: () => void
@@ -62,6 +64,7 @@ export function CalculatorRow({
   category,
   suggestion,
   remembered,
+  saveError,
   onChange,
   onCommitPrice,
   onUndoRemember,
@@ -172,6 +175,12 @@ export function CalculatorRow({
               ours: {formatMoney(suggestion.priceMinor, currency)} / {suggestion.packAmount}
               {UNIT_LABEL[suggestion.packUnit] ?? suggestion.packUnit} — tap to use
             </button>
+          )}
+
+          {saveError && (
+            <p className="mt-1.5 mb-0 font-mono text-caption text-heat">
+              could not save this price — {saveError}
+            </p>
           )}
 
           {remembered && (

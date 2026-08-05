@@ -66,6 +66,8 @@ export function useCosting({
   const [saveState, setSaveState] = useState<SaveState>('idle')
   /** Slugs saved to the price book this session, for the inline undo. */
   const [remembered, setRemembered] = useState<Map<string, IngredientPrice | null>>(new Map())
+  /** Why a price failed to reach the book, by slug. */
+  const [priceError, setPriceError] = useState<Map<string, string>>(new Map())
   /** Names as they were when remembered, so an undo restores the row intact. */
   const previousName = useRef(new Map<string, string>()).current
 
@@ -300,7 +302,18 @@ export function useCosting({
         },
         { onConflict: 'user_id,ingredient_slug' },
       )
-      if (error) return
+      if (error) {
+        // Silence here was its own bug: a price that failed to save looked
+        // exactly like one that saved, and the cook would go on believing
+        // their correction had stuck.
+        setPriceError((e) => new Map(e).set(item.slug!, error.message || 'could not save'))
+        return
+      }
+      setPriceError((e) => {
+        const next = new Map(e)
+        next.delete(item.slug!)
+        return next
+      })
       previousName.set(item.slug, item.label)
       setMyPrices((m) => new Map(m).set(item.slug!, next))
       setRemembered((r) => new Map(r).set(item.slug!, previous))
@@ -415,6 +428,7 @@ export function useCosting({
     signedIn,
     myPrices,
     remembered,
+    priceError,
     saveState,
     addCatalogueItem,
     addFreeItem,

@@ -12,8 +12,7 @@ import {
 
 import {
   CATEGORIES,
-  CATEGORY_COOKIE_PREFIXES,
-  clearCookiesByPrefix,
+  clearCategoryStorage,
   DENIED,
   hasGPC,
   makeConsent,
@@ -62,9 +61,10 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const apply = useCallback((next: ConsentState) => {
-    // Actively clear a category's cookies the moment it's withdrawn.
+    // Actively clear a category the moment it's withdrawn — cookies and the
+    // localStorage that the Preferences category is actually made of.
     for (const cat of ['analytics', 'marketing', 'preferences'] as ConsentCategory[]) {
-      if (!next[cat]) clearCookiesByPrefix(CATEGORY_COOKIE_PREFIXES[cat])
+      if (!next[cat]) clearCategoryStorage(cat)
     }
     writeConsentCookie(next)
     setConsent(next)

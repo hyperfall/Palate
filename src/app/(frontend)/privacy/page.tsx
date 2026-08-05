@@ -1,6 +1,26 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
+import { manifestByCategory } from '@/lib/storageManifest'
+
+/** Plain-language headings for the groups the table is split into. */
+const CATEGORY_TITLE: Record<string, string> = {
+  necessary: 'Strictly necessary',
+  preferences: 'Preferences',
+  analytics: 'Analytics',
+  marketing: 'Marketing',
+}
+
+const CATEGORY_NOTE: Record<string, string> = {
+  necessary:
+    'Needed for the site to work at all — signing in, remembering your cookie choices, and holding the costing you are part-way through. These cannot be switched off, because switching them off would break the thing you came to do.',
+  preferences: 'Remembers choices you made, so you do not have to make them again.',
+  analytics:
+    'Counts readers and pages. Nothing is loaded and no request reaches Google until you allow this.',
+  marketing:
+    'For advertising measurement. We do not currently run ads; if that changes, this is what would be set.',
+}
+
 import { SITE } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -63,6 +83,59 @@ export default function PrivacyPage() {
             We don’t sell your personal information, and we don’t share it with advertisers. Partners
             get aggregate performance, never your identity.
           </p>
+        </section>
+
+        <section className="grid gap-2">
+          <h2 className="font-display text-title text-ink">What is stored on your device</h2>
+          <p>
+            Everything below, and nothing else. The table is generated from the same declaration
+            the site uses to set and clear these, so it cannot describe one thing while the code
+            does another. Anything outside the first group is only stored after you allow that
+            category, and switching a category off removes what it covers straight away.
+          </p>
+          <p className="text-slate">
+            Some of these are held in your browser rather than as cookies. They are listed together
+            because the rules are about storing information on your device, not about which method
+            put it there.
+          </p>
+
+          {manifestByCategory().map(({ category, entries }) => (
+            <div key={category} className="mt-6">
+              <h3 className="eyebrow m-0 text-flame">{CATEGORY_TITLE[category]}</h3>
+              <p className="mt-1 mb-0 text-detail text-slate">{CATEGORY_NOTE[category]}</p>
+
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[34rem] border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-rule">
+                      <th className="eyebrow py-2 pr-4 font-normal">Name</th>
+                      <th className="eyebrow py-2 pr-4 font-normal">Set by</th>
+                      <th className="eyebrow py-2 pr-4 font-normal">What it does</th>
+                      <th className="eyebrow py-2 font-normal">Kept for</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map((e) => (
+                      <tr key={e.name} className="border-b border-rule/60 align-top">
+                        <td className="py-2.5 pr-4 font-mono text-caption text-ink">
+                          {e.name}
+                          {e.prefix && <span className="text-slate">…</span>}
+                          <span className="block text-slate">
+                            {e.kind === 'cookie' ? 'cookie' : 'in-browser'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 text-detail text-slate">{e.party}</td>
+                        <td className="py-2.5 pr-4 text-detail text-slate">{e.purpose}</td>
+                        <td className="py-2.5 text-detail whitespace-nowrap text-slate">
+                          {e.retention}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </section>
 
         <section className="grid gap-2">

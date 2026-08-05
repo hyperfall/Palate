@@ -8,6 +8,8 @@
  * whenever the categories or the processors behind them change.
  */
 
+import { cookiePrefixesFor, localKeysFor } from './storageManifest'
+
 export const CONSENT_COOKIE = 'palate_consent'
 export const CONSENT_VERSION = 1
 export const CONSENT_MAX_AGE_DAYS = 180
@@ -92,7 +94,11 @@ export function writeConsentCookie(state: ConsentState): void {
   if (typeof document === 'undefined') return
   const value = encodeURIComponent(JSON.stringify(state))
   const maxAge = CONSENT_MAX_AGE_DAYS * 24 * 60 * 60
-  document.cookie = `${CONSENT_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
+  // Secure wherever the page is: a record of someone's privacy choices should
+  // not be the one cookie willing to travel in clear. Omitted on http so it
+  // still works on localhost.
+  const secure = location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${CONSENT_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
 }
 
 /**
@@ -105,11 +111,28 @@ export function hasGPC(): boolean {
   return (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true
 }
 
-/** Cookies to actively clear when a category is withdrawn. */
-export const CATEGORY_COOKIE_PREFIXES: Record<ConsentCategory, string[]> = {
-  analytics: ['_ga', '_gid', '_gat'],
-  marketing: ['_gcl', 'IDE', 'test_cookie'],
-  preferences: [],
+/**
+ * Clear everything a category covers — cookies AND localStorage.
+ *
+ * The localStorage half is the bug this replaces. Every preference this site
+ * keeps lives in localStorage, and the old version only cleared cookies with a
+ * hardcoded list in which `preferences` was an empty array. Switching
+ * Preferences off therefore did nothing at all: the country, the units and the
+ * dismissed prompt all survived a withdrawal that claimed to remove them.
+ *
+ * PECR is about storing information on someone's device, not about which API
+ * put it there.
+ */
+export function clearCategoryStorage(category: ConsentCategory): void {
+  clearCookiesByPrefix(cookiePrefixesFor(category))
+  if (typeof window === 'undefined') return
+  for (const key of localKeysFor(category)) {
+    try {
+      window.localStorage.removeItem(key)
+    } catch {
+      /* storage unavailable — nothing was stored to begin with */
+    }
+  }
 }
 
 export function clearCookiesByPrefix(prefixes: string[]): void {

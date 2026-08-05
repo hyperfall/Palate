@@ -252,10 +252,23 @@ function OverviewCard({ href, label, value, hint }: { href: string; label: strin
       className="ticket-card group flex flex-col gap-1 p-5 no-underline transition-colors hover:border-flame"
     >
       <span className="eyebrow">{label}</span>
-      <span className="truncate font-display text-[1.75rem] leading-none text-ink group-hover:text-flame">
+      {/*
+        A readout, not a headline. This was set in the display serif, which is a
+        face drawn for a sentence at 40px — at 28px a lone "0" or "7" reads thin
+        and slightly wrong, and nothing lined up between the four cards because
+        the figures are proportional.
+
+        Mono with tabular figures instead: every other number on this site is
+        set that way, so the dashboard was the one place breaking its own
+        convention, and tabular means the digits sit in the same column whether
+        a card says 7 or 128. The tighter tracking keeps mono from sprawling at
+        this size, and truncate is kept because this slot also holds a household
+        name.
+      */}
+      <span className="truncate font-mono text-[1.625rem] leading-none font-semibold tracking-[-0.01em] tabular-nums text-ink group-hover:text-flame">
         {value}
       </span>
-      <span className="font-mono text-tag tracking-[0.06em] text-slate">{hint}</span>
+      <span className="mt-0.5 font-mono text-tag tracking-[0.06em] text-slate">{hint}</span>
     </Link>
   )
 }

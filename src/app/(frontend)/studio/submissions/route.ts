@@ -49,6 +49,10 @@ export async function GET(request: NextRequest) {
       createdAt: doc.createdAt,
       recipeSlug: promotedObj?.slug ?? null,
       recipeId: promotedObj?.id ?? (typeof promoted === 'number' ? promoted : null),
+      // A revision of a recipe that is already live, not a new one. Without
+      // this the creator's own list shows the same dish twice, both marked
+      // published, and reads as an accidental duplicate.
+      isEdit: Boolean(doc.editsRecipe),
     }
   })
 

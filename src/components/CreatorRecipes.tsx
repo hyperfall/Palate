@@ -13,6 +13,8 @@ type Submission = {
   createdAt: string
   recipeSlug: string | null
   recipeId: number | null
+  /** A revision of a recipe already live, rather than a new one. */
+  isEdit?: boolean
 }
 
 type Page = { submissions: Submission[]; total: number; page: number; totalPages: number }
@@ -191,6 +193,7 @@ export function CreatorRecipes() {
                       )}
                     </span>
                     <span className="font-mono text-tag tracking-[0.06em] text-slate">
+                      {s.isEdit && <span className="text-slate">revision · </span>}
                       {fmtDate(s.createdAt)}
                       {/* Only once it's live and someone has actually done
                           something — a row of zeroes on a day-old recipe reads

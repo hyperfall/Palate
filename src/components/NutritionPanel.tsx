@@ -20,6 +20,8 @@ const LIGHT_CLASS = {
   red: 'bg-heat',
 } as const
 
+const LIGHT_WORD = { green: 'Low', amber: 'Medium', red: 'High' } as const
+
 /**
  * Per-serving nutrition in food-label grammar: the eight familiar values, a
  * percentage of a 2,000 kcal reference day beside each, and low/medium/high
@@ -65,11 +67,16 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
             <div key={row.label} className="leader">
               <dt className="eyebrow flex items-center gap-1.5">
                 {light && (
-                  <span
-                    aria-hidden="true"
-                    title={`${light === 'green' ? 'Low' : light === 'amber' ? 'Medium' : 'High'} per 100 g`}
-                    className={`h-2 w-2 shrink-0 rounded-full ${LIGHT_CLASS[light]}`}
-                  />
+                  <>
+                    <span
+                      aria-hidden="true"
+                      title={`${LIGHT_WORD[light]} per 100 g`}
+                      className={`h-2 w-2 shrink-0 rounded-full ${LIGHT_CLASS[light]}`}
+                    />
+                    {/* The colour was carried by a title alone, which a phone
+                        cannot show and a screen reader was told to ignore. */}
+                    <span className="sr-only">{LIGHT_WORD[light]} per 100 g:</span>
+                  </>
                 )}
                 {row.label}
               </dt>
@@ -83,6 +90,23 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
           )
         })}
       </dl>
+      {rows.some((r) => r.light && r.value != null) && (
+        <p className="mt-3 mb-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-eyebrow leading-snug text-slate">
+          {(['green', 'amber', 'red'] as const).map((l) => (
+            <span key={l} className="inline-flex items-center gap-1.5">
+              <span aria-hidden="true" className={`h-2 w-2 rounded-full ${LIGHT_CLASS[l]}`} />
+              {LIGHT_WORD[l].toLowerCase()}
+            </span>
+          ))}
+          {/* Its own sentence, because the swatches wrap above it on a narrow
+              column and a fragment beginning "per 100 g" reads as a mistake. */}
+          <span className="basis-full">
+            Rated per 100 g. Only fat, saturates, sugars and salt have agreed thresholds — the
+            other rows carry no dot.
+          </span>
+        </p>
+      )}
+
       <p className="mt-2.5 font-mono text-tag tracking-[0.08em] text-slate/70 uppercase">
         Estimated from ingredients · % of a 2,000 kcal reference day
         {grams ? ` · serving ≈ ${grams} g` : ''}

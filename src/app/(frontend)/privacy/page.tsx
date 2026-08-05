@@ -100,11 +100,14 @@ export default function PrivacyPage() {
           </p>
 
           {manifestByCategory().map(({ category, entries }) => (
-            <div key={category} className="mt-6">
+            <div key={category} className="mt-6 min-w-0">
               <h3 className="eyebrow m-0 text-flame">{CATEGORY_TITLE[category]}</h3>
               <p className="mt-1 mb-0 text-detail text-slate">{CATEGORY_NOTE[category]}</p>
 
-              <div className="mt-3 overflow-x-auto">
+              {/* min-w-0 on both: a grid item defaults to min-width:auto, so
+                  without it the table's min-width wins and the PAGE scrolls
+                  sideways instead of this box. */}
+              <div className="mt-3 min-w-0 overflow-x-auto">
                 <table className="w-full min-w-[34rem] border-collapse text-left">
                   <thead>
                     <tr className="border-b border-rule">

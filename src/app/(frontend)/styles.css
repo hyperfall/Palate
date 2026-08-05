@@ -199,6 +199,31 @@
     box-shadow: none;
   }
 
+  /*
+   * Tap target — for a small standalone link or button.
+   *
+   * WCAG 2.2 asks for 24x24 CSS pixels of tappable area, and a line of 12px
+   * mono type is about 17 to 21 of them. The obvious fix is padding, but that
+   * moves everything around it: these sit in tight rows and captions where the
+   * spacing is the design.
+   *
+   * So the HIT AREA grows and the box does not. The pseudo-element is a child
+   * of the link, so it takes the tap; nothing reflows, and nothing looks
+   * different. Not for links sitting inside a sentence — WCAG exempts those,
+   * and stretching them would make neighbouring words fight for the same tap.
+   */
+  .tap {
+    position: relative;
+  }
+  .tap::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    translate: 0 -50%;
+    height: max(100%, 24px);
+  }
+
   /* Facet toggle — a square-cornered mono tag, like tape on a shelf. */
   .chip {
     display: inline-flex;

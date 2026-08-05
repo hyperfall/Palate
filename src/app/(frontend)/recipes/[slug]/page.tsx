@@ -559,7 +559,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
                 </h2>
                 <Link
                   href={cuisine ? `/cuisine/${cuisine.slug}` : '/recipes'}
-                  className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+                  className="tap font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
                 >
                   See the station →
                 </Link>

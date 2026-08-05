@@ -97,7 +97,7 @@ export function CreatorByline({
         aria-controls={open && pos ? panelId : undefined}
         onClick={() => (open ? setOpen(false) : reveal())}
         onFocus={reveal}
-        className="group/byline inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-left"
+        className="tap group/byline inline-flex cursor-pointer items-center gap-1 border-none bg-transparent p-0 text-left"
       >
         {variant === 'full' ? (
           <span className="text-ink underline decoration-dotted decoration-slate/40 underline-offset-4 transition-colors group-hover/byline:decoration-flame">

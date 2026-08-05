@@ -28,7 +28,20 @@ type QuizDish = { title: string; image: string | null; cuisine: string | null; t
 // form people work down, and a fixed card bottom-right sits squarely over a row
 // of it. On a phone it hid an entire ingredient — its price, its amount and its
 // cost — behind an advert for a quiz.
-const SUPPRESS = ['/taste-night', '/taste', '/account', '/studio', '/plan/shared', '/calculator']
+const SUPPRESS = [
+  '/taste-night',
+  '/taste',
+  '/account',
+  '/studio',
+  '/plan/shared',
+  // A form people work down: the card sits over a row of it, and on a phone it
+  // hid a whole ingredient behind an advert for a quiz.
+  '/calculator',
+  // Someone reading what we store on their device should not have a marketing
+  // prompt over the paragraph explaining it.
+  '/privacy',
+  '/terms',
+]
 const KEY = 'palate:quiz-nudge'
 const SUPPRESS_MS = 7 * 24 * 60 * 60 * 1000
 

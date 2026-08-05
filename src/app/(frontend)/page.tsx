@@ -126,7 +126,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/cuisines"
-                className="font-mono text-detail font-medium tracking-[0.12em] text-milk uppercase underline underline-offset-4 hover:text-flame"
+                className="tap font-mono text-detail font-medium tracking-[0.12em] text-milk uppercase underline underline-offset-4 hover:text-flame"
               >
                 Explore cuisines
               </Link>
@@ -257,7 +257,7 @@ export default async function HomePage() {
           <h2 className="text-[clamp(1.75rem,2.5vw,2.5rem)]">On the board</h2>
           <Link
             href="/recipes"
-            className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+            className="tap font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
           >
             All recipes →
           </Link>
@@ -282,7 +282,7 @@ export default async function HomePage() {
             <h2 className="text-[clamp(1.75rem,2.5vw,2.5rem)]">By cuisine</h2>
             <Link
               href="/cuisines"
-              className="font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
+              className="tap font-mono text-detail font-medium tracking-[0.14em] text-ink uppercase no-underline hover:text-flame"
             >
               All cuisines →
             </Link>

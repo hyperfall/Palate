@@ -32,7 +32,7 @@ export default async function CostingPage({ params }: { params: Promise<{ id: st
   return (
     <div className="shell py-10 lg:py-14">
       <p className="eyebrow m-0">
-        <Link href="/calculator" className="text-slate no-underline hover:text-flame">
+        <Link href="/calculator" className="tap text-slate no-underline hover:text-flame">
           ← Your costings
         </Link>
       </p>

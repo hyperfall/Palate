@@ -211,7 +211,7 @@ export function IngredientsPanel({
                       // and unlike the popover it is there for crawlers too.
                       <Link
                         href={`/ingredients/${canonical.slug}`}
-                        className="text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
+                        className="tap text-ink no-underline hover:text-flame hover:underline hover:underline-offset-4"
                       >
                         {ingredient.item}
                       </Link>

@@ -23,7 +23,12 @@ type QuizDish = { title: string; image: string | null; cuisine: string | null; t
 
 // Don't nudge where it'd be redundant or intrusive (the quiz itself, onboarding,
 // account/studio flows, a shared page a guest landed on).
-const SUPPRESS = ['/taste-night', '/taste', '/account', '/studio', '/plan/shared']
+//
+// /calculator is on the list for the strongest version of intrusive: it is a
+// form people work down, and a fixed card bottom-right sits squarely over a row
+// of it. On a phone it hid an entire ingredient — its price, its amount and its
+// cost — behind an advert for a quiz.
+const SUPPRESS = ['/taste-night', '/taste', '/account', '/studio', '/plan/shared', '/calculator']
 const KEY = 'palate:quiz-nudge'
 const SUPPRESS_MS = 7 * 24 * 60 * 60 * 1000
 

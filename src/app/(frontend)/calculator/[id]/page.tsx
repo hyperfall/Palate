@@ -37,6 +37,12 @@ export default async function CostingPage({ params }: { params: Promise<{ id: st
         </Link>
       </p>
 
+      {/* The costing's own name is an input, so it cannot be the heading — and
+          without one this page opened straight into a form with nothing to
+          orient by. Visually quiet because the name field directly below is
+          what the eye should land on. */}
+      <h1 className="sr-only">Cost calculator</h1>
+
       <CostingLoader id={id} ingredients={ingredients} detectedCountry={detectedCountry} />
     </div>
   )

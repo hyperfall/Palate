@@ -146,7 +146,7 @@ export function CostingList({ catalogue }: { catalogue: Map<string, CatalogueEnt
           <Link href="/account" className="text-flame">
             Sign in
           </Link>{' '}
-          to keep more than one, and to share them — and the prices you correct — with your
+          to keep more than one, and to share them, and the prices you correct, with your
           household.
         </p>
       )}

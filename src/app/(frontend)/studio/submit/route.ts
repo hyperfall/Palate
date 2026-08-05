@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
     // log the real cause server-side, since it's masked from the client on purpose.
     console.error('[studio/submit] submission create failed:', error)
     return NextResponse.json(
-      { error: 'Some fields didn’t pass validation — check cuisine, meal, and taste values.' },
+      { error: 'Some fields didn’t pass validation. Check cuisine, meal, and taste values.' },
       { status: 400 },
     )
   }

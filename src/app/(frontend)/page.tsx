@@ -200,7 +200,7 @@ export default async function HomePage() {
             </div>
 
             <p className="mt-6 font-body text-eyebrow leading-relaxed text-milk/85">
-              Tap a level — flavours mean “at least this much”, effort means “at most”.
+              Tap a level. Flavours mean “at least this much”; effort means “at most”.
             </p>
           </div>
 

@@ -46,7 +46,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     meta: {
-      titleSuffix: ' — Recipe platform',
+      titleSuffix: ' · Recipe platform',
     },
   },
   collections: [Recipes, Ingredients, Cuisines, Authors, BrandCards, Media, Submissions, PartnerRequests, AdEvents, GroceryRetailers, GroceryEvents, Ratings, Users],

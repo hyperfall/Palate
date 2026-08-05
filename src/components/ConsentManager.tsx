@@ -154,7 +154,7 @@ function CookieBanner({
           <p className="eyebrow m-0 text-flame">Cookies</p>
           <p className="mt-1 text-note leading-snug text-slate">
             We use strictly-necessary cookies to run the site (sign-in, your choices). With your
-            consent we also use analytics — and, if you allow it, marketing — cookies. You can accept,
+            consent we also use analytics cookies and, if you allow it, marketing cookies. You can accept,
             reject, or choose per category. Change it anytime under “Cookie settings.”
           </p>
         </div>
@@ -293,7 +293,7 @@ function CookiePreferences({
             <div>
               <p className="m-0 font-body font-semibold text-ink">Strictly necessary</p>
               <p className="mt-1 text-eyebrow leading-snug text-slate">
-                Required to run the site — sign-in, security, and remembering this consent choice.
+                Required to run the site: sign-in, security, and remembering this consent choice.
                 Always on.
               </p>
             </div>

@@ -201,7 +201,7 @@ export function PantryFinder({
           />
           {noMatch && (
             <p role="status" className="mt-1.5 m-0 font-mono text-caption text-slate">
-              Nothing in the pantry called “{noMatch}” — try a simpler word, like the
+              Nothing in the pantry called “{noMatch}”. Try a simpler word, like the
               ingredient on its own.
             </p>
           )}

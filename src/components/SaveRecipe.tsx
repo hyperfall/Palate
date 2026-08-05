@@ -78,7 +78,7 @@ export function SaveRecipe({
         // Only flip the check mark once the write actually succeeded — a
         // silent failure here would tell someone a recipe is saved when it
         // isn't.
-        if (error) setError('Couldn’t update — try again.')
+        if (error) setError('Couldn’t update. Try again.')
         else {
           setMemberOf((prev) => {
             const next = new Set(prev)
@@ -93,11 +93,11 @@ export function SaveRecipe({
           recipe_title: title,
           recipe_image: image,
         })
-        if (error) setError('Couldn’t save — try again.')
+        if (error) setError('Couldn’t save. Try again.')
         else setMemberOf((prev) => new Set(prev).add(collectionId))
       }
     } catch {
-      setError('Couldn’t save — check your connection.')
+      setError('Couldn’t save. Check your connection.')
     } finally {
       setBusy(false)
     }
@@ -115,7 +115,7 @@ export function SaveRecipe({
         .select('id,name,created_at')
         .single()
       if (error || !data) {
-        setError('Couldn’t create that collection — try again.')
+        setError('Couldn’t create that collection. Try again.')
       } else {
         setCollections((prev) => [...prev, data as Collection])
         setNewName('')
@@ -182,7 +182,7 @@ export function SaveRecipe({
             </ul>
           ) : (
             <p className="mt-2 mb-0 text-detail text-slate">
-              No collections yet — name your first one.
+              No collections yet. Name your first one.
             </p>
           )}
 

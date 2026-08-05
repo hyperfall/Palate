@@ -173,13 +173,13 @@ export function CalculatorRow({
               className="mt-1.5 cursor-pointer border-none bg-transparent p-0 text-left font-mono text-caption text-slate hover:text-flame"
             >
               ours: {formatMoney(suggestion.priceMinor, currency)} / {suggestion.packAmount}
-              {UNIT_LABEL[suggestion.packUnit] ?? suggestion.packUnit} — tap to use
+              {UNIT_LABEL[suggestion.packUnit] ?? suggestion.packUnit}, tap to use
             </button>
           )}
 
           {saveError && (
             <p className="mt-1.5 mb-0 font-mono text-caption text-heat">
-              could not save this price — {saveError}
+              could not save this price. {saveError}
             </p>
           )}
 
@@ -198,7 +198,7 @@ export function CalculatorRow({
 
           {!item.slug && (
             <p className="mt-1.5 mb-0 font-mono text-caption text-slate/70">
-              typed in — not saved to your prices
+              typed in, not saved to your prices
             </p>
           )}
         </div>

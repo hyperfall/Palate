@@ -177,7 +177,7 @@ export async function renderWeekPdf(opts: { week: WeekSnapshot; shopping: WeekSh
   y += 22
   if (shopping.netted.length === 0) {
     setText('body', 'normal', 10, C.slate)
-    doc.text('All set — every ingredient is a pantry staple.', M, y, { baseline: 'top' })
+    doc.text('All set. Every ingredient is already a staple.', M, y, { baseline: 'top' })
     y += 18
   } else {
     for (const l of shopping.netted) listLine(l.name, l.amounts)

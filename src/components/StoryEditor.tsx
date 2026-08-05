@@ -210,7 +210,7 @@ export function StoryEditor({
           value={value}
           maxLength={STORY_MARKDOWN_CAP}
           rows={8}
-          placeholder="Tell the story behind the dish. Use the buttons above to format — or write plain and it still looks great. Paste or drop a photo straight in."
+          placeholder="Tell the story behind the dish. Use the buttons above to format, or write plain and it still looks great. Paste or drop a photo straight in."
           onChange={(e) => onChange(e.target.value)}
           onPaste={onPaste}
           onDrop={onDrop}
@@ -229,7 +229,7 @@ export function StoryEditor({
 
       <div className="flex items-center justify-between">
         <span className="font-mono text-tag text-slate">
-          Replaces the instructions behind a toggle — opt-in reading.
+          Replaces the instructions behind a toggle, so reading stays opt-in.
         </span>
         <span className="font-mono text-tag text-slate tabular-nums">
           {value.length}/{STORY_MARKDOWN_CAP}

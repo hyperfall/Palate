@@ -147,7 +147,7 @@ export function CostingTotals({
       {currency !== BASE_CURRENCY && (
         <div className="mt-4 rounded border border-rule bg-paper/40 px-3 py-2.5">
           <p className="m-0 text-eyebrow leading-snug text-slate">
-            Our shelf prices are British, and we never convert them — a rate we invented would be
+            Our shelf prices are British, and we never convert them. A rate we invented would be
             worse than a gap. In {currency}, only prices you enter count
             {result.quantified > 0 && result.priced === 0 ? ', which is why this is empty' : ''}.
           </p>
@@ -167,7 +167,7 @@ export function CostingTotals({
       <p className="mt-4 mb-0 text-eyebrow leading-snug text-slate" aria-live="polite">
         {saveState === 'saving' && 'Saving…'}
         {saveState === 'saved' && 'Saved.'}
-        {saveState === 'error' && 'Could not save — your work is still here, try again in a moment.'}
+        {saveState === 'error' && 'Could not save. Your work is still here; try again in a moment.'}
         {(saveState === 'signed-out' || (!signedIn && saveState === 'idle')) && (
           <>
             <Link href="/account" className="text-flame">

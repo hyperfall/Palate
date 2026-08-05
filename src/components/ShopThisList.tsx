@@ -182,7 +182,7 @@ export function ShopThisList({
 
         {eligible.length === 0 && (
           <p className="mt-3 mb-0 text-eyebrow text-slate">
-            No shops listed for {country ? countryName(country) : 'your country'} yet — copy the
+            No shops listed for {country ? countryName(country) : 'your country'} yet. Copy the
             list and take it anywhere.
           </p>
         )}
@@ -264,7 +264,7 @@ export function ShopThisList({
                 </option>
               ))}
             </optgroup>
-            <optgroup label="No shops listed yet — copy list still works">
+            <optgroup label="No shops listed yet, copy list still works">
               {uncovered.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.name}

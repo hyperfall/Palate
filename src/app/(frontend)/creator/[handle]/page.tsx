@@ -45,7 +45,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical },
     openGraph: {
-      title: `${author.name} — recipes on Palate`,
+      title: `Recipes by ${author.name} on Palate`,
       description,
       url: canonical,
       type: 'profile',
@@ -125,7 +125,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ handle
           <div className="ticket-card max-w-[38rem] p-6">
             <p className="eyebrow m-0 text-flame">Nothing on the pass yet</p>
             <p className="mt-2 text-slate">
-              {author.name} hasn’t published a recipe here yet. Check back — or browse the board in
+              {author.name} hasn’t published a recipe here yet. Check back, or browse the board in
               the meantime.
             </p>
             <Link href="/recipes" className="btn-primary mt-5">

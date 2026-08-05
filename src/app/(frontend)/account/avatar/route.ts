@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const media = await payload.create({
     collection: 'media',
     data: {
-      alt: `${user.user_metadata?.display_name ?? 'Creator'} — avatar`,
+      alt: `${user.user_metadata?.display_name ?? 'Creator'} avatar`,
       credit: user.email ?? 'account avatar',
       license: 'original',
     },

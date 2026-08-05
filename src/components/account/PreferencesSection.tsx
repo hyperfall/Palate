@@ -21,7 +21,7 @@ export function PreferencesSection() {
   return (
     <SettingsSection
       title="Cooking preferences"
-      desc="How recipes read to you — here and on your other devices."
+      desc="How recipes read to you, here and on your other devices."
     >
       <div className="grid items-start gap-4 sm:grid-cols-2">
       <div className="grid gap-1.5">

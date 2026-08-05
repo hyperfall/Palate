@@ -206,7 +206,7 @@ export function AccountPanel() {
                   })
                   setSession((prev) => (prev ? { ...prev, avatarUrl: data.url } : prev))
                 } catch {
-                  setNotice({ kind: 'error', text: 'Avatar upload failed — try a smaller image.' })
+                  setNotice({ kind: 'error', text: 'Avatar upload failed. Try a smaller image.' })
                 }
               }}
             />
@@ -317,7 +317,7 @@ export function AccountPanel() {
       // never show a blank alert.
       text:
         (error instanceof Error && error.message) ||
-        'Couldn’t reach the sign-in service — check the connection and try again.',
+        'Couldn’t reach the sign-in service. Check the connection and try again.',
     })
 
   const submit = async (event: React.FormEvent) => {
@@ -341,7 +341,7 @@ export function AccountPanel() {
         if (!data.session) {
           setNotice({
             kind: 'info',
-            text: 'Almost there — confirm the link we just emailed you, then sign in.',
+            text: 'Almost there. Confirm the link we just emailed you, then sign in.',
           })
         }
       } else if (mode === 'sign-in') {
@@ -354,13 +354,13 @@ export function AccountPanel() {
         if (error) throw error
         setNotice({
           kind: 'info',
-          text: 'Reset link sent — check your inbox and follow it back here.',
+          text: 'Reset link sent. Check your inbox and follow it back here.',
         })
       } else {
         const { error } = await supabase.auth.updateUser({ password })
         if (error) throw error
         setMode('sign-in')
-        setNotice({ kind: 'info', text: 'Password updated — you’re signed in.' })
+        setNotice({ kind: 'info', text: 'Password updated. You’re signed in.' })
       }
     } catch (error) {
       fail(error)
@@ -423,11 +423,11 @@ export function AccountPanel() {
               className={`font-mono text-caption ${strength.acceptable ? 'text-slate' : 'text-heat'}`}
             >
               {strength.label}
-              {strength.suggestions[0] ? ` — ${strength.suggestions[0]}` : ''}
+              {strength.suggestions[0] ? `. ${strength.suggestions[0]}` : ''}
             </span>
           </div>
         ) : (
-          <span className="text-detail text-slate">At least 8 characters — longer is stronger.</span>
+          <span className="text-detail text-slate">At least 8 characters. Longer is stronger.</span>
         ))}
     </label>
   )

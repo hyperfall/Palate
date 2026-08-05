@@ -113,7 +113,7 @@ export function IngredientPicker({
                   +
                 </span>
                 <span className="font-body text-[0.95rem] text-ink">
-                  Add “{trimmed}” — you give it a price
+                  Add “{trimmed}”, and give it a price
                 </span>
               </button>
             </li>

@@ -70,7 +70,7 @@ export function StudioPreview({
         }
       >
       <div className="flex items-center justify-between gap-3">
-        <p className="eyebrow m-0">Live preview — how it will look</p>
+        <p className="eyebrow m-0">Live preview · how it will look</p>
         {open && (
           <button
             type="button"

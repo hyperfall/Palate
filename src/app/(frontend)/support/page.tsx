@@ -9,14 +9,14 @@ export const metadata: Metadata = {
   alternates: { canonical: '/support' },
   title: 'Become a supporter',
   description:
-    'Support Palate — a recipe-first, honestly-monetised platform. Unlock Household mode and the perks to come, and help keep the recipe at the top.',
+    'Support Palate, a recipe-first, honestly-monetised platform. Unlock Household mode and the perks to come, and help keep the recipe at the top.',
 }
 
 export const dynamic = 'force-dynamic'
 
 const PERKS_NOW = [
   ['Household mode', 'Share one week board, pantry and shopping list with the people you cook for.'],
-  ['An honest platform', 'Fund a recipe site with no life-story walls and no ad spam — the recipe stays first.'],
+  ['An honest platform', 'Fund a recipe site with no life-story walls and no ad spam. The recipe stays first.'],
 ]
 const PERKS_SOON = [
   ['Taste Night host mode', 'Run the quiz for a room, with join codes and group picks.'],
@@ -38,7 +38,7 @@ export default async function SupportPage() {
           Keep the recipe at the top.
         </h1>
         <p className="mt-4 text-read leading-relaxed text-slate">
-          Palate earns from clearly-labelled partner cards — never from burying the food. Supporters
+          Palate earns from clearly-labelled partner cards, never from burying the food. Supporters
           fund the rest, and get the tools built for people who cook for a household. It’s{' '}
           <span className="font-semibold text-ink">{SUPPORTER_PRICE_LABEL}</span>, cancel anytime.
         </p>
@@ -60,13 +60,13 @@ export default async function SupportPage() {
         ) : configured ? (
           <form action="/support/checkout" method="post">
             <button type="submit" className="btn-primary">
-              Support Palate — {SUPPORTER_PRICE_LABEL}
+              Support Palate · {SUPPORTER_PRICE_LABEL}
             </button>
           </form>
         ) : (
           <div className="ticket-card p-5">
             <p className="m-0 text-slate">
-              Supporter subscriptions aren’t switched on yet — check back soon.
+              Supporter subscriptions aren’t switched on yet. Check back soon.
             </p>
           </div>
         )}
@@ -95,7 +95,7 @@ export default async function SupportPage() {
           ))}
         </ul>
         <p className="mt-6 text-note text-slate">
-          Everything you use today stays free. Supporting only adds — it never takes a feature away.
+          Everything you use today stays free. Supporting only adds; it never takes a feature away.
         </p>
       </section>
     </div>

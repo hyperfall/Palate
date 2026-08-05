@@ -97,7 +97,7 @@ export default async function HouseholdPage({
   return (
     <Shell>
       {join === 'invalid' && <Note>That invite code didn’t match a household. Check it and try again.</Note>}
-      {join === 'already' && <Note>You’re already in a household — leave it first to join another.</Note>}
+      {join === 'already' && <Note>You’re already in a household. Leave it first to join another.</Note>}
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div className="ticket-card p-5">

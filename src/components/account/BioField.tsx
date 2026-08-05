@@ -43,11 +43,11 @@ export function BioField() {
         setStatus('saved')
       } else {
         const d = await res.json().catch(() => ({}))
-        setError(d.error ?? 'Couldn’t save your bio — try again.')
+        setError(d.error ?? 'Couldn’t save your bio. Try again.')
         setStatus('idle')
       }
     } catch {
-      setError('Couldn’t save your bio — check your connection.')
+      setError('Couldn’t save your bio. Check your connection.')
       setStatus('idle')
     }
   }
@@ -57,7 +57,7 @@ export function BioField() {
   return (
     <SettingsSection
       title="Creator profile"
-      desc="Your public byline — the bio and links shown wherever your recipes appear."
+      desc="Your public byline: the bio and links shown wherever your recipes appear."
     >
       {state.hasProfile ? (
         <div className="grid gap-1">

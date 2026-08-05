@@ -147,7 +147,7 @@ export default async function FeedPage() {
         // Followed creators, no published recipes yet — a different truth from
         // "not following anyone", so it gets its own sentence.
         <p className="mt-10 max-w-[52ch] text-slate">
-          The creators you follow haven’t published here yet — the moment they do, it lands on this
+          The creators you follow haven’t published here yet. The moment they do, it lands on this
           page.{' '}
           <Link href="/recipes" className="text-flame underline underline-offset-4">
             Browse the board meanwhile

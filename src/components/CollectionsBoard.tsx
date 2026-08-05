@@ -80,7 +80,7 @@ export function CollectionsBoard() {
       <div className="ticket-card max-w-[34rem] p-6">
         <p className="eyebrow m-0 text-flame">Nothing on the shelf yet</p>
         <p className="mt-2 text-note leading-relaxed text-slate">
-          Sign in and every recipe you save — into collections you name yourself — lands here.
+          Sign in and every recipe you save, into collections you name yourself, lands here.
         </p>
         <Link href="/account" className="btn-primary mt-5">
           Sign in →
@@ -145,7 +145,7 @@ export function CollectionsBoard() {
         <div className="ticket-card max-w-[34rem] p-6">
           <p className="eyebrow m-0">Empty shelf</p>
           <p className="mt-2 text-note text-slate">
-            Open any recipe and hit <span className="font-mono">+ Save</span> — your collections
+            Open any recipe and hit <span className="font-mono">+ Save</span>. Your collections
             build from there.
           </p>
           <Link href="/recipes" className="btn-primary mt-5">
@@ -185,7 +185,7 @@ export function CollectionsBoard() {
             </div>
             {collectionItems.length === 0 ? (
               <p className="mt-4 text-eyebrow text-slate">
-                Nothing plated here yet — open a recipe and hit + Save to fill it.
+                Nothing plated here yet. Open a recipe and hit + Save to fill it.
               </p>
             ) : (
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-4">

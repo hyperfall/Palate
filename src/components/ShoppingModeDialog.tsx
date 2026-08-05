@@ -211,7 +211,7 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
                   </button>
                   {stocking === 'error' && (
                     <p role="alert" className="mt-2 m-0 font-mono text-caption text-heat">
-                      Couldn’t stock the pantry — try again.
+                      Couldn’t stock the pantry. Try again.
                     </p>
                   )}
                 </>

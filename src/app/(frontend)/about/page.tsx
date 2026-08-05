@@ -23,17 +23,17 @@ export default function AboutPage() {
         <p>
           Most recipe sites bury the food under a life story, a wall of ads, and a photo of someone’s
           childhood kitchen. Palate is the opposite bet: the recipe comes first, measured on the few
-          things that actually decide whether you’ll make it tonight — how it tastes, how long it
+          things that actually decide whether you’ll make it tonight: how it tastes, how long it
           takes, what it costs, and how much effort it really is.
         </p>
         <p>
           Every recipe is written by a person and published under their name. We don’t scrape or
-          spin up filler — the catalog grows as real creators bring their food to the platform.
+          spin up filler. The catalog grows as real creators bring their food to the platform.
         </p>
 
         <h2 className="mt-4 font-display text-[1.375rem] text-ink">How we make money, honestly</h2>
         <p>
-          A single, clearly-labelled partner card can appear beside a recipe — matched to the dish
+          A single, clearly-labelled partner card can appear beside a recipe, matched to the dish
           and to your country, and rotated fairly when more than one brand fits. It’s always marked
           “Partner”, its links never pass search credit, and{' '}
           <span className="font-semibold text-ink">we never take money to change a recipe</span>. When

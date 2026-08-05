@@ -7,9 +7,9 @@ import { findFeaturedRecipes } from '@/lib/queries'
 
 export const metadata: Metadata = {
   alternates: { canonical: '/taste-night' },
-  title: 'Taste Night — the Palate quiz',
+  title: 'Taste Night, the Palate quiz',
   description:
-    'Eight quick questions on ingredients, technique, and your own palate. Score at the end — plus the dish your answers say you should cook tonight.',
+    'Eight quick questions on ingredients, technique, and your own palate. Score at the end, plus the dish your answers say you should cook tonight.',
 }
 
 export const revalidate = 3600

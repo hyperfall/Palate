@@ -113,7 +113,7 @@ export function StudentBudgetBoard({
 
       {shown.length === 0 ? (
         <p className="mt-6 max-w-[46ch] text-slate">
-          Nothing under that cap in this mode — loosen the budget a notch, or{' '}
+          Nothing under that cap in this mode. Loosen the budget a notch, or{' '}
           <Link href="/recipes" className="text-flame underline underline-offset-2">
             browse everything
           </Link>

@@ -19,7 +19,7 @@ export function DisplayNameField({ initial, onSaved }: { initial: string | null;
     const name = value.trim()
     const { error: err } = await supabase.auth.updateUser({ data: { display_name: name } })
     if (err) {
-      setError('Couldn’t save your name — try again.')
+      setError('Couldn’t save your name. Try again.')
       setStatus('idle')
     } else {
       setStatus('saved')

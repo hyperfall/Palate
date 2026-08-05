@@ -63,7 +63,7 @@ async function resolve(params: Props['params']): Promise<Period> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const period = await resolve(params)
-  const title = period.grain === 'all' ? 'Top of the pass, all time' : `Top of the pass — ${period.label}`
+  const title = period.grain === 'all' ? 'Top of the pass, all time' : `Top of the pass, ${period.label}`
   return {
     title,
     description: `The most voted recipes on Palate${period.grain === 'all' ? '' : ` for ${period.label}`}, ranked by how many people scored them.`,
@@ -172,7 +172,7 @@ export default async function RankingPage({ params }: Props) {
           <p className="mt-2 text-slate">
             {isFuture(period, now)
               ? 'This board fills in as people cook and score.'
-              : 'Nobody scored a recipe in this period. Cook something and be the first — a single vote puts a dish up here.'}
+              : 'Nobody scored a recipe in this period. Cook something and be the first; a single vote puts a dish up here.'}
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/ranking/all" className="btn-primary">
@@ -193,7 +193,7 @@ export default async function RankingPage({ params }: Props) {
           </p>
           <p className="mt-2 max-w-[52ch] text-slate">
             {ranked.length === 1
-              ? 'One dish has been scored so far. A ranking needs a race — cook another and cast the vote that starts it.'
+              ? 'One dish has been scored so far. A ranking needs a race, so cook another and cast the vote that starts it.'
               : `${ranked.length} dishes have been scored so far. A few more votes and this becomes a real leaderboard.`}
           </p>
           <ol className="m-0 mt-6 grid max-w-[46rem] list-none gap-y-0 p-0">

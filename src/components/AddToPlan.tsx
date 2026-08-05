@@ -135,7 +135,7 @@ export function AddToPlan({
       const existing = planned.find((p) => p.day === day && p.meal === meal)
       if (existing) {
         const { error } = await supabase.from('meal_plan').delete().eq('id', existing.id)
-        if (error) setError('Couldn’t update your week — try again.')
+        if (error) setError('Couldn’t update your week. Try again.')
         else setPlanned((prev) => prev.filter((p) => p.id !== existing.id))
       } else {
         // Position: every insert defaulted to 0, so multi-dish slots had
@@ -153,7 +153,7 @@ export function AddToPlan({
           })
           .select('id')
           .single()
-        if (error) setError('Couldn’t update your week — try again.')
+        if (error) setError('Couldn’t update your week. Try again.')
         else if (data) setPlanned((prev) => [...prev, { id: data.id as string, day, meal }])
       }
     } finally {

@@ -154,7 +154,7 @@ export function IngredientsPanel({
 
       {servings !== baseServings && (
         <p className="eyebrow mt-2">
-          Scaled from {baseServings} —{' '}
+          Scaled from {baseServings}.{' '}
           <button
             type="button"
             onClick={() => setServings(baseServings)}
@@ -167,7 +167,7 @@ export function IngredientsPanel({
 
       {factor >= 2 && (
         <p className="mt-1.5 text-detail leading-snug text-slate">
-          At {Math.round(factor * 10) / 10}×, use a wider pan and expect a little extra cooking time —
+          At {Math.round(factor * 10) / 10}×, use a wider pan and expect a little extra cooking time.
           scaled amounts are a starting point, taste as you go.
         </p>
       )}

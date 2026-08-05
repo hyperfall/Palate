@@ -17,7 +17,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           That didn’t plate up.
         </h1>
         <p className="mx-auto mt-3 max-w-[38ch] text-slate">
-          A step went wrong on our side. Give it another go — most of the time the second
+          A step went wrong on our side. Give it another go. Most of the time the second
           attempt lands clean.
         </p>
         <button type="button" onClick={reset} className="btn-primary mt-7">

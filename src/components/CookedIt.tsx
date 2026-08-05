@@ -89,7 +89,7 @@ export function CookedIt({
       note: note.trim() ? note.trim().slice(0, 500) : null,
     })
     if (err) {
-      setError('Couldn’t save that — try again.')
+      setError('Couldn’t save that. Try again.')
       setState('noting')
       return
     }

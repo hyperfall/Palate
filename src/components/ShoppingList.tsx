@@ -41,14 +41,14 @@ function LineRow({
           ) : (
             line.name
           )}
-          {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
+          {line.amounts.length > 0 && <span className="text-slate"> · {line.amounts.join(' + ')}</span>}
         </span>
         {onStaple && (
           <button
             type="button"
             disabled={busy}
             onClick={() => onStaple(line)}
-            title="I always have this — hide it from the list"
+            title="I always have this. Hide it from the list"
             className="shrink-0 cursor-pointer border-none bg-transparent p-0 font-mono text-tag tracking-[0.08em] text-slate uppercase underline-offset-2 hover:text-flame hover:underline disabled:opacity-50"
           >
             have it
@@ -95,7 +95,7 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
           next.delete(line.key)
           return next
         })
-        setError(`Couldn’t save “${line.name}” as a staple — try again.`)
+        setError(`Couldn’t save “${line.name}” as a staple. Try again.`)
       }
     } finally {
       setBusy(null)
@@ -105,7 +105,7 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
   if (list.dishes.length === 0) {
     return (
       <p className="mt-4 text-note text-slate">
-        {interactive ? 'Nothing to buy — add recipes to your week.' : 'No dishes in this week.'}
+        {interactive ? 'Nothing to buy. Add recipes to your week.' : 'No dishes in this week.'}
       </p>
     )
   }
@@ -127,7 +127,7 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
         meta={`${visibleNetted.length} ${visibleNetted.length === 1 ? 'item' : 'items'}`}
       >
         {visibleNetted.length === 0 ? (
-          <p className="text-note text-slate">All set — every ingredient is a pantry staple.</p>
+          <p className="text-note text-slate">All set. Every ingredient is already a staple.</p>
         ) : (
           <ul className="grid list-none gap-0 p-0">
             {visibleNetted.map((line) => (

@@ -60,7 +60,7 @@ export function limited(
   const { ok, retryAfter } = rateLimit(`${opts.name}:${who}`, opts.limit, opts.windowMs)
   if (ok) return null
   return NextResponse.json(
-    { error: 'Too many requests — please slow down and try again shortly.' },
+    { error: 'Too many requests. Please slow down and try again shortly.' },
     { status: 429, headers: { 'Retry-After': String(retryAfter) } },
   )
 }

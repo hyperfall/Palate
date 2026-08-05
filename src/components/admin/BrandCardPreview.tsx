@@ -99,7 +99,7 @@ export function BrandCardPreview() {
         </strong>
         {live.length > 1 && (
           <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.8rem' }}>
-            Creative {index + 1} of {live.length} — each reader sees one
+            Creative {index + 1} of {live.length}. Each reader sees one
           </span>
         )}
       </div>
@@ -139,7 +139,7 @@ export function BrandCardPreview() {
 
       {!imageUrl && (
         <p style={{ marginTop: '0.6rem', color: 'var(--theme-elevation-500)', fontSize: '0.8rem' }}>
-          No image yet — add a creative below, or a brand logo above.
+          No image yet. Add a creative below, or a brand logo above.
         </p>
       )}
     </div>

@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   const author = found.docs[0]
   if (!author) {
     return NextResponse.json(
-      { error: 'No creator profile yet — publish a recipe first, then add your links.' },
+      { error: 'No creator profile yet. Publish a recipe first, then add your links.' },
       { status: 404 },
     )
   }

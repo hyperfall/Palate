@@ -9,14 +9,14 @@ export const metadata: Metadata = {
   alternates: { canonical: '/partners' },
   title: 'Advertise with us',
   description:
-    'Reach cooks at the moment they’re choosing what to make — one labelled partner card per recipe, targeted by country and dish. Request a placement.',
+    'Reach cooks at the moment they’re choosing what to make. One labelled partner card per recipe, targeted by country and dish. Request a placement.',
 }
 
 const HOW = [
   {
     n: '01',
     t: 'One card, in context',
-    d: 'A single labelled partner card sits beside the recipe — never a banner farm, never mistaken for editorial.',
+    d: 'A single labelled partner card sits beside the recipe, never a banner farm, never mistaken for editorial.',
   },
   {
     n: '02',
@@ -48,7 +48,7 @@ const EXAMPLES = [
 const CREATIVE_SPEC: Array<[string, string]> = [
   ['Images per campaign', 'Up to 8, rotated evenly'],
   ['Image size', '800×600 or larger, square-safe'],
-  ['Format', 'JPG or PNG — no SVG'],
+  ['Format', 'JPG or PNG, no SVG'],
   ['Tagline', 'One line, 160 characters'],
   ['Button label', '2–3 words'],
   ['Destination', 'https:// only'],
@@ -63,7 +63,7 @@ export default function PartnersPage() {
           Reach cooks the moment they decide.
         </h1>
         <p className="mt-3 text-read leading-relaxed text-slate">
-          Palate readers arrive with intent — they’re about to cook. One tasteful, labelled partner
+          Palate readers arrive with intent: they’re about to cook. One tasteful, labelled partner
           card per recipe, matched to the dish and the reader’s country.
         </p>
       </header>
@@ -88,7 +88,7 @@ export default function PartnersPage() {
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
           <h2 className="font-display text-[1.375rem]">This is the placement</h2>
           <p className="m-0 max-w-[46ch] text-note text-slate">
-            One card, in the margin beside the method — where a reader is already
+            One card, in the margin beside the method, where a reader is already
             deciding what to buy. Supply several images and we rotate them evenly.
           </p>
         </div>
@@ -113,7 +113,7 @@ export default function PartnersPage() {
           <h2 className="font-display text-[1.375rem]">Request a placement</h2>
           <p className="mt-2 max-w-[56ch] text-slate">
             Tell us a little about the brand and what you’d like to promote. We review every request
-            by hand and reply by email — no auto-approvals, no auction.
+            by hand and reply by email. No auto-approvals, no auction.
           </p>
           <div className="mt-6">
             <PartnerRequestForm />

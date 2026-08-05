@@ -48,11 +48,11 @@ const BANK: Question[] = [
     format: 'Myth-buster',
     prompt: 'Does searing meat “lock in the juices”?',
     options: [
-      { label: 'Yes — that’s the whole point' },
-      { label: 'No — but it builds flavour', nudge: { richness: 1 } },
+      { label: 'Yes, that’s the whole point' },
+      { label: 'No, but it builds flavour', nudge: { richness: 1 } },
     ],
     answer: 1,
-    lesson: 'Searing doesn’t seal anything — it creates browning (Maillard), which is flavour, not a lid.',
+    lesson: 'Searing doesn’t seal anything. It creates browning (Maillard), which is flavour, not a lid.',
   },
   {
     format: 'Technique test',
@@ -64,14 +64,14 @@ const BANK: Question[] = [
       { label: 'Whipped cream', nudge: { sweetness: 1 } },
     ],
     answer: 0,
-    lesson: 'Flour cooked in fat thickens milk into béchamel — the mother of every proper cheese sauce.',
+    lesson: 'Flour cooked in fat thickens milk into béchamel, the mother of every proper cheese sauce.',
   },
   {
     format: 'True or false',
     prompt: 'Bananas are botanically berries.',
     options: [{ label: 'True', nudge: { sweetness: 1 } }, { label: 'False' }],
     answer: 0,
-    lesson: 'True — and raspberries aren’t. Botany is chaos.',
+    lesson: 'True, and raspberries aren’t. Botany is chaos.',
   },
   {
     format: 'Cuisine passport',
@@ -83,7 +83,7 @@ const BANK: Question[] = [
       { label: 'Chinese' },
     ],
     answer: 0,
-    lesson: 'Korean — and a day-old pot of it makes the best kimchi jjigae.',
+    lesson: 'Korean. A day-old pot of it makes the best kimchi jjigae.',
   },
   {
     format: 'Taste prediction',
@@ -95,7 +95,7 @@ const BANK: Question[] = [
       { label: 'Smashed cucumber salad' },
     ],
     answer: 1,
-    lesson: 'Butter + cream + cashew gravy — that’s the decadent end of our richness meter.',
+    lesson: 'Butter, cream and cashew gravy: the decadent end of our richness meter.',
   },
   {
     format: 'Technique test',
@@ -107,17 +107,17 @@ const BANK: Question[] = [
       { label: 'Whisking air into eggs' },
     ],
     answer: 0,
-    lesson: 'A hot-cold shock that sets colour and texture — the secret behind restaurant-green vegetables.',
+    lesson: 'A hot-cold shock that sets colour and texture. It is the secret behind restaurant-green vegetables.',
   },
   {
     format: 'This or that',
-    prompt: 'Honest answer — tonight you’d rather cook:',
+    prompt: 'Honest answer. Tonight you’d rather cook:',
     options: [
       { label: 'Fiery and fast', nudge: { spiciness: 2, effort: -1 } },
       { label: 'Rich and slow', nudge: { richness: 2, effort: 2 } },
     ],
     answer: -1,
-    lesson: 'No wrong answer — that one was about you.',
+    lesson: 'No wrong answer. That one was about you.',
   },
   {
     format: 'Guess the ingredient',
@@ -129,14 +129,14 @@ const BANK: Question[] = [
       { label: 'Green peppercorns' },
     ],
     answer: 0,
-    lesson: 'Green bird’s-eye chillies, coriander root, and basil — fresher and often hotter than red.',
+    lesson: 'Green bird’s-eye chillies, coriander root and basil: fresher, and often hotter than red.',
   },
   {
     format: 'Myth-buster',
     prompt: 'Adding oil to pasta water stops it sticking.',
     options: [
       { label: 'True' },
-      { label: 'False — stir early instead' },
+      { label: 'False. Stir early instead' },
     ],
     answer: 1,
     lesson: 'The oil floats; it mostly greases your drained pasta so sauce won’t cling. Stir in the first minute.',
@@ -151,7 +151,7 @@ const BANK: Question[] = [
       { label: 'Minty' },
     ],
     answer: 0,
-    lesson: 'Umami — glutamate savouriness. Chilli heat is pain, not taste. Delicious pain.',
+    lesson: 'Umami: glutamate savouriness. Chilli heat is pain, not taste. Delicious pain.',
   },
   {
     format: 'This or that',
@@ -199,7 +199,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
               image: dish.image!,
               options,
               answer,
-              lesson: `${dish.title} — ${dish.cuisine ?? 'from the board'}, ${dish.totalLabel}.`,
+              lesson: `${dish.title} · ${dish.cuisine ?? 'from the board'}, ${dish.totalLabel}.`,
             }
           })
         : []
@@ -274,7 +274,7 @@ export function TasteNight({ dishes = [] }: { dishes?: QuizDish[] }) {
         <p className="mt-3 max-w-[46ch] text-slate">
           Your answers lean{' '}
           {prefs.spiciness >= 3 ? 'spicy' : 'mild'}, {prefs.richness >= 3 ? 'rich' : 'light'},{' '}
-          {prefs.sweetness >= 3 ? 'sweet-leaning' : 'savoury'} — so tonight the board recommends:
+          {prefs.sweetness >= 3 ? 'sweet-leaning' : 'savoury'}, so tonight the board recommends:
         </p>
 
         {pick ? (

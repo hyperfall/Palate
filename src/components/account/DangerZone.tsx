@@ -23,15 +23,15 @@ export function DangerZone() {
         return
       }
       const d = (await res.json().catch(() => ({}))) as { error?: string }
-      setError(d.error ?? 'Couldn’t delete the account — try again.')
+      setError(d.error ?? 'Couldn’t delete the account. Try again.')
     } catch {
-      setError('Couldn’t reach the server — check your connection.')
+      setError('Couldn’t reach the server. Check your connection.')
     }
     setBusy(false)
   }
 
   return (
-    <SettingsSection tone="danger" title="Danger zone" desc="The way out — deliberate, never accidental.">
+    <SettingsSection tone="danger" title="Danger zone" desc="The way out: deliberate, never accidental.">
       {!arming ? (
         <div className="grid gap-1.5">
           <button

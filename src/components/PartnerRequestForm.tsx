@@ -62,7 +62,7 @@ export function PartnerRequestForm() {
       if (!res.ok) throw new Error(data.error ?? 'Could not send your request.')
       setNotice({
         kind: 'ok',
-        text: 'Request received — we’ll review it and get back to you by email.',
+        text: 'Request received. We’ll review it and get back to you by email.',
       })
       setCompany('')
       setWebsite('')
@@ -73,7 +73,7 @@ export function PartnerRequestForm() {
       setBudgetRange('')
       setMessage('')
     } catch (err) {
-      setNotice({ kind: 'error', text: err instanceof Error ? err.message : 'Couldn’t send that — try again in a moment.' })
+      setNotice({ kind: 'error', text: err instanceof Error ? err.message : 'Couldn’t send that. Try again in a moment.' })
     } finally {
       setBusy(false)
     }
@@ -123,7 +123,7 @@ export function PartnerRequestForm() {
           onChange={(e) => setPromoting(e.target.value)}
           rows={3}
           required
-          placeholder="Product, brand, or category — and which cuisines or recipes feel like a fit."
+          placeholder="Product, brand, or category, and which cuisines or recipes feel like a fit."
           className={`${inputCls} resize-y`}
         />
       </label>
@@ -134,7 +134,7 @@ export function PartnerRequestForm() {
           <input
             value={regions}
             onChange={(e) => setRegions(e.target.value)}
-            placeholder="US, GB, KR — leave blank for global"
+            placeholder="US, GB, KR. Leave blank for global"
             className={inputCls}
           />
         </label>

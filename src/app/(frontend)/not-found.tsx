@@ -10,7 +10,7 @@ export default function NotFound() {
           This ticket isn’t on the pass.
         </h1>
         <p className="mx-auto mt-3 max-w-[38ch] text-slate">
-          Whatever you were after has been cleared, renamed, or never printed. No harm done —
+          Whatever you were after has been cleared, renamed, or never printed. No harm done.
           the kitchen’s still open.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">

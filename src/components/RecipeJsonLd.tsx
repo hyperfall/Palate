@@ -34,7 +34,7 @@ export function RecipeJsonLd({ recipe }: { recipe: Recipe }) {
   const description =
     recipe.metaDescription?.trim() ||
     storyText ||
-    `${recipe.title} — a ${dish} for ${recipe.servings}${timing}.`
+    `${recipe.title}: a ${dish} for ${recipe.servings}${timing}.`
 
   const nutrition = recipe.nutrition
   const hasNutrition =

@@ -49,7 +49,7 @@ export async function SupporterStatus() {
       ) : (
         <>
           <p className="mt-2 text-note text-slate">
-            Unlock Household mode and the perks to come — {SUPPORTER_PRICE_LABEL}, cancel anytime.
+            Unlock Household mode and the perks to come. {SUPPORTER_PRICE_LABEL}, cancel anytime.
           </p>
           <Link href="/support" className="btn-primary mt-4 inline-block">
             Become a supporter →

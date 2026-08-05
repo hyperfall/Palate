@@ -11,7 +11,7 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 export const metadata: Metadata = {
   title: 'Ingredients',
   description:
-    'Every ingredient on the board — what to cook with it, what to swap it for, and what it’s usually cooked alongside.',
+    'Every ingredient on the board: what to cook with it, what to swap it for, and what it’s usually cooked alongside.',
   alternates: { canonical: absoluteUrl('/ingredients') },
 }
 
@@ -102,7 +102,7 @@ export default async function IngredientsPage() {
 
       {cooked.length === 0 ? (
         <p className="mt-10 text-slate">
-          Nothing linked yet —{' '}
+          Nothing linked yet.{' '}
           <Link href="/recipes" className="text-flame underline underline-offset-4">
             browse the board
           </Link>
@@ -127,7 +127,7 @@ export default async function IngredientsPage() {
                           </span>
                           {/* Without this the link's accessible name runs the
                               two together — "Garlic9". */}
-                          <span className="sr-only">— {usage.get(ing.slug!)} recipes</span>
+                          <span className="sr-only">, {usage.get(ing.slug!)} recipes</span>
                         </>
                       )}
                     </Link>

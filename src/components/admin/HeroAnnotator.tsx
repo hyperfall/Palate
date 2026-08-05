@@ -105,7 +105,7 @@ export function HeroAnnotator() {
       <p style={label}>
         {selected == null
           ? 'Select a pin below the photo, then click the photo to place it.'
-          : `Placing “${pins[selected]?.kicker}” — click the photo, or focus it and use the arrow keys (Shift for bigger steps). Click another pin to switch.`}
+          : `Placing “${pins[selected]?.kicker}”. Click the photo, or focus it and use the arrow keys (Shift for bigger steps). Click another pin to switch.`}
       </p>
       <div
         onClick={placeAt}
@@ -114,7 +114,7 @@ export function HeroAnnotator() {
         tabIndex={0}
         aria-label={
           selected == null
-            ? 'Pin placement area — select a pin first'
+            ? 'Pin placement area. Select a pin first'
             : `Placing ${pins[selected]?.kicker ?? 'pin'}. Arrow keys move it, Shift for larger steps.`
         }
         style={{

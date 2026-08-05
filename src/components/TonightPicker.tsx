@@ -221,7 +221,7 @@ export function TonightPicker() {
       <div>
         <h2 className="text-[clamp(1.75rem,3.5vw,3rem)]">Nothing fits all of that.</h2>
         <p className="mt-3 max-w-[44ch] text-slate">
-          Usually the clock is the constraint — try again with a longer window.
+          Usually the clock is the constraint. Try again with a longer window.
         </p>
         <button type="button" onClick={reset} className="btn-primary mt-6">
           Start over

@@ -107,7 +107,7 @@ export default async function CookFromPage({
             <p className="eyebrow m-0">What can I make?</p>
             <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
             <p className="mt-3 text-slate max-sm:hidden">
-              Add a few things from your kitchen — the board sorts into what you can cook right
+              Add a few things from your kitchen. The board sorts them into what you can cook right
               now, what’s an item or two away, and what needs a bigger trip.
             </p>
           </header>
@@ -120,7 +120,7 @@ export default async function CookFromPage({
             <>
               <p className="mt-6 font-mono text-detail text-slate">
                 {guestTotal === 0
-                  ? 'Nothing matches yet — add another ingredient.'
+                  ? 'Nothing matches yet. Add another ingredient.'
                   : `${guestTotal} ${guestTotal === 1 ? 'recipe' : 'recipes'} from ${guestHave.length} ${guestHave.length === 1 ? 'ingredient' : 'ingredients'}.`}
               </p>
               <div className="mt-8 grid gap-12">
@@ -131,7 +131,7 @@ export default async function CookFromPage({
             </>
           ) : (
             <p className="mt-6 max-w-[52ch] text-slate">
-              Start with two or three staples — an onion, a tin of tomatoes, whatever’s actually in
+              Start with two or three staples: an onion, a tin of tomatoes, whatever’s actually in
               there.
             </p>
           )}
@@ -164,7 +164,7 @@ export default async function CookFromPage({
           <p className="eyebrow m-0">What can I make?</p>
           <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Cook from what you have.</h1>
           <p className="mt-3 text-slate max-sm:hidden">
-            Add a few ingredients from your kitchen — the board sorts into what you can cook right
+            Add a few ingredients from your kitchen. The board sorts them into what you can cook right
             now, what’s one or two items away, and what needs a bigger trip.
           </p>
         </header>
@@ -178,7 +178,7 @@ export default async function CookFromPage({
             <p className="text-slate">Add your first ingredient above to see what’s cookable.</p>
           ) : totalResults === 0 ? (
             <p className="text-slate">
-              Nothing matches yet — try adding a common ingredient, or drop the time cap.
+              Nothing matches yet. Try a more common ingredient, or drop the time cap.
             </p>
           ) : (
             <div className="grid gap-10">

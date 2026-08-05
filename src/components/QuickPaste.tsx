@@ -29,7 +29,7 @@ export function QuickPaste({
         <div>
           <h2 className="m-0 text-title">Paste your recipe. We’ll lay it out.</h2>
           <p className="mt-1 max-w-[54ch] text-note text-slate">
-            From your notes, a doc, a message to a friend — anything. You’ll check it before it
+            From your notes, a doc, a message to a friend, anything. You’ll check it before it
             fills the form.
           </p>
         </div>
@@ -62,7 +62,7 @@ export function QuickPaste({
             <>
               <p className="eyebrow m-0">What we understood</p>
               <p className="mt-2 text-read text-ink">
-                {parsed.title || <span className="text-slate">No title found — add one after</span>}
+                {parsed.title || <span className="text-slate">No title found. Add one after</span>}
               </p>
               <p className="mt-1 font-mono text-caption text-slate">
                 {[
@@ -104,7 +104,7 @@ export function QuickPaste({
                 onClick={() => parsed && onApply(parsed)}
                 className="btn-primary mt-4 disabled:opacity-50"
               >
-                Looks right — fill the form
+                Looks right, fill the form
               </button>
               {!usable && (
                 <p className="mt-2 font-mono text-tag tracking-[0.06em] text-slate uppercase">

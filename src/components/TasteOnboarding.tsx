@@ -43,7 +43,7 @@ export function TasteOnboarding({ dishes }: { dishes: OnboardingDish[] }) {
         <div>
           <h2 className="text-[clamp(1.75rem,3.5vw,3rem)]">Nothing caught your eye.</h2>
           <p className="mt-3 max-w-[46ch] text-slate">
-            We build your profile from the dishes you like — try again and say yes to a few.
+            We build your profile from the dishes you like. Try again and say yes to a few.
           </p>
           <button
             type="button"

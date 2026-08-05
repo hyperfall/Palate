@@ -49,7 +49,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
 
       {recipes.length === 0 ? (
         <p className="mt-10 text-slate">
-          Nothing here yet — check back as the board fills up, or{' '}
+          Nothing here yet. Check back as the board fills up, or{' '}
           <Link href="/recipes" className="text-flame underline underline-offset-4">
             browse everything
           </Link>

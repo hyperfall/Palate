@@ -29,7 +29,7 @@ export default async function CuisinesPage() {
           <span className="text-ink">
             {active.length} of {cuisines.length} kitchens open
           </span>{' '}
-          — the rest of the world fills in as creators arrive.
+          The rest of the world fills in as creators arrive.
         </p>
       </header>
 

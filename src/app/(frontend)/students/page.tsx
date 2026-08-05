@@ -53,7 +53,7 @@ const MODES = [
   {
     key: 'two',
     label: 'Two people',
-    blurb: 'Date night or flatmate dinner — proper food, split shop.',
+    blurb: 'Date night or flatmate dinner: proper food, split shop.',
     servingsHint: 2,
     query: { effort: '0-3' },
     filter: (r: Recipe) => r.effort <= 3,
@@ -146,7 +146,7 @@ export default async function StudentsPage({
 
         {picks.length === 0 ? (
           <p className="mt-6 max-w-[46ch] text-slate">
-            Nothing fits this mode in the catalog yet — try another, or{' '}
+            Nothing fits this mode in the catalog yet. Try another, or{' '}
             <Link href="/recipes" className="text-flame underline underline-offset-2">
               browse everything
             </Link>
@@ -177,7 +177,7 @@ export default async function StudentsPage({
         */}
         {picks.length > 0 && (
           <p className="mt-5 max-w-[60ch] text-eyebrow text-slate">
-            Plate prices are estimates for a typical UK shop, not a quote — what
+            Plate prices are estimates for a typical UK shop, not a quote. What
             you pay depends on where you buy and what you already have. Some
             dishes carry no estimate yet; those show no price rather than a
             guess.

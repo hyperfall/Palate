@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   // prompt, so keep it out of the index like every other private page.
   robots: { index: false, follow: false },
   title: 'Find your taste',
-  description: 'Rate a few dishes and we’ll learn what you lean toward — then tune tonight’s dinner and the catalog to it.',
+  description: 'Rate a few dishes and we’ll learn what you lean toward, then tune tonight’s dinner and the catalog to it.',
 }
 
 export const dynamic = 'force-dynamic'
@@ -80,7 +80,7 @@ export default async function TastePage() {
         <p className="eyebrow m-0">Find your taste</p>
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Rate a few dishes.</h1>
         <p className="mt-3 max-w-[52ch] text-slate max-sm:hidden">
-          Say yes to what you’d happily eat. We’ll average the ones you like into a taste profile —
+          Say yes to what you’d happily eat. We’ll average the ones you like into a taste profile.
           then tonight’s pick and the catalog can start from it.
         </p>
       </div>
@@ -88,7 +88,7 @@ export default async function TastePage() {
         {dishes.length > 0 ? (
           <TasteOnboarding dishes={dishes} />
         ) : (
-          <p className="text-slate">No dishes to rate yet — check back once the catalog has photos.</p>
+          <p className="text-slate">No dishes to rate yet. Check back once the catalog has photos.</p>
         )}
       </div>
     </div>

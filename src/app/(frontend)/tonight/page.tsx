@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/tonight' },
   title: 'Pick dinner for me',
   description:
-    'Five quick taps — heat, sweetness, richness, effort, and time — and Palate hands you one dinner, stated with confidence.',
+    'Five quick taps on heat, sweetness, richness, effort and time, and Palate hands you one dinner, stated with confidence.',
 }
 
 export const revalidate = 3600
@@ -25,7 +25,7 @@ export default async function TonightPage() {
             <p className="eyebrow m-0">Tonight</p>
             <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Pick dinner for me.</h1>
             <p className="mt-3 text-slate max-sm:hidden">
-              Answer five questions. You get one recipe, not a grid — the board decides so you
+              Answer five questions. You get one recipe, not a grid. The board decides so you
               don’t have to.
             </p>
             <p className="mt-3 font-mono text-detail text-slate">

@@ -101,7 +101,7 @@ export function NutritionPanel({ nutrition }: { nutrition: RecipeNutrition | nul
           {/* Its own sentence, because the swatches wrap above it on a narrow
               column and a fragment beginning "per 100 g" reads as a mistake. */}
           <span className="basis-full">
-            Rated per 100 g. Only fat, saturates, sugars and salt have agreed thresholds — the
+            Rated per 100 g. Only fat, saturates, sugars and salt have agreed thresholds, so the
             other rows carry no dot.
           </span>
         </p>

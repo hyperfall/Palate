@@ -731,7 +731,7 @@ export function FilterPanel({
                 ))}
               </div>
               <p className="mt-2.5 text-caption leading-snug text-slate">
-                Shows only recipes tagged free of the allergen — untagged dishes aren’t assumed safe.
+                Shows only recipes tagged free of the allergen. Untagged dishes aren’t assumed safe.
               </p>
             </FacetGroup>
           )}

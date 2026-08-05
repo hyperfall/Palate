@@ -36,7 +36,7 @@ export async function generateMetadata({
     title: `Cooking with ${ingredient.name}`,
     description:
       count > 0
-        ? `${count} ${count === 1 ? 'recipe uses' : 'recipes use'} ${ingredient.name} on Palate — plus what to swap it for and what it's usually cooked with.`
+        ? `${count} ${count === 1 ? 'recipe uses' : 'recipes use'} ${ingredient.name} on Palate, plus what to swap it for and what it's usually cooked with.`
         : `What to cook with ${ingredient.name}, what to swap it for, and what it pairs with.`,
     alternates: { canonical: absoluteUrl(`/ingredients/${ingredient.slug}`) },
   }
@@ -80,7 +80,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
         <p className="mt-3 text-slate">
           {recipes.length > 0
             ? `${recipes.length} ${recipes.length === 1 ? 'recipe on the board uses' : 'recipes on the board use'} it.`
-            : 'Nothing on the board uses it yet — it’s in the pantry, waiting.'}
+            : 'Nothing on the board uses it yet. It’s in the pantry, waiting.'}
         </p>
         {/* Filling the pantry used to mean typing each item into cook-from's
             search box. Browsing and tapping what you own is a shorter road. */}
@@ -130,7 +130,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
         <section className="mt-10 border-t border-rule pt-6">
           <h2 className="m-0 text-title">Cooked alongside</h2>
           <p className="mt-1 text-eyebrow text-slate">
-            Counted from the recipes themselves — the number is how many share it.
+            Counted from the recipes themselves; the number is how many share it.
           </p>
           <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
             {pairsWith.map((p) => (
@@ -142,7 +142,7 @@ export default async function IngredientPage({ params }: { params: Promise<{ slu
                       <span aria-hidden="true" className="ml-1.5 text-slate">
                         {p.count}
                       </span>
-                      <span className="sr-only">— shares {p.count} recipes</span>
+                      <span className="sr-only">, shares {p.count} recipes</span>
                     </>
                   )}
                 </Link>

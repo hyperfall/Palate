@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   // ends up on the wrong page. This one is the editorial cut of the catalog,
   // which is what its own heading has always called it.
   title: 'Ways in',
-  description: 'Curated ways into the catalog — one-pan dinners, under £2 a serving, batch-and-keep, and more.',
+  description: 'Curated ways into the catalog: one-pan dinners, under £2 a serving, batch-and-keep, and more.',
 }
 
 export const revalidate = 3600

@@ -119,7 +119,7 @@ export function CatalogGrid({
 
       {failed && (
         <p className="mt-6 text-center font-mono text-caption tracking-[0.08em] text-heat uppercase">
-          Couldn’t load more — scroll to retry.
+          Couldn’t load more. Scroll to retry.
         </p>
       )}
 

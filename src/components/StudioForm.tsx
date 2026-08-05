@@ -275,7 +275,7 @@ export function StudioForm({
     setTouched(true)
     setNotice({
       kind: 'ok',
-      text: 'Filled from your paste — check the rows, then add a photo and a cuisine.',
+      text: 'Filled from your paste. Check the rows, then add a photo and a cuisine.',
     })
   }
 
@@ -337,7 +337,7 @@ export function StudioForm({
         <p className="eyebrow m-0 text-flame">Signed in as a cook</p>
         <p className="mt-1 font-display text-[1.5rem] leading-tight text-ink">Switch on creator mode</p>
         <p className="mt-2 text-slate">
-          Switch this account to a creator account to publish recipes — everything you’ve saved
+          Switch this account to a creator account to publish recipes. Everything you’ve saved
           stays exactly as it is.
         </p>
         <button
@@ -353,7 +353,7 @@ export function StudioForm({
             })
             setCreatorBusy(false)
             if (error) {
-              setNotice({ kind: 'error', text: 'Could not switch your account — try again in a moment.' })
+              setNotice({ kind: 'error', text: 'Could not switch your account. Try again in a moment.' })
               return
             }
             setGate('creator')
@@ -454,13 +454,13 @@ export function StudioForm({
         // Edited recipe: it stays live as-is until the edit is approved.
         setNotice({
           kind: 'ok',
-          text: 'Changes submitted — a human reviews them, then they replace the live recipe. It stays published meanwhile.',
+          text: 'Changes submitted. A human reviews them, then they replace the live recipe; it stays published meanwhile.',
         })
         return
       }
       setNotice({
         kind: 'ok',
-        text: 'Submitted — a human reviews it next, then it goes live under your name.',
+        text: 'Submitted. A human reviews it next, then it goes live under your name.',
       })
       // Full reset — every field back to its initial state, so nothing (cuisine,
       // diet, taste, story…) silently rides into the creator's next recipe.
@@ -499,7 +499,7 @@ export function StudioForm({
     } catch (error) {
       setNotice({
         kind: 'error',
-        text: error instanceof Error ? error.message : 'Submission failed — try again.',
+        text: error instanceof Error ? error.message : 'Submission failed. Try again.',
       })
     } finally {
       setBusy(false)
@@ -530,7 +530,7 @@ export function StudioForm({
     {editRecipeId ? (
       <div className="mb-8 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
         <p className="m-0 text-note text-ink">
-          Editing <span className="font-semibold">{editTitle ?? 'your recipe'}</span>. Changes go back for review — the live
+          Editing <span className="font-semibold">{editTitle ?? 'your recipe'}</span>. Changes go back for review. The live
           recipe stays as it is until they’re approved.
         </p>
       </div>
@@ -563,7 +563,7 @@ export function StudioForm({
       <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-flame/40 bg-flame/5 px-4 py-3">
         <p className="m-0 text-note text-ink">
           You have an unfinished recipe from {draftAge(foundDraft.savedAt)}
-          {foundDraft.title.trim() ? ` — “${foundDraft.title.trim()}”` : ''}.
+          {foundDraft.title.trim() ? `: “${foundDraft.title.trim()}”` : ''}.
         </p>
         <div className="ml-auto flex items-center gap-2">
           <button type="button" onClick={() => restoreDraft(foundDraft)} className="chip">
@@ -662,14 +662,14 @@ export function StudioForm({
       <div className={labelCls}>
         <span className="eyebrow">Ingredients</span>
         <span className="-mt-0.5 text-detail leading-snug text-slate">
-          Quantity, unit, then name — paste a whole list to fill rows fast. At least{' '}
+          Quantity, unit, then name. Paste a whole list to fill rows fast. At least{' '}
           {MIN_INGREDIENTS}.
         </span>
         <IngredientRowsInput value={ingredientRows} onChange={setIngredientRows} />
       </div>
 
       <div className={labelCls}>
-        <span className="eyebrow">Steps — one per row</span>
+        <span className="eyebrow">Steps, one per row</span>
         <span className="-mt-0.5 text-detail leading-snug text-slate">
           One action per step, in order. At least {MIN_STEPS}.
         </span>
@@ -730,7 +730,7 @@ export function StudioForm({
       </div>
 
       <fieldset className="grid gap-5 border-t border-rule pt-5 sm:grid-cols-2">
-        <legend className="eyebrow">How it tastes — your honest call</legend>
+        <legend className="eyebrow">How it tastes, your honest call</legend>
         {TASTE_AXES.map((axis) => (
           <div key={axis} style={{ ['--gauge-hue' as string]: AXIS_COLOR[axis] }}>
             <div className="flex items-baseline justify-between gap-3">
@@ -790,7 +790,7 @@ export function StudioForm({
           folded until a creator wants it. */}
       <div className="border-t border-rule pt-2">
         <Disclosure
-          title={<span className="eyebrow m-0">Story &amp; notes — optional</span>}
+          title={<span className="eyebrow m-0">Story &amp; notes (optional)</span>}
           meta={storyMarkdown.trim() || story.trim() ? 'written' : 'add depth'}
         >
           <div className="grid gap-6 pt-2">
@@ -800,7 +800,7 @@ export function StudioForm({
           value={story}
           onChange={(e) => setStory(e.target.value)}
           rows={3}
-          placeholder="A short note — a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
+          placeholder="A short note: a tip, the origin, why you cook it this way. Renders below the recipe, never before it."
           className={`${inputCls} resize-y`}
         />
       </label>

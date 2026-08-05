@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   // prompt, so keep it out of the index like every other private page.
   robots: { index: false, follow: false },
   title: 'Your week',
-  description: 'Plan the week and get one consolidated shopping list — overlapping ingredients netted, pantry staples dropped.',
+  description: 'Plan the week and get one consolidated shopping list: overlapping ingredients netted, pantry staples dropped.',
 }
 
 export const dynamic = 'force-dynamic'
@@ -32,7 +32,7 @@ export default async function PlanPage() {
           <p className="eyebrow m-0">Your week</p>
           <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">Plan the week.</h1>
           <p className="mt-3 text-slate max-sm:hidden">
-            Assign recipes to days and get one shopping list — overlaps netted, staples dropped. Your
+            Assign recipes to days and get one shopping list, with overlaps netted and staples dropped. Your
             plan saves to your account.
           </p>
           <Link href="/account?next=/plan" className="btn-primary mt-6 inline-block">

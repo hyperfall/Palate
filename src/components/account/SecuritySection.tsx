@@ -69,7 +69,7 @@ export function SecuritySection({ currentEmail }: { currentEmail: string }) {
         />
         {emailStatus === 'sent' ? (
           <span className="font-mono text-caption text-richness" role="status">
-            Confirmation links sent to both addresses — the change applies once confirmed.
+            Confirmation links sent to both addresses. The change applies once confirmed.
           </span>
         ) : (
           emailDirty && (

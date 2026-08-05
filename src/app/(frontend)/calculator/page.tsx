@@ -37,7 +37,7 @@ export default async function CalculatorPage() {
         <p className="eyebrow m-0 text-flame">Costs</p>
         <h1 className="mt-1 text-[clamp(1.5rem,4.5vw,2.75rem)]">What does it cost?</h1>
         <p className="mt-3 text-slate max-sm:hidden">
-          Add what a dish is made of and what you paid for each thing, and it totals as you go — the
+          Add what a dish is made of and what you paid for each thing, and it totals as you go. The
           whole dish, and what one plate comes to. Prices you correct are kept, so the next dish
           starts from your shop rather than our estimate.
         </p>

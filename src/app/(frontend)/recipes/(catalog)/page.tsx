@@ -18,7 +18,7 @@ import { ALLERGENS } from '@/lib/taxonomy'
 export const metadata: Metadata = {
   title: 'All recipes',
   description:
-    'Filter by how a dish actually tastes — heat, sweetness, richness, and how much effort it will cost you.',
+    'Filter by how a dish actually tastes: heat, sweetness, richness, and how much effort it will cost you.',
   // Filters, sorts and pages are real crawlable links, so the catalog has a
   // near-infinite set of query-string variants. They all point back here, or
   // Google splits the ranking signal across permutations of the same page.
@@ -93,7 +93,7 @@ export default async function CatalogPage({
           </h1>
         </div>
         <p className="m-0 max-w-[44ch] text-note leading-snug text-slate max-sm:hidden">
-          Every recipe is measured on four axes. Pick the band you actually want tonight — from
+          Every recipe is measured on four axes. Pick the band you actually want tonight, from
           “no heat at all” to “nothing short of fiery”.
         </p>
       </header>
@@ -123,7 +123,7 @@ export default async function CatalogPage({
               exact term still deserves to be shown, in case the guess is wrong. */}
           {correctedFrom && (
             <p className="mb-4 text-note text-slate">
-              Nothing matched <span className="text-ink">“{correctedFrom}”</span> exactly — showing
+              Nothing matched <span className="text-ink">“{correctedFrom}”</span> exactly. Showing
               the closest {totalDocs === 1 ? 'recipe' : 'recipes'}.
             </p>
           )}
@@ -135,7 +135,7 @@ export default async function CatalogPage({
                   that scrolling was the answer. */}
               {totalDocs > recipes.length && (
                 <span className="ml-2 font-mono text-tag tracking-[0.08em] text-slate uppercase">
-                  showing {recipes.length} — more load as you scroll
+                  showing {recipes.length}, more load as you scroll
                 </span>
               )}
             </p>
@@ -157,7 +157,7 @@ export default async function CatalogPage({
                 </>
               ) : (
                 <p className="mx-auto mt-3 max-w-[42ch] text-slate">
-                  Nothing comes back however this is loosened — the board is still small.
+                  Nothing comes back however this is loosened. The board is still small.
                 </p>
               )}
               {hasActiveFilters(filters) && (

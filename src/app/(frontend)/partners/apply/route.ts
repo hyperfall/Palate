@@ -47,6 +47,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[partners/apply] create failed:', err)
-    return NextResponse.json({ error: 'Could not send your request — try again.' }, { status: 400 })
+    return NextResponse.json({ error: 'Could not send your request. Try again.' }, { status: 400 })
   }
 }

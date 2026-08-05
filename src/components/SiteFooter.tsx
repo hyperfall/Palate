@@ -124,7 +124,7 @@ export function SiteFooter() {
               for anyone who needs the contrast. /60 clears it at 5.33 and stays
               quieter than the links above at /70. */}
           <p className="eyebrow m-0 text-milk/60">
-            © {new Date().getFullYear()} {SITE.company} — the company behind {SITE.name}.
+            © {new Date().getFullYear()} {SITE.company}, the company behind {SITE.name}.
           </p>
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <nav aria-label="Company" className="flex flex-wrap items-center gap-x-5 gap-y-2">

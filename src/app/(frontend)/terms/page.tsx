@@ -25,7 +25,7 @@ export default function TermsPage() {
         <p>
           These terms govern your use of Palate, a service operated by {SITE.company}. By using the
           site you agree to them. If you don’t agree, please don’t use the site. This is a
-          plain-English summary of how we operate — not a substitute for legal advice.
+          plain-English summary of how we operate. It is not a substitute for legal advice.
         </p>
 
         <section className="grid gap-2">
@@ -62,7 +62,7 @@ export default function TermsPage() {
             Palate may show a single, clearly-labelled partner card alongside a recipe, matched to the
             dish and the reader’s country. Every partner card is marked “Partner” and its links carry{' '}
             <code className="font-mono text-eyebrow">rel=&quot;sponsored nofollow&quot;</code>. We
-            do not take payment to alter, favour, or reorder recipes — advertising never changes the
+            do not take payment to alter, favour, or reorder recipes. Advertising never changes the
             food.
           </p>
           <p>
@@ -87,7 +87,7 @@ export default function TermsPage() {
           <h2 className="font-display text-title text-ink">No warranty</h2>
           <p>
             Recipes and nutrition figures are provided in good faith but as-is. Cooking involves
-            judgement, heat, and allergens — use your own. We’re not liable for outcomes from using
+            judgement, heat, and allergens; use your own. We’re not liable for outcomes from using
             the site to the extent the law allows.
           </p>
         </section>

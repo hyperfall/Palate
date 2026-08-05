@@ -53,7 +53,7 @@ type IndexedCuisine = {
 /** Utility destinations, matched on plain-English keywords. */
 const PAGES = [
   { href: '/tonight', title: 'Pick dinner for me', keywords: 'tonight dinner pick decide random' },
-  { href: '/taste-night', title: 'Taste Night — the quiz', keywords: 'quiz trivia taste night game' },
+  { href: '/taste-night', title: 'Taste Night, the quiz', keywords: 'quiz trivia taste night game' },
   { href: '/students', title: 'Studying hard?', keywords: 'student budget cheap flat batch' },
   // Words people search that name a way of filtering, not a dish. "cheap"
   // used to return nothing at all, despite the catalogue having a cost sort.

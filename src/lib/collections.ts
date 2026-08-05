@@ -17,7 +17,7 @@ export const COLLECTIONS: Collection[] = [
   {
     slug: 'one-pan-dinners',
     title: 'One-pan dinners',
-    blurb: 'Everything in a single pan or pot — less washing up, same big flavour.',
+    blurb: 'Everything in a single pan or pot: less washing up, same big flavour.',
     params: { onepan: '1' },
   },
   {
@@ -35,13 +35,13 @@ export const COLLECTIONS: Collection[] = [
   {
     slug: 'no-cook',
     title: 'No-cook',
-    blurb: 'Not a hob in sight — assembled, blitzed, or dressed and done.',
+    blurb: 'Not a hob in sight. Assembled, blitzed, or dressed and done.',
     params: { equip: 'no-cook' },
   },
   {
     slug: 'batch-and-keep',
     title: 'Batch & keep',
-    blurb: 'Cook once, eat all week — dishes that keep and reheat well.',
+    blurb: 'Cook once, eat all week: dishes that keep and reheat well.',
     params: { keeps: '1' },
   },
   {

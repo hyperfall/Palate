@@ -13,7 +13,7 @@ const CATEGORY_TITLE: Record<string, string> = {
 
 const CATEGORY_NOTE: Record<string, string> = {
   necessary:
-    'Needed for the site to work at all — signing in, remembering your cookie choices, and holding the costing you are part-way through. These cannot be switched off, because switching them off would break the thing you came to do.',
+    'Needed for the site to work at all: signing in, remembering your cookie choices, and holding the costing you are part-way through. These cannot be switched off, because switching them off would break the thing you came to do.',
   preferences: 'Remembers choices you made, so you do not have to make them again.',
   analytics:
     'Counts readers and pages. Nothing is loaded and no request reaches Google until you allow this.',
@@ -52,15 +52,15 @@ export default function PrivacyPage() {
           <h2 className="font-display text-title text-ink">What we collect</h2>
           <ul className="m-0 grid list-disc gap-2 pl-5">
             <li>
-              <span className="font-semibold text-ink">Account details</span> — if you sign up: your
+              <span className="font-semibold text-ink">Account details</span>. If you sign up: your
               email and profile, so you can save collections, plan meals, and publish recipes.
             </li>
             <li>
-              <span className="font-semibold text-ink">A rotation cookie</span> — a random,
+              <span className="font-semibold text-ink">A rotation cookie</span>. A random,
               non-identifying value so partner cards rotate evenly across visits rather than repeating.
             </li>
             <li>
-              <span className="font-semibold text-ink">Coarse country</span> — derived from your IP
+              <span className="font-semibold text-ink">Coarse country</span>. Derived from your IP
               address by our host, used only to show partner cards relevant to your country. We don’t
               store your IP for advertising or build a profile from it.
             </li>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
         <section className="grid gap-2">
           <h2 className="font-display text-title text-ink">Advertising</h2>
           <p>
-            Partner cards are chosen by the recipe and your country — not by tracking you around the
+            Partner cards are chosen by the recipe and your country, not by tracking you around the
             web. They’re always labelled, and their links carry{' '}
             <code className="font-mono text-eyebrow">rel=&quot;sponsored nofollow&quot;</code>. You
             can adjust non-essential cookies any time from the “Cookie settings” link in the footer.

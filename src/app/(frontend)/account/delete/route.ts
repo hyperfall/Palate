@@ -17,7 +17,7 @@ export async function POST() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !serviceKey) {
     return NextResponse.json(
-      { error: 'Deletion isn’t switched on yet — the server needs SUPABASE_SERVICE_ROLE_KEY.' },
+      { error: 'Deletion isn’t switched on yet. The server needs SUPABASE_SERVICE_ROLE_KEY.' },
       { status: 501 },
     )
   }

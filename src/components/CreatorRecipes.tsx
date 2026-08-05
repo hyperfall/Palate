@@ -163,11 +163,11 @@ export function CreatorRecipes() {
         </ul>
       ) : failed ? (
         <p role="alert" className="mt-6 text-note text-slate">
-          Couldn’t load your recipes just now — they’re safe. Refresh to try again.
+          Couldn’t load your recipes just now. They’re safe; refresh to try again.
         </p>
       ) : total === 0 ? (
         <p className="mt-6 text-note text-slate">
-          {isFiltering ? 'No recipes match that.' : 'No recipes yet — '}
+          {isFiltering ? 'No recipes match that.' : 'No recipes yet. '}
           {!isFiltering && (
             <Link href="/studio" className="text-flame underline underline-offset-4">
               submit your first

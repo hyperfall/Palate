@@ -54,7 +54,7 @@ export function scorePassword(pw: string, ctx: { email?: string; name?: string }
 
   // Hard fails — regardless of length.
   if (COMMON.has(lower) || isSequential(pw)) {
-    return { score: 0, label: 'Too common', suggestions: ['That’s a commonly-used password — pick something unique.'], acceptable: false }
+    return { score: 0, label: 'Too common', suggestions: ['That’s a commonly-used password. Pick something unique.'], acceptable: false }
   }
 
   let raw = 0
@@ -76,7 +76,7 @@ export function scorePassword(pw: string, ctx: { email?: string; name?: string }
     suggestions.push('Don’t base it on your name.')
   }
 
-  if (pw.length < 12) suggestions.push('Longer is stronger — aim for 12+ characters.')
+  if (pw.length < 12) suggestions.push('Longer is stronger: aim for 12+ characters.')
   if (cls < 3) suggestions.push('Mix upper/lowercase, numbers, and a symbol.')
 
   const score = Math.max(0, Math.min(4, raw - 1)) as StrengthResult['score']

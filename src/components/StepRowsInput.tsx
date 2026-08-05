@@ -168,7 +168,7 @@ export function StepRowsInput({
                 type="button"
                 onClick={() => fileRefs.current[i]?.click()}
                 disabled={busy === i}
-                title="Add a photo of this step — or drop / paste one here"
+                title="Add a photo of this step, or drop / paste one here"
                 className="grid h-16 w-16 place-items-center rounded border border-dashed border-rule bg-transparent font-mono text-[0.5625rem] tracking-[0.08em] text-slate uppercase transition-colors hover:border-flame hover:text-flame disabled:opacity-50"
               >
                 {busy === i ? '…' : '+ photo'}
@@ -198,7 +198,7 @@ export function StepRowsInput({
           + Add step
         </button>
         <span className="font-mono text-tag text-slate">
-          A photo per step is optional — drop or paste one onto a step.
+          A photo per step is optional. Drop or paste one onto a step.
         </span>
       </div>
     </div>

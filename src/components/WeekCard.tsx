@@ -113,7 +113,7 @@ export function WeekCard({ week }: { week: WeekSnapshot }) {
       <footer className="mt-auto flex items-center justify-between gap-4 border-t-2 border-ink bg-wash px-8 py-4">
         <span className="font-display text-[1.375rem] leading-none text-ink">{SITE.name}</span>
         <span className="font-mono text-caption tracking-[0.1em] text-slate uppercase">
-          Plan your week — cook first
+          Plan your week · cook first
         </span>
       </footer>
     </article>

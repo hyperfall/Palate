@@ -59,7 +59,7 @@ export function UsernameField({
     if (check.kind !== 'ok') return
     // The race the live check can't see is settled here by the server.
     const ok = await onSave(name || null)
-    setCheck(ok ? { kind: 'saved' } : { kind: 'taken', msg: 'Just taken — try another.' })
+    setCheck(ok ? { kind: 'saved' } : { kind: 'taken', msg: 'Just taken. Try another.' })
   }
 
   const tone =

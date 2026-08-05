@@ -99,7 +99,7 @@ export function CostingEditor({
             <Link href={`/recipes/${costing.sourceRecipeSlug}`} className="text-flame">
               the recipe
             </Link>
-            . Correcting a price here does not change the recipe — it changes what you pay.
+            . Correcting a price here does not change the recipe; it changes what you pay.
           </p>
         )}
 
@@ -114,7 +114,7 @@ export function CostingEditor({
 
         {costing.items.length === 0 ? (
           <p className="mt-8 max-w-[48ch] text-slate">
-            Nothing added yet. Search above — anything in our catalogue comes with a researched
+            Nothing added yet. Search above. Anything in our catalogue comes with a researched
             price and converts between units, and you can type in whatever we do not have.
           </p>
         ) : (

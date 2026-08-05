@@ -14,7 +14,7 @@ import type { MetadataRoute } from 'next'
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Palate — cook first',
+    name: 'Palate · cook first',
     short_name: 'Palate',
     description:
       'Recipes filtered by how a dish actually tastes. Cook from what you have, plan the week, shop once.',

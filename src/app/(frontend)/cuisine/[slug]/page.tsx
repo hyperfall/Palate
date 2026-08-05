@@ -116,13 +116,13 @@ export default async function CuisinePage({ params }: { params: Promise<{ slug: 
               The {cuisine.name} kitchen is waiting for its first cook.
             </h2>
             <p className="mt-3 text-slate">
-              Someone’s name is going to open this station — the founding cook, first on the pass,
+              Someone’s name is going to open this station: the founding cook, first on the pass,
               on every {cuisine.name} card that follows. Your recipe gets the full treatment: set
               beautifully, cookable step by step, plannable, shoppable, filtered by how it actually
               tastes.
             </p>
             <p className="mt-2 text-slate">
-              You keep your name, your photo, your voice, and your recipes — always.
+              You keep your name, your photo, your voice and your recipes, always.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-4">
               <Link href="/studio" className="btn-primary">

@@ -257,8 +257,8 @@ export function ImagePicker({
             }`}
           >
             {quality.level === 'block'
-              ? `This photo is only ${quality.w}×${quality.h}px — too small to stay sharp on the recipe page. Please choose one at least ${minResolution}px wide.`
-              : `Heads up: at ${quality.w}×${quality.h}px this may look a little soft. A photo ${minResolution}px+ wide looks best — or use it anyway if it's your best shot.`}
+              ? `This photo is only ${quality.w}×${quality.h}px, too small to stay sharp on the recipe page. Please choose one at least ${minResolution}px wide.`
+              : `Heads up: at ${quality.w}×${quality.h}px this may look a little soft. A photo ${minResolution}px+ wide looks best, or use it anyway if it's your best shot.`}
           </p>
         )}
 

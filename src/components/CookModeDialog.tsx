@@ -42,7 +42,7 @@ export type Finish = {
 const RESCUES: Array<{ problem: string; fix: string }> = [
   {
     problem: 'Too salty',
-    fix: 'Add acid (lemon, vinegar) and something starchy or fatty — potato, unsalted stock, cream, coconut milk. Dilution beats regret; never try to “cook it off”.',
+    fix: 'Add acid (lemon, vinegar) and something starchy or fatty: potato, unsalted stock, cream, coconut milk. Dilution beats regret; never try to “cook it off”.',
   },
   {
     problem: 'Sauce split',
@@ -58,7 +58,7 @@ const RESCUES: Array<{ problem: string; fix: string }> = [
   },
   {
     problem: 'Burnt garlic',
-    fix: 'Start it again — fresh oil, fresh garlic, thirty seconds. Burnt garlic is bitter and nothing masks it. This is the cheapest fix in the kitchen.',
+    fix: 'Start it again: fresh oil, fresh garlic, thirty seconds. Burnt garlic is bitter and nothing masks it. This is the cheapest fix in the kitchen.',
   },
   {
     problem: 'Sauce too thin',
@@ -66,7 +66,7 @@ const RESCUES: Array<{ problem: string; fix: string }> = [
   },
   {
     problem: 'Stuck to the pan',
-    fix: 'Deglaze: add liquid to the hot pan and scrape with a wooden spoon. That browned layer is flavour, not failure — unless it is black, in which case leave it.',
+    fix: 'Deglaze: add liquid to the hot pan and scrape with a wooden spoon. That browned layer is flavour, not failure. Unless it is black, in which case leave it.',
   },
 ]
 
@@ -287,7 +287,7 @@ export function CookMode({
               type="button"
               onClick={() => setIndex(t.index)}
               className="chip !min-h-0 !py-1"
-              aria-label={`Step ${t.index + 1} timer, ${mmss(t.secondsLeft)} left — go to that step`}
+              aria-label={`Step ${t.index + 1} timer, ${mmss(t.secondsLeft)} left. Go to that step`}
             >
               Step {String(t.index + 1).padStart(2, '0')}
               <span className="ml-1.5 font-semibold tabular-nums">{mmss(t.secondsLeft)}</span>
@@ -473,7 +473,7 @@ export function CookMode({
                 </dl>
               ) : (
                 <p className="mt-5 max-w-[44ch] text-slate">
-                  Leftovers keep best cooled fast and boxed shallow. Reheat gently — most dishes
+                  Leftovers keep best cooled fast and boxed shallow. Reheat gently; most dishes
                   want less heat the second time, not more.
                 </p>
               )}
@@ -508,7 +508,7 @@ export function CookMode({
               )}
               {step && step.prepAhead.length > 0 && (
                 <p className="mt-4 font-mono text-detail text-flame">
-                  Coming up — take out: {step.prepAhead.join(', ')}.
+                  Coming up, take out: {step.prepAhead.join(', ')}.
                 </p>
               )}
 

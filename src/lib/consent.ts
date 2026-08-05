@@ -25,7 +25,7 @@ export const CATEGORIES: {
     key: 'analytics',
     label: 'Analytics',
     description:
-      'Anonymous usage measurement (Google Analytics) so we can see which recipes and pages work — how many visitors, what they view. Never sold, never used to identify you.',
+      'Anonymous usage measurement (Google Analytics) so we can see which recipes and pages work: how many visitors, what they view. Never sold, never used to identify you.',
   },
   {
     key: 'marketing',

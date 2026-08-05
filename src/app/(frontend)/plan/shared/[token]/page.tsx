@@ -159,7 +159,7 @@ export default async function SharedPlanPage({ params }: { params: Promise<{ tok
             {shopping.map((line) => (
               <li key={line.key} className="border-b border-rule pb-2 text-read">
                 {line.name}
-                {line.amounts.length > 0 && <span className="text-slate"> — {line.amounts.join(' + ')}</span>}
+                {line.amounts.length > 0 && <span className="text-slate"> · {line.amounts.join(' + ')}</span>}
               </li>
             ))}
           </ul>

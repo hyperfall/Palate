@@ -38,7 +38,8 @@
     "clean:ingredients": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/cleanIngredientNames.ts",
     "normalize:catalog": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/normalizeCatalog.ts",
     "seed:constraints": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedConstraints.ts",
-    "seed:prices": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedIngredientPrices.ts"
+    "seed:prices": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/seedIngredientPrices.ts",
+    "reset:ratings": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node src/scripts/resetRatings.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

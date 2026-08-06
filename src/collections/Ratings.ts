@@ -34,7 +34,15 @@ export const Ratings: CollectionConfig = {
       async ({ doc, req }) => {
         const recipeId = typeof doc.recipe === 'object' && doc.recipe ? doc.recipe.id : doc.recipe
         if (typeof recipeId === 'number') {
-          await syncRecipeRating(req.payload, recipeId).catch(() => {})
+          // `req` matters: without it the recompute runs outside this delete's
+          // transaction, still sees the deleted row, and writes the old total
+          // back. Failures are logged rather than swallowed — a silent one here
+          // leaves every card and sort reading a rating that no longer exists.
+          await syncRecipeRating(req.payload, recipeId, req).catch((err) => {
+            req.payload.logger.error(
+              `Rating deleted but recipe ${recipeId} aggregate not re-synced: ${String(err)}`,
+            )
+          })
         }
       },
     ],

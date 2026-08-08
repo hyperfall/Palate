@@ -51,6 +51,10 @@ export function convertMeasure(
 }
 
 const VULGAR: Array<[number, string]> = [
+  // An eighth is a real spoon in a real drawer, and scaling a quarter-teaspoon
+  // down by half lands exactly on it. Without this row that halving fell
+  // through to the decimal branch and printed "0.13 tsp".
+  [0.125, '⅛'],
   [0.25, '¼'],
   [0.33, '⅓'],
   [0.5, '½'],
@@ -64,6 +68,22 @@ const VULGAR: Array<[number, string]> = [
  * way to show you a third of a pound, so "1⅓ lb" is a number you cannot act on.
  */
 const FRACTIONAL_UNITS = new Set(['cup', 'cups', 'tsp', 'tbsp', 'fl oz', 'pint', 'quart'])
+
+/** Is this measured with a spoon or cup, rather than read off a scale? */
+export function isSpoonable(unit: string | null | undefined): boolean {
+  return FRACTIONAL_UNITS.has(String(unit ?? '').toLowerCase())
+}
+
+/**
+ * Below this, a spoon measure stops being a measurement.
+ *
+ * Set at the point where a value no longer rounds to an eighth (⅛ less the
+ * 0.05 snap tolerance), so every spoonful either names a fraction of a real
+ * spoon or admits it is too little to measure. Scaling a recipe down far enough
+ * produced "0.06 tsp" of cayenne — a quantity no kitchen tool can produce and
+ * no cook can act on. What a recipe writer says here is "a pinch".
+ */
+export const PINCH_BELOW = 0.075
 
 export function humanizeQuantity(
   value: number,
@@ -83,7 +103,11 @@ export function humanizeQuantity(
       if (Math.abs(frac - v) < 0.05) return whole > 0 ? `${whole}${glyph}` : glyph
     }
   }
-  if (frac < 0.05) return String(whole)
+  // Drop a negligible tail, but only from a number that HAS a whole part.
+  // Without that guard anything under 0.05 became the string "0": scaled far
+  // enough down, a gram of something printed as "0 g", which reads as an
+  // instruction to leave it out. A small amount is still an amount.
+  if (frac < 0.05 && whole > 0) return String(whole)
 
   // Precision follows how BIG the unit is, not just how big the number is.
   //

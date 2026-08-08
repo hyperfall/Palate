@@ -26,3 +26,42 @@ describe('formatMeasure', () => {
     expect(at('a handful', null)).toBe('a handful')
   })
 })
+
+describe('scaling a spoon measure down', () => {
+  const tsp = (quantity: string) => ({ quantity, unit: 'tsp' })
+
+  it('lands on an eighth rather than a two-decimal number', () => {
+    // Weeknight Shakshuka serves 4 with 1/4 tsp cayenne. Halved, that is an
+    // eighth — a real spoon. It used to print "0.13 tsp".
+    expect(formatMeasure(tsp('1/4'), { factor: 0.5, unitSystem: 'metric' })).toBe('⅛ tsp')
+  })
+
+  it('says what a cook says once it is below the smallest spoon', () => {
+    // The same recipe scaled to one serving: a sixteenth of a teaspoon. No
+    // kitchen tool produces that, and "0.06 tsp" is not an instruction.
+    expect(formatMeasure(tsp('1/4'), { factor: 0.25, unitSystem: 'metric' })).toBe('a pinch')
+    expect(formatMeasure(tsp('1/2'), { factor: 0.125, unitSystem: 'metric' })).toBe('a pinch')
+  })
+
+  it('leaves a measurable spoonful alone', () => {
+    expect(formatMeasure(tsp('1'), { factor: 1, unitSystem: 'metric' })).toBe('1 tsp')
+    expect(formatMeasure(tsp('1/2'), { factor: 1, unitSystem: 'metric' })).toBe('½ tsp')
+    expect(formatMeasure(tsp('3'), { factor: 0.5, unitSystem: 'metric' })).toBe('1½ tsp')
+  })
+
+  it('does not turn a weight into a pinch', () => {
+    // A scale reads small numbers perfectly well; only spoons have a floor.
+    expect(formatMeasure({ quantity: '1', unit: 'g' }, { factor: 0.03, unitSystem: 'metric' })).toBe(
+      '0.03 g',
+    )
+  })
+
+  it('never reduces a countable ingredient to a pinch', () => {
+    expect(
+      formatMeasure(
+        { quantity: '1', unit: 'tsp', ingredient: { countable: true } },
+        { factor: 0.01, unitSystem: 'metric' },
+      ),
+    ).toBe('1 tsp')
+  })
+})

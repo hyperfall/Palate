@@ -838,6 +838,16 @@ export function FilterPanel({
 
 export function SortSelect({ filters }: { filters: CatalogFilters }) {
   const commit = useCommit(filters)
+  /**
+   * Which selection is the live one.
+   *
+   * Choosing "For your taste" waits on the saved profile before committing, and
+   * every other option commits immediately. Pick the slow one and then change
+   * your mind, and the fetch that was already in flight came back and wrote its
+   * sort over the newer choice — the selector visibly snapped back to an option
+   * the reader had just moved away from, and the results followed it.
+   */
+  const latest = useRef(0)
 
   return (
     <label className="inline-flex items-center gap-2">
@@ -846,9 +856,13 @@ export function SortSelect({ filters }: { filters: CatalogFilters }) {
         value={filters.sort}
         onChange={async (e) => {
           const value = e.target.value as SortKey
+          const seq = ++latest.current
           // Attach the saved taste profile (from Supabase) so the server can rank
           // by it; a visitor with no profile just gets the newest-order fallback.
           const tv = value === 'foryou' ? await fetchTasteProfile() : null
+          // A newer selection committed while this was waiting. Drop this one:
+          // the reader has already told us they wanted something else.
+          if (seq !== latest.current) return
           commit((d) => {
             d.sort = value
             d.tasteVector = tv

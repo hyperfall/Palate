@@ -52,8 +52,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not save. Try again.' }, { status: 500 })
   }
 
-  // Sync metadata for display + submit-time creatorHandle. Non-fatal if it fails.
-  await supabase.auth.updateUser({ data: { username } }).catch(() => {})
+  // Sync metadata for display + submit-time creatorHandle. Non-fatal: the
+  // usernames table above is the source of truth and has already been written.
+  //
+  // The catch is not the whole story, which is why this is spelled out.
+  // supabase.auth.updateUser RESOLVES with { error } rather than rejecting, so
+  // a catch alone silently ignores every API-level failure and only sees a
+  // thrown network error. Both are checked, and a drift between the table and
+  // the metadata is logged — the two disagreeing shows up later as a display
+  // name and a submission handle that do not match the username, which is
+  // impossible to diagnose from the symptom alone.
+  const meta = await supabase.auth.updateUser({ data: { username } }).catch((err: unknown) => ({
+    error: err instanceof Error ? err : new Error(String(err)),
+  }))
+  if (meta.error) {
+    console.error(
+      `[username] saved "${username}" for ${user.id} but auth metadata did not follow:`,
+      meta.error.message,
+    )
+  }
 
   return NextResponse.json({ ok: true, username })
 }

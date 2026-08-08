@@ -109,13 +109,22 @@ export function ShoppingMode({ list, onClose }: { list: WeekShoppingList; onClos
     // original slug, so the row would land under a slug no canonical record
     // has, cook-from would resolve it to id: null and silently ignore it — the
     // cook told they were stocked while nothing changed.
-    const rows = new Map<string, { ingredient_slug: string; ingredient_name: string; is_staple: boolean }>()
+    // is_staple is deliberately ABSENT from this payload. An upsert only
+    // overwrites the columns it carries, so omitting it lets the column default
+    // to false on a genuinely new row while leaving an existing true alone.
+    //
+    // Sending `is_staple: false` clobbered it: mark something "I always have
+    // this" in the shopping list, then tick it into the basket here, and the
+    // flag silently reverted — so it reappeared on next week's list as
+    // something to buy, after the cook had said the opposite. Worse across a
+    // household, where the two actions can be different people.
+    const rows = new Map<string, { ingredient_slug: string; ingredient_name: string }>()
     for (const line of inBasket) {
       const slug = line.slug ?? slugify(line.name)
       // Deduplicate: two lines resolving to one slug in a single upsert makes
       // Postgres reject the whole batch ("cannot affect row a second time").
       if (!rows.has(slug)) {
-        rows.set(slug, { ingredient_slug: slug, ingredient_name: line.name, is_staple: false })
+        rows.set(slug, { ingredient_slug: slug, ingredient_name: line.name })
       }
     }
 

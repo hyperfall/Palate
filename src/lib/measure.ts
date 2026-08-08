@@ -1,4 +1,10 @@
-import { convertMeasure, humanizeQuantity, type UnitSystem } from '@/lib/units'
+import {
+  convertMeasure,
+  humanizeQuantity,
+  isSpoonable,
+  PINCH_BELOW,
+  type UnitSystem,
+} from '@/lib/units'
 import { parseQuantity } from '@/lib/nutrition'
 
 /**
@@ -32,8 +38,16 @@ export function formatMeasure(
   const scaled = parsed * factor
   const canonical = ing.ingredient && typeof ing.ingredient === 'object' ? ing.ingredient : null
   const converted = ing.unit ? convertMeasure(scaled, ing.unit, unitSystem) : { quantity: scaled, unit: '' }
+  // Below the smallest spoon, say what a cook would say. Handled here rather
+  // than in humanizeQuantity because the unit is dropped along with the number
+  // — "a pinch" is the whole measure, and "a pinch tsp" is not English.
+  const countable = Boolean(canonical?.countable)
+  if (!countable && isSpoonable(converted.unit) && converted.quantity > 0 && converted.quantity < PINCH_BELOW) {
+    return 'a pinch'
+  }
+
   const qty = humanizeQuantity(converted.quantity, {
-    countable: Boolean(canonical?.countable),
+    countable,
     unit: converted.unit,
   })
   return [qty, converted.unit].filter(Boolean).join(' ')

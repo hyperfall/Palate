@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  buildWhere,
-  catalogHref,
-  countActiveFilters,
-  encodeTasteRange,
-  parseFilters,
-  parseTasteRange,
-  sortExpression,
-  toSearchParams,
-} from '@/lib/filters'
+import { CALORIE_MAX, CALORIE_MIN, buildWhere, catalogHref, countActiveFilters, encodeTasteRange, parseFilters, parseTasteRange, sortExpression, toSearchParams } from '@/lib/filters'
 
 describe('parseFilters', () => {
   it('defaults to an unfiltered, newest-first catalog', () => {
@@ -255,5 +246,29 @@ describe('countActiveFilters', () => {
 
   it('does not count sort or page — they reorder, not narrow', () => {
     expect(countActiveFilters(parseFilters({ sort: 'quickest', page: '3' }))).toBe(0)
+  })
+})
+
+describe('a calorie ceiling outside the slider', () => {
+  it('treats a value below the floor as no ceiling, not a 100 kcal ceiling', () => {
+    // The slider cannot reach here, but filter state is URL-shareable by
+    // design, so a pasted or hand-edited link does. Clamping up hid 17 of 18
+    // recipes behind a ceiling nobody asked for.
+    expect(parseFilters({ kcal: '0' }).maxCalories).toBeNull()
+    expect(parseFilters({ kcal: '50' }).maxCalories).toBeNull()
+  })
+
+  it('treats the top of the slider as no ceiling', () => {
+    expect(parseFilters({ kcal: String(CALORIE_MAX) }).maxCalories).toBeNull()
+    expect(parseFilters({ kcal: '99999' }).maxCalories).toBeNull()
+  })
+
+  it('keeps a value the slider can actually produce', () => {
+    expect(parseFilters({ kcal: '600' }).maxCalories).toBe(600)
+    expect(parseFilters({ kcal: String(CALORIE_MIN) }).maxCalories).toBe(CALORIE_MIN)
+  })
+
+  it('ignores something that is not a number', () => {
+    expect(parseFilters({ kcal: 'lots' }).maxCalories).toBeNull()
   })
 })

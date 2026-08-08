@@ -155,12 +155,20 @@ export function parseFilters(params: RawSearchParams): CatalogFilters {
     difficulties: asList(params.difficulty).filter((d) => DIFFICULTY_VALUES.has(d as never)),
     taste,
     maxMinutes: Number.isNaN(parsedTime) ? null : Math.max(1, Math.min(24 * 60, parsedTime)),
-    // A continuous ceiling: any sane per-serving value, clamped to the slider's
-    // range. Below the floor means "no ceiling"; above it is capped.
+    // A continuous ceiling: any sane per-serving value within the slider's
+    // range. Outside it in EITHER direction means "no ceiling" — at the top
+    // because the slider's maximum is the "any" position, and at the bottom
+    // because a value the slider cannot reach is not a request for a 100 kcal
+    // dinner.
+    //
+    // It used to clamp a low value UP with Math.max, which is the opposite of
+    // what the line above it promised: ?kcal=0 imposed a 100 kcal ceiling and
+    // hid 17 of 18 recipes. Unreachable by dragging the slider, but filter
+    // state is URL-shareable by design, so a hand-edited or pasted link got it.
     maxCalories:
-      Number.isNaN(parsedKcal) || parsedKcal >= CALORIE_MAX
+      Number.isNaN(parsedKcal) || parsedKcal >= CALORIE_MAX || parsedKcal < CALORIE_MIN
         ? null
-        : Math.max(CALORIE_MIN, parsedKcal),
+        : parsedKcal,
     minRating: parseMinRating(first(params.rating)),
     maxCost: (() => {
       const c = first(params.cost)

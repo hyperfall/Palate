@@ -85,7 +85,16 @@ export function ShoppingList({ list, interactive = true }: { list: WeekShoppingL
       const { error: err } = await supabase
         .from('pantry')
         .upsert(
-          { ingredient_slug: slugify(line.name), ingredient_name: line.name, is_staple: true },
+          // line.slug, not slugify(line.name). A renamed ingredient keeps its
+          // original slug on purpose — the slug is a permanent URL — so
+          // deriving one from the display name lands the row under a slug no
+          // canonical record has, and getPantryStaples resolves it to nothing.
+          // ShoppingModeDialog already does this; this path was missed.
+          {
+            ingredient_slug: line.slug ?? slugify(line.name),
+            ingredient_name: line.name,
+            is_staple: true,
+          },
           { onConflict: 'user_id,ingredient_slug' },
         )
       if (err) {

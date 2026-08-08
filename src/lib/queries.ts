@@ -60,21 +60,22 @@ export async function findRecipes(
       pagination: false,
       select: { spiciness: true, sweetness: true, richness: true, effort: true },
     })
-    const ranked = [...scoring.docs].sort(
-      (a, b) =>
-        distance(tv, {
-          spiciness: a.spiciness ?? 0,
-          sweetness: a.sweetness ?? 0,
-          richness: a.richness ?? 0,
-          effort: a.effort ?? 0,
-        }) -
-        distance(tv, {
-          spiciness: b.spiciness ?? 0,
-          sweetness: b.sweetness ?? 0,
-          richness: b.richness ?? 0,
-          effort: b.effort ?? 0,
-        }),
-    )
+    // Distance first, then id. The id is not decoration: this query asks
+    // Postgres for no order at all, and ties on taste distance are common —
+    // four axes of 0-5 collide constantly across 18 recipes. Page 1 is rendered
+    // by the catalog page and page 2 by a separate request to /recipes/feed, so
+    // without a deterministic tiebreaker a tied pair can fall on either side of
+    // the boundary differently between the two, showing one recipe twice and
+    // another never. sortExpression() appends `-id` to every other sort in this
+    // codebase for exactly this reason; this branch never went through it.
+    const score = (r: { spiciness?: number | null; sweetness?: number | null; richness?: number | null; effort?: number | null }) =>
+      distance(tv, {
+        spiciness: r.spiciness ?? 0,
+        sweetness: r.sweetness ?? 0,
+        richness: r.richness ?? 0,
+        effort: r.effort ?? 0,
+      })
+    const ranked = [...scoring.docs].sort((a, b) => score(a) - score(b) || Number(a.id) - Number(b.id))
     const totalDocs = ranked.length
     const start = (page - 1) * limit
     const pageIds = ranked.slice(start, start + limit).map((r) => r.id)

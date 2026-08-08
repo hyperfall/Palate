@@ -1,5 +1,5 @@
 import type { CostRow, IngredientPrice, PriceBook } from './cost'
-import { BASE_CURRENCY, isSupportedCurrency } from './money'
+import { BASE_CURRENCY, isSupportedCurrency, MAX_MINOR } from './money'
 
 /**
  * A costing: a named list of what a dish is made of, what was paid for each
@@ -154,8 +154,14 @@ export function parseItem(raw: unknown): CostingItem | null {
   return {
     label,
     slug: str(o.slug, 200),
-    priceMinor: priceMinor != null && priceMinor >= 0 ? Math.round(priceMinor) : null,
-    packAmount: packAmount != null && packAmount > 0 ? packAmount : null,
+    // Bounded on both sides: a value the database would reject is not worth
+    // carrying in a draft, and the row would fail to save with no explanation.
+    priceMinor:
+      priceMinor != null && priceMinor >= 0 && priceMinor <= MAX_MINOR
+        ? Math.round(priceMinor)
+        : null,
+    packAmount:
+      packAmount != null && Number.isFinite(packAmount) && packAmount >= 0.001 ? packAmount : null,
     packUnit: packUnit && PACK_UNIT_SET.has(packUnit) ? (packUnit as CostingItem['packUnit']) : null,
     useAmount: str(o.useAmount, 24),
     useUnit: typeof o.useUnit === 'string' ? o.useUnit.trim().slice(0, 12) : null,
@@ -234,8 +240,13 @@ export function toCostInput(
 export function unitPrice(
   item: CostingItem,
 ): { minor: number; per: string } | null {
-  if (item.priceMinor == null || item.packAmount == null || item.packAmount <= 0) return null
-  if (!item.packUnit) return null
+  if (item.priceMinor == null || item.packAmount == null || !item.packUnit) return null
+  // Number.isFinite, not `> 0`. NaN fails every comparison, so `packAmount <= 0`
+  // let a NaN straight through and the shelf price rendered as NaN. A pack
+  // smaller than a milligram is a typo rather than a pack, and dividing by it
+  // produced figures like £25,000,000,000 per kilo.
+  if (!Number.isFinite(item.packAmount) || item.packAmount < 0.001) return null
+  if (!Number.isFinite(item.priceMinor)) return null
   const each = item.priceMinor / item.packAmount
   if (item.packUnit === 'piece') return { minor: each, per: 'each' }
   // Scale to the unit a shelf label uses, so the figure is comparable rather

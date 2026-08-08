@@ -16,6 +16,17 @@
  * cook has not given us is reported as missing instead.
  */
 
+/**
+ * The largest amount the price book will hold, matching the CHECK constraint on
+ * ingredient_prices.price_minor.
+ *
+ * Without a ceiling, a typed "999999999999999" parsed happily into 99 trillion
+ * pence: the calculator then showed absurd totals for as long as the row was on
+ * screen, and the save failed at the database on a constraint the interface had
+ * never mentioned. Refusing it at the point of entry is the honest place.
+ */
+export const MAX_MINOR = 100_000_000
+
 /** An amount of money: minor units (pence, cents, yen) and what they are. */
 export type Money = { minor: number; currency: string }
 
@@ -155,5 +166,9 @@ export function parseMoneyInput(
   }
   const value = Number(s)
   if (!Number.isFinite(value) || value < 0) return null
-  return Math.round(value * minorPerMajor(currency))
+  const minor = Math.round(value * minorPerMajor(currency))
+  // Out of range is a typo, not a price. Returning null puts it through the
+  // same path as "cheap" or an empty box rather than inventing a number.
+  if (minor > MAX_MINOR) return null
+  return minor
 }
